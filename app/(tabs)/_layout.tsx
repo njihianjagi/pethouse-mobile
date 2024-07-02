@@ -8,7 +8,8 @@ import { TouchableIcon, useTheme, useTranslations } from '../../dopebase';
 import { View } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
 import useCurrentUser from '../../hooks/useCurrentUser';
-
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Home, Search, MessageSquare, User2 } from '@tamagui/lucide-icons'
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -48,7 +49,8 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            // <Ionicons name={focused ? 'home' : 'home-outline'} color={color} size={24} />
+            <Home color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
         }}
       />
@@ -58,7 +60,8 @@ export default function TabLayout() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'search' : 'search-outline'} color={color} />
+            // <TabBarIcon name={focused ? 'search' : 'search-outline'} color={color} />
+            <Search color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
         }}
       />
@@ -68,7 +71,8 @@ export default function TabLayout() {
         options={{
           title: 'Inbox',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'chatbox' : 'chatbox-outline'} color={color} />
+            // <TabBarIcon name={focused ? 'chatbox' : 'chatbox-outline'} color={color} />
+            <MessageSquare color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
         }}
       />
@@ -80,7 +84,8 @@ export default function TabLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
+            // <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
+            <User2 color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
         }}
       />
