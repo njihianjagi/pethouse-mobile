@@ -259,7 +259,7 @@ const router = useRouter();
           console.log('user: ', user)
           dispatch(setUserData({ user }))
           Keyboard.dismiss()
-          router.replace('/(tabs)')
+          router.replace('(onboarding)/role-selection')
 
         }
       })
@@ -331,12 +331,17 @@ const router = useRouter();
             [{ text: localized('OK') }],
             { cancelable: false },
           )
-
+          
+          router.push({pathname: '/SmsAuthenticationScreen', params: { isSigningUp: 'true' }}) 
         } else {
           const user = response.user
           dispatch(setUserData({ user }))
           Keyboard.dismiss()
-          router.replace('(tabs)')
+          if (user.role){
+            router.replace('(tabs)')
+          } else {
+            router.replace('(onboarding)/role-selection')
+          }
         }
       })
     }
@@ -391,7 +396,7 @@ const router = useRouter();
           margin="auto"
           onPress={onPressSend}
           >
-          {localized('Send code')}
+          {localized('Continue with phone number')}
         </TamaguiButton>
 
 
@@ -485,13 +490,8 @@ const router = useRouter();
   const renderAsSignUpState = () => {
     return (
       <>
-        <Text style={styles.title}>{localized('Create new account')}</Text>
-        {!isConfirmSignUpCode && (
-          <ProfilePictureSelector
-            setProfilePictureFile={setProfilePictureFile}
-          />
-        )}
-
+        <Text style={styles.title}>{localized('Let\'s create your account')}</Text>
+  
         {!isConfirmSignUpCode && config.smsSignupFields.map(renderInputField)}
         
         { renderPhoneInput() }
@@ -502,8 +502,8 @@ const router = useRouter();
             {localized('Please check your phone for a confirmation code.')}
           </Text>
         )}
-
-        {/* {!isConfirmSignUpCode && (
+{/* 
+        {!isConfirmSignUpCode && (
           <>
             <Text style={styles.orTextStyle}> {localized('OR')}</Text>
             <TouchableOpacity
@@ -530,7 +530,7 @@ const router = useRouter();
       : {}
 
     return (
-      <>
+      <YStack space="$2">
         {isConfirmResetPasswordCode ? (
           <Text style={styles.title}>{localized('Reset Password')}</Text>
         ) : (
@@ -575,47 +575,58 @@ const router = useRouter();
             onPress={() => onAppleButtonPress()}
           />
         )}
-{/* 
-   
-          <TouchableOpacity
-            style={styles.signWithEmailContainer}
-            onPress={
-              () => {}
-              // () => navigation.navigate('Login')
-              }>
-            <Text style={styles.signWithEmailText}>
-              {localized('Sign in with E-mail')}
-            </Text>
-          </TouchableOpacity> */}
-      </>
+
+        <TouchableOpacity
+          style={styles.alreadyHaveAnAccountContainer}
+          onPress={
+            () => config.isSMSAuthEnabled
+            ? router.push({pathname: '/SmsAuthenticationScreen', params: { isSigningUp: 'false' }}) 
+            : router.push('/SignupScreen')
+          }>
+          <Text style={styles.alreadyHaveAnAccountText}>
+            {localized('Don\'t have an account? ')}
+            <TamaguiText color={colorSet.primaryForeground} >Sign Up</TamaguiText>
+          </Text>
+        </TouchableOpacity> 
+      </YStack>
     )
   }
 
   return (
-    <View style={styles.container}>
+    <TamaguiView  
+      flex={1}
+      alignItems="center"
+      justifyContent="center"
+      backgroundColor={colorSet.primaryBackground}
+    >
       <KeyboardAwareScrollView
         style={{ flex: 1, width: '100%' }}
-        keyboardShouldPersistTaps="always">
-        <TouchableOpacity onPress={
-          () => router.back()
-          }>
-          <Image style={styles.backArrowStyle} source={theme.icons.backArrow} />
-        </TouchableOpacity>
+        keyboardShouldPersistTaps="always"
+      >
 
-        {isSigningUp === 'true' && renderAsSignUpState()}
-
-        {isSigningUp === 'false' && renderAsLoginState()}
-
-        {isSigningUp === 'true' && (
-          <TermsOfUseView
-            tosLink={config.tosLink}
-            privacyPolicyLink={config.privacyPolicyLink}
-            style={styles.tos}
+      <YStack padding="$8" space="$4">
+        <View style={styles?.logo}>
+          <Image
+            style={styles.logoImage}
+            source={ theme.icons?.logo}
           />
-        )}
+        </View>
+      </YStack>
+
+      {isSigningUp === 'true' && renderAsSignUpState()}
+
+      {isSigningUp === 'false' && renderAsLoginState()}
+
+      {isSigningUp === 'true' && (
+        <TermsOfUseView
+          tosLink={config.tosLink}
+          privacyPolicyLink={config.privacyPolicyLink}
+          style={styles.tos}
+        />
+      )}
       </KeyboardAwareScrollView>
       {loading && <ActivityIndicator />}
-    </View>
+    </TamaguiView>
   )
 }
 
@@ -663,14 +674,14 @@ const dynamicStyles = (theme, colorScheme) => {
       backgroundColor: colorSet.primaryBackground,
     },
     title: {
-      fontSize: 30,
+      fontSize: 40,
       fontWeight: 'bold',
       color: colorSet.primaryForeground,
-      marginTop: 25,
+      marginTop: 0,
       marginBottom: 50,
       alignSelf: 'stretch',
-      textAlign: 'left',
-      marginLeft: 35,
+      textAlign: 'center',
+      paddingHorizontal: 8
     },
     sendContainer: {
       width: '70%',
@@ -744,7 +755,7 @@ const dynamicStyles = (theme, colorScheme) => {
       width: codeInptCellWidth,
       height: 60,
       lineHeight: 55,
-      fontSize: 163,
+      fontSize: 16,
       fontWeight: '400',
       textAlign: 'center',
       marginLeft: 8,
@@ -806,6 +817,25 @@ const dynamicStyles = (theme, colorScheme) => {
       marginTop: Platform.OS === 'ios' ? 50 : 20,
       marginLeft: 10,
       transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
+    },
+    logo: {
+      width: 'auto',
+      height: 'auto',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    logoImage: {
+      width: 200,
+      height: 150,
+      resizeMode: 'contain',
+      tintColor: '',
+    },
+    alreadyHaveAnAccountContainer: {
+      alignItems: 'center',
+      marginTop: 8,
+    },
+    alreadyHaveAnAccountText: {
+      color: colorSet.secondaryText,
     },
   })
 }

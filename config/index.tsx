@@ -80,7 +80,7 @@ export const ConfigProvider = ({ children }) => {
         },
       ],
     },
-    tosLink: 'https://www.instamobile.io/eula-instachatty/',
+    tosLink: 'https://www.doghouse.co.ke/terms-of-service/',
     isUsernameFieldEnabled: false,
     smsSignupFields: [
       // {

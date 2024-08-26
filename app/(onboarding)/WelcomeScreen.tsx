@@ -8,13 +8,14 @@ import {
   ActivityIndicator,
 } from '../../dopebase'
 import { setUserData } from '../../redux/auth'
-import { updateUser } from '../../users'
+
 
 import { useAuth } from '../../hooks/useAuth'
 import useCurrentUser from '../../hooks/useCurrentUser'
 import { useConfig } from '../../config'
 import { Link, useRouter } from 'expo-router'
-import { View as TamaguiView, YStack, Button as TamaguiButton, Text as TamaguiText } from 'tamagui'
+import { View as TamaguiView, YStack, Button as TamaguiButton, Text as TamaguiText, Spinner } from 'tamagui'
+import { updateUser } from '../../api/firebase/users/userClient'
 
 const WelcomeScreen = props => {
   const currentUser = useCurrentUser()
@@ -120,7 +121,8 @@ const WelcomeScreen = props => {
   if (isLoading == true) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator />
+        {/* <ActivityIndicator /> */}
+        <Spinner size="large" />
       </View>
     )
   }
@@ -189,7 +191,7 @@ const WelcomeScreen = props => {
         />
       </View>
 
-      <TamaguiView display="flex" ></TamaguiView>
+      {/* <TamaguiView display="flex" ></TamaguiView> */}
 
       <YStack padding="$8" space="$4" {...props}>
         <Text style={styles.title}>
@@ -206,7 +208,7 @@ const WelcomeScreen = props => {
           onPress={
           () => config.isSMSAuthEnabled
            ? router.push({pathname: '/SmsAuthenticationScreen', params: { isSigningUp: 'true' }}) 
-           : router.push('/LoginScreen')
+           : router.push('/SignupScreen')
         }>
           {localized('Get Started')}
         </TamaguiButton>
@@ -217,7 +219,7 @@ const WelcomeScreen = props => {
             onPress={
               () => config.isSMSAuthEnabled
               ? router.push({pathname: '/SmsAuthenticationScreen', params: { isSigningUp: 'false' }}) 
-              : router.push('/SignupScreen/SignupScreen')
+              : router.push('/SignupScreen')
             }>
             <Text style={styles.alreadyHaveAnAccountText}>
               {localized('Already have an account? ')}

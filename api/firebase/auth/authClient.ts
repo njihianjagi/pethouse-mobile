@@ -1,9 +1,9 @@
 import messaging from '@react-native-firebase/messaging'
 import auth from '@react-native-firebase/auth'
 import firestore from '@react-native-firebase/firestore'
-import { updateUser } from '../../../users'
 import { ErrorCode } from '../../ErrorCode'
 import { getUnixTimeStamp } from '../../../helpers/timeFormat'
+import { updateUser } from '../users/userClient'
 
 const usersRef = firestore().collection('users')
 

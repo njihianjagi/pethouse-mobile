@@ -7,14 +7,14 @@ import { useAuth } from '../../hooks/useAuth'
 import { StyleSheet } from 'react-native'
 import { useNavigation, useRouter } from 'expo-router'
 import { Text, View , XStack, Button , YStack, Input, Card, Paragraph, Image, H2} from 'tamagui'
-import { MapPin, ListFilter, ArrowRight, Bell } from '@tamagui/lucide-icons'
+import { MapPin, ListFilter, ArrowRight, Bell, LogOut } from '@tamagui/lucide-icons'
+import { logout } from '../../api/firebase/auth/authClient'
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const router = useRouter();
 
   const currentUser = useCurrentUser()
-  const authManager = useAuth()
 
   const { localized } = useTranslations()
   const { theme, appearance } = useTheme()
@@ -29,7 +29,7 @@ export default function HomeScreen() {
         <Button 
           onPress={onLogout} 
           chromeless 
-          icon={<Bell size="$1"/>} 
+          icon={<LogOut size="$1"/>} 
           color={colorSet.primaryForeground} size="$4"
         />
       ),
@@ -48,18 +48,9 @@ export default function HomeScreen() {
   }, [currentUser?.id])
 
   const onLogout = useCallback(() => {
-    authManager?.logout(currentUser)
-    // navigation.reset({
-    //   index: 0,
-    //   routes: [
-    //     {
-    //       name: 'LoadScreen',
-    //     },
-    //   ],
-    // })
+    logout()
     router.push('/')
-
-  }, [currentUser])
+  }, [])
 
   return (
     <View backgroundColor={colorSet.primaryBackground} flex={1}>
@@ -67,7 +58,7 @@ export default function HomeScreen() {
 
         <XStack gap="$2" >
           <MapPin color={colorSet.primaryForeground}/>
-          <Text>{currentUser.location.latitude}, {currentUser.location.longitude}</Text>
+          <Text>{currentUser.location?.latitude}, {currentUser.location?.longitude}</Text>
         </XStack>
 
         <XStack gap="$2">

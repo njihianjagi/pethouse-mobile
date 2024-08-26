@@ -9,8 +9,8 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin'
 
 import { storageAPI } from '../../../media'
 import * as authAPI from './authClient'
-import { updateUser } from '../../../users'
 import { ErrorCode } from '../../ErrorCode'
+import { updateUser } from '../users/userClient'
 
 const defaultProfilePhotoURL =
   'https://www.iosapptemplates.com/wp-content/uploads/2019/06/empty-avatar.jpg'
