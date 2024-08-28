@@ -1,6 +1,9 @@
-import { useSelector } from 'react-redux'
+import { useSelector } from 'react-redux';
 
-// @ts-ignore
-const useCurrentUser = () => useSelector(state => state.auth.user)
+const useCurrentUser = () => {
+  // @ts-ignore
+  const user = useSelector(state => state.auth.user);
+  return user;
+};
 
-export default useCurrentUser
+export default useCurrentUser;

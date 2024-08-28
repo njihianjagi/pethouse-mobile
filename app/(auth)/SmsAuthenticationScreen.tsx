@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, forwardRef } from 'react'
 import {
   Image,
   Keyboard,
   TextInput,
-  Text,
   TouchableOpacity,
   View,
   Dimensions,
@@ -11,7 +10,6 @@ import {
   Platform,
   StyleSheet
 } from 'react-native'
-import PhoneInput from 'react-native-phone-input'
 import {
   CodeField,
   Cursor,
@@ -39,10 +37,44 @@ import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogle
 import { useAuth } from '../../hooks/useAuth'
 import { router, useLocalSearchParams, useRouter } from 'expo-router'
 import { useConfig } from '../../config'
-import { Text as TamaguiText, View as TamaguiView, XStack, Button as TamaguiButton, YStack, Sheet } from 'tamagui'
+import { Text, View as TamaguiView, XStack, Button as TamaguiButton, YStack, Sheet, Spinner, Input, styled } from 'tamagui'
 import { Toast, ToastViewport, useToastController, useToastState } from '@tamagui/toast'
+import { ChevronDown, ChevronUp } from '@tamagui/lucide-icons'
+import { ScrollView } from 'react-native'
+import CountryPicker from 'react-native-country-picker-modal';
+import { CountryCode, parsePhoneNumber } from 'libphonenumber-js';
 
 const codeInputCellCount = 6
+
+const StyledInput = styled(Input, {
+  height: 48,
+  borderWidth: 1,
+  borderColor: '$grey3',
+  backgroundColor: '$gray5Light',
+  color: '$primaryText',
+  paddingLeft: 10,
+  borderRadius: 9,
+  // Remove left border radius to align with flag container
+  borderTopLeftRadius: 0,
+  borderBottomLeftRadius: 0,
+});
+
+// Forward the ref and specify the type
+const PhoneInput = forwardRef<TextInput, React.ComponentProps<typeof StyledInput>>((props, ref) => {
+  return <StyledInput ref={ref} {...props} />;
+});
+
+const FlagContainer = styled(View, {
+  width: 48,
+  height: 48,
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+
+const DropdownIndicator = () => (
+  <ChevronDown size={16} />
+)
+
 
 const SmsAuthenticationScreen = () => {
 const router = useRouter();
@@ -70,14 +102,26 @@ const router = useRouter();
   const [isCodeInputVisible, setIsCodeInputVisible] = useState(
     false
   )
-  const [phoneNumber, setPhoneNumber] = useState(null as any)
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [countriesPickerData, setCountriesPickerData] = useState(null)
   const [verificationId, setVerificationId] = useState(null)
   const [profilePictureFile, setProfilePictureFile] = useState(null)
   const [countryModalVisible, setCountryModalVisible] = useState(false)
   const [codeInputValue, setCodeInputValue] = useState('')
   const [open, setOpen] = useState(false)
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [selectedCountry, setSelectedCountry] = useState(null)
+  const [countryCode, setCountryCode] = useState('KE' as any); // Default country code
 
+  const phoneRef = useRef(null); // Create a ref for the phone input
+
+  const onSelectCountry = (country) => {
+    const code = `+${country.callingCode[0]} `;
+    setCountryCode(country.cca2);
+    setPhoneNumber(code); // Append country code with + sign
+    setCountryModalVisible(false); // Close modal after selection
+  };
+  
   const myCodeInput = useBlurOnFulfill({
     //codeInputValue,
      
@@ -92,8 +136,6 @@ const router = useRouter();
     setValue: setCodeInputValue,
   })
 
-  const phoneRef = useRef(null as any)
-
   // const toast = useToastController()
 
   useEffect(() => {
@@ -104,7 +146,7 @@ const router = useRouter();
 
   useEffect(() => {
     if (phoneRef && phoneRef.current) {
-      setCountriesPickerData(phoneRef.current.getPickerData())
+      setPhoneNumber('+254 ')
     }
   }, [phoneRef])
 
@@ -265,12 +307,18 @@ const router = useRouter();
       })
   }
 
+  const isValidNumber = (phoneNumber: string, countryCode: string) => {
+    try {
+      const parsedNumber = parsePhoneNumber(phoneNumber, countryCode as CountryCode);
+      return parsedNumber.isValid();
+    } catch (error) {
+      return false;
+    }
+  };
 
   const onPressSend = async () => {
-    if (phoneRef.current.isValidNumber()) {
-      const userValidPhoneNumber = phoneRef.current.getValue()
+    if (isValidNumber(phoneNumber, countryCode)) {
       setLoading(true)
-      setPhoneNumber(userValidPhoneNumber)
       if (isSigningUp === 'true') {
         const { error } = await authManager.validateUsernameFieldIfNeeded(
           trimFields(inputFields),
@@ -290,7 +338,7 @@ const router = useRouter();
         }
       }
 
-      signInWithPhoneNumber(userValidPhoneNumber)
+      signInWithPhoneNumber(phoneNumber)
     } else {
       Alert.alert(
         '',
@@ -304,7 +352,7 @@ const router = useRouter();
   }
 
   const onPressFlag = () => {
-    setCountryModalVisible(true)
+    setSheetOpen(true)
   }
 
   const onPressCancelContryModalPicker = () => {
@@ -332,7 +380,7 @@ const router = useRouter();
             { cancelable: false },
           )
           
-          router.push({pathname: '/SmsAuthenticationScreen', params: { isSigningUp: 'true' }}) 
+          router.push({pathname: '(auth)/SmsAuthenticationScreen', params: { isSigningUp: 'true' }}) 
         } else {
           const user = response.user
           dispatch(setUserData({ user }))
@@ -340,7 +388,7 @@ const router = useRouter();
           if (user.role){
             router.replace('(tabs)')
           } else {
-            router.replace('(onboarding)/role-selection')
+            router.replace('(onboarding)')
           }
         }
       })
@@ -354,39 +402,37 @@ const router = useRouter();
     }))
   }
 
-  const selectCountry = country => {
-    phoneRef.current.selectCountry(country.iso2)
-  }
-
   const renderPhoneInput = () => {
     return (
       <>
-        <PhoneInput
-          style={styles.InputContainer}
-          flagStyle={styles.flagStyle}
-          textStyle={styles.phoneInputTextStyle}
-          ref={phoneRef}
-          initialCountry={'ke'}
-          onPressFlag={onPressFlag}
-          offset={10}
-          allowZeroAfterCountryCode
-          textProps={{
-            placeholder: localized('Phone number'),
-            placeholderTextColor: '#aaaaaa',
-          }}
-        />
-
-        {countriesPickerData && (
-          <CountriesModalPicker
-            data={countriesPickerData}
-            onChange={country => {
-              selectCountry(country)
-            }}
-            cancelText={localized('Cancel')}
-            visible={countryModalVisible}
-            onCancel={onPressCancelContryModalPicker}
+        <XStack width="80%" alignSelf="center" marginBottom={32}>
+          <TouchableOpacity onPress={onPressFlag}>
+            <FlagContainer>
+              <CountryPicker
+                countryCode={countryCode}
+                onSelect={onSelectCountry}
+                withFlag
+                withCallingCode
+                withCountryNameButton={false}
+                withFilter
+                visible={countryModalVisible}
+                onOpen={() => setCountryModalVisible(true)}
+                onClose={() => setCountryModalVisible(false)}
+                modalProps={{
+                  style: { height: Dimensions.get('window').height * 0.75 },
+                }}
+              />
+            </FlagContainer>
+          </TouchableOpacity>
+          <PhoneInput
+            ref={phoneRef}
+            flex={1}
+            placeholder={localized('Phone number')}
+            placeholderTextColor="$grey3"
+            value={phoneNumber}
+            onChangeText={(text) => setPhoneNumber(text)}
           />
-        )}
+        </XStack>
 
         <TamaguiButton 
           theme="active" 
@@ -395,11 +441,11 @@ const router = useRouter();
           width="80%"
           margin="auto"
           onPress={onPressSend}
-          >
-          {localized('Continue with phone number')}
+          iconAfter={loading ? <Spinner /> : <></>}
+          disabled={loading}
+        >
+          {!loading && localized('Continue with phone number')}
         </TamaguiButton>
-
-
       </>
     )
   }
@@ -448,7 +494,7 @@ const router = useRouter();
           space="$5" 
           backgroundColor={colorSet.primaryBackground}
         >
-            <TamaguiText color={colorSet.primaryForeground} fontSize="$4" >Enter code sent to {phoneNumber} </TamaguiText>
+            <Text color={colorSet.primaryForeground} fontSize="$4" >Enter code sent to {phoneNumber} </Text>
             
             <CodeField
               ref={myCodeInput}
@@ -462,9 +508,9 @@ const router = useRouter();
             />
 
             <TouchableOpacity onPress={onPressSend}>
-              <TamaguiText color={colorSet.secondaryText}>{localized("Didn't get a code? ")}
-                <TamaguiText color={colorSet.primaryForeground} >Resend</TamaguiText>
-              </TamaguiText>
+              <Text color={colorSet.secondaryText}>{localized("Didn't get a code? ")}
+                <Text color={colorSet.primaryForeground} >Resend</Text>
+              </Text>
 
             </TouchableOpacity>
         </Sheet.Frame>
@@ -532,14 +578,15 @@ const router = useRouter();
     return (
       <YStack space="$2">
         {isConfirmResetPasswordCode ? (
-          <Text style={styles.title}>{localized('Reset Password')}</Text>
+          <Text padding="$8" style={styles.title}>{localized('Reset Password')}</Text>
         ) : (
-          <Text style={styles.title}>{localized('Login to your account')}</Text>
+          <Text paddingHorizontal="$8" style={styles.title}>{localized('Login to your account')}</Text>
         )}
 
 
         {renderPhoneInput()}
 
+        
         {isCodeInputVisible && renderCodeInput() }
 
         {isConfirmResetPasswordCode && (
@@ -585,7 +632,7 @@ const router = useRouter();
           }>
           <Text style={styles.alreadyHaveAnAccountText}>
             {localized('Don\'t have an account? ')}
-            <TamaguiText color={colorSet.primaryForeground} >Sign Up</TamaguiText>
+            <Text color={colorSet.primaryForeground} >Sign Up</Text>
           </Text>
         </TouchableOpacity> 
       </YStack>
@@ -600,7 +647,7 @@ const router = useRouter();
       backgroundColor={colorSet.primaryBackground}
     >
       <KeyboardAwareScrollView
-        style={{ flex: 1, width: '100%' }}
+        style={{ width: '100%' }}
         keyboardShouldPersistTaps="always"
       >
 
@@ -625,7 +672,7 @@ const router = useRouter();
         />
       )}
       </KeyboardAwareScrollView>
-      {loading && <ActivityIndicator />}
+      {/* {loading && <ActivityIndicator />} */}
     </TamaguiView>
   )
 }

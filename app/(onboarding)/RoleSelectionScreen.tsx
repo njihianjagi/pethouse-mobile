@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { YStack, Text, Button, XStack, View } from 'tamagui';
-import { updateUser } from '../../api/firebase/users/userClient';
+import { YStack, Text, Button, XStack, View, Spinner } from 'tamagui';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import { useTheme, useTranslations } from '../../dopebase';
 import { useConfig } from '../../config';
 import { Image, StyleSheet} from 'react-native';
+import { updateUser } from '../../api/firebase/users/userClient';
 
-export default function RoleSelection() {
+export default function RoleSelectionScreen() {
   const router = useRouter();
 
   const currentUser = useCurrentUser();
@@ -15,16 +15,19 @@ export default function RoleSelection() {
   const { localized } = useTranslations()
   const { theme, appearance } = useTheme()
   const styles = dynamicStyles(theme, appearance)
-  const config = useConfig();
   
   const colorSet = theme?.colors[appearance]
-  
-  console.log(currentUser)
+
+  const [loading, setLoading] = useState(false)
+
   const handleRoleSelection = async (role: 'breeder' | 'seeker') => {
     try {
+      setLoading(true)
       await updateUser(currentUser?.id,{ role });
-      router.push(role === 'breeder' ? '/breeder-profile-creation' : '/seeker-profile-creation');
+      router.push(role === 'breeder' ? '/BreederProfileScreen' : '/SeekerProfileScreen');
+      setLoading(false)
     } catch (error) {
+      setLoading(false)
       console.error('Error updating user role:', error);
       // Handle error (e.g., show an error message to the user)
     }
@@ -46,7 +49,7 @@ export default function RoleSelection() {
         </View>
 
         <Text style={styles.title}>
-          Welcome to Doghouse!
+          Let's Get Started!
         </Text>
         <Text style={styles.caption}>
           Before you continue, please tell us whether you are searching for a new dog or you would like to rehome your current dog.
@@ -59,7 +62,7 @@ export default function RoleSelection() {
           theme="active" 
           backgroundColor={colorSet.secondaryForeground} 
           color={colorSet.primaryForeground}
-          onPress={() => handleRoleSelection('breeder')}
+          onPress={() => handleRoleSelection('seeker')}
         >
           {localized('I am looking for a new dog')}
         </Button>
@@ -68,9 +71,11 @@ export default function RoleSelection() {
           theme="active" 
           backgroundColor={colorSet.primaryForeground} 
           color={colorSet.secondaryForeground}
-          onPress={() => handleRoleSelection('seeker')}
+          onPress={() => handleRoleSelection('breeder')}
+          disabled={loading}
+          iconAfter={loading ? <Spinner /> : <></>}
         >
-          {localized('I want to rehome my dog')}
+          {localized('I want to rehome my dog(s)')}
         </Button>
       </YStack>
     

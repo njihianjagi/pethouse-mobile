@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { db } from '../../../firebase/config'; // Adjust the path as necessary
 
-const useBreedsData = (kennelId) => {
+export const useBreedData = () => {
   const [allBreeds, setAllBreeds] = useState([] as any);
   const [kennelBreeds, setKennelBreeds] = useState([] as any);
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ const useBreedsData = (kennelId) => {
   };
 
   // Fetch all breeds for a specific kennel
-  const fetchKennelBreeds = async () => {
+  const fetchKennelBreeds = async (kennelId) => {
     if (!kennelId) return;
     setLoading(true);
     try {
@@ -39,7 +39,7 @@ const useBreedsData = (kennelId) => {
   };
 
   // Add a new breed to a kennel
-  const addKennelBreed = async (breed) => {
+  const addKennelBreed = async (kennelId, breed) => {
     if (!kennelId) return;
     try {
       const response = await db.collection('kennel_breeds').add({ ...breed, kennel_id: kennelId });
@@ -75,5 +75,3 @@ const useBreedsData = (kennelId) => {
 
   return { allBreeds, kennelBreeds, loading, error, addKennelBreed, updateKennelBreed, deleteKennelBreed, fetchKennelBreeds, fetchAllBreeds };
 };
-
-export default useBreedsData;

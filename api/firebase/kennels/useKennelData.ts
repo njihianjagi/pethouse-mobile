@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../../../firebase/config'; // Adjust the path as necessary
 
-const useKennelData = () => {
+export const useKennelData = () => {
   const [kennels, setKennels] = useState([] as any);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,6 +24,22 @@ const useKennelData = () => {
       console.error("Error fetching kennels:", err);
     }
     setLoading(false);
+  };
+
+  // Get a kennel by user ID
+  const getKennelByUserId = async (userId: string): Promise<any | null> => {
+    try {
+      const response = await db.collection('kennels').where('userId', '==', userId).get();
+      if (response.empty) {
+        return null;
+      }
+      const kennelData = response.docs[0].data();
+      return { id: response.docs[0].id, ...kennelData };
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Error fetching kennel by user ID:", err);
+      throw err;
+    }
   };
 
   // Add a new kennel
@@ -64,7 +80,7 @@ const useKennelData = () => {
     fetchKennels();
   }, []);
 
-  return { kennels, loading, error, addKennel, updateKennel, deleteKennel, fetchKennels };
+  return { kennels, loading, error, addKennel, updateKennel, deleteKennel, fetchKennels, getKennelByUserId };
 };
 
 export default useKennelData;

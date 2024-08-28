@@ -17,7 +17,7 @@ const styles = (theme, appearance) =>
       width: 100,
       height: 100,
       borderRadius: 10,
-      backgroundColor: 'rgba(52, 52, 52, 0.7)',
+      backgroundColor: theme.colors[appearance].primaryBackground,
       alignItems: 'center',
       justifyContent: 'center',
       position: 'absolute',

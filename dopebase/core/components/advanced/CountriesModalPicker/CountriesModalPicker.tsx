@@ -90,18 +90,18 @@ const dp = (
 return <View style={ props.style }>{ dp }</View>
 }
 
-// CountriesModalPicker.defaultProps = {
-//   data: [],
-//   onChange: () => {},
-//   initValue: 'Select me!',
-//   style: {},
-//   selectStyle: {},
-//   optionStyle: {},
-//   optionTextStyle: {},
-//   sectionStyle: {},
-//   sectionTextStyle: {},
-//   cancelStyle: {},
-//   cancelTextStyle: {},
-//   overlayStyle: {},
-//   cancelText: 'cancel',
-// }
+CountriesModalPicker.defaultProps = {
+  data: [],
+  onChange: () => {},
+  initValue: 'Select me!',
+  style: {},
+  selectStyle: {},
+  optionStyle: {},
+  optionTextStyle: {},
+  sectionStyle: {},
+  sectionTextStyle: {},
+  cancelStyle: {},
+  cancelTextStyle: {},
+  overlayStyle: {},
+  cancelText: 'cancel',
+}

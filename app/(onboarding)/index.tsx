@@ -1,75 +1,50 @@
-import React, { useCallback, useLayoutEffect } from 'react'
-import { View, Text, Keyboard } from 'react-native'
-import { useFocusEffect, useRouter } from 'expo-router'
-import deviceStorage from '../../utils/AuthDeviceStorage'
-import { useDispatch } from 'react-redux'
-import { setUserData } from '../../redux/auth'
-import { useOnboardingConfig } from '../../hooks/useOnboardingConfig'
-import { useAuth } from '../../hooks/useAuth'
-import { HelloWave } from '../../components/HelloWave'
-import { ThemedText } from '../../components/ThemedText'
-import { ThemedView } from '../../components/ThemedView'
-import { useConfig } from '../../config'
+import React, { useCallback, useEffect, useLayoutEffect } from 'react';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
+import { useAuth } from '../../hooks/useAuth';
+import useCurrentUser from '../../hooks/useCurrentUser';
+import { View } from 'tamagui';
 
- const LoadScreen = () => {
-  // const navigation = useNavigation()
-  const router = useRouter();
+const OnboardingScreen = () => {
+	const router = useRouter();
+	const currentUser = useCurrentUser();
+	const authManager = useAuth();
 
-  const dispatch = useDispatch()
-  const authManager = useAuth()
+  const navigation = useNavigation();
 
-  const config = useConfig();
-  // useLayoutEffect(() => {
-  //   navigation.setOptions({
-  //     headerShown: false,
-  //   })
-  // }, [navigation])
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+    })
+  }, [navigation])
 
   useFocusEffect(
     useCallback(() => {
-      setAppState()
-    }, []),
+      checkUserRole()
+    }, [currentUser, router]),
   )
 
-  const setAppState = async () => {
-    const shouldShowOnboardingFlow = await deviceStorage.getShouldShowOnboardingFlow()
-    if (!shouldShowOnboardingFlow) {
-      if (config?.isDelayedLoginEnabled) {
-        fetchPersistedUserIfNeeded()
-        return
-      }
-      router.push('/DelayedLoginScreen')
-    } else {
-      router.push('/WalkthroughScreen')
-    }
-  }
-
-  const fetchPersistedUserIfNeeded = async () => {
-    if (!authManager?.retrievePersistedAuthUser) {
-      router.push('/WelcomeScreen')
-    }
-    authManager
-      ?.retrievePersistedAuthUser(config)
-      .then(response => {
-        if (response?.user) {
-          dispatch(
-            setUserData({
-              user: response.user,
-            }),
-          )
-         Keyboard.dismiss()
+  
+  const checkUserRole = async () => {
+    if (currentUser) {
+      // Check if the user has a role
+      if (currentUser.role) {
+        // Redirect to the appropriate profile creation screen based on the role
+        if (currentUser.role === 'breeder') {
+          router.push('/BreederProfileScreen');
+        } else if (currentUser.role === 'seeker') {
+          router.push('/SeekerProfileScreen');
         }
-        router.push('(tabs)')
-      })
-      .catch(error => {
-        console.log(error)
-        router.push('/WelcomeScreen')
-      })
-  }
+      } else {
+        // If no role is assigned, navigate to the role selection screen
+        router.push('/RoleSelectionScreen');
+      }
+    } else {
+      // If no user is logged in, you might want to redirect to the login screen
+      router.push('/WelcomeScreen');
+    }
+  };
 
-  return (
-    <ThemedView />
-  )
-}
+	return <View />
+};
 
-export default LoadScreen;
+export default OnboardingScreen;

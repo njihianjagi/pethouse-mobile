@@ -15,7 +15,6 @@ import useCurrentUser from '../../hooks/useCurrentUser'
 import { useConfig } from '../../config'
 import { Link, useRouter } from 'expo-router'
 import { View as TamaguiView, YStack, Button as TamaguiButton, Text as TamaguiText, Spinner } from 'tamagui'
-import { updateUser } from '../../api/firebase/users/userClient'
 
 const WelcomeScreen = props => {
   const currentUser = useCurrentUser()
@@ -78,14 +77,17 @@ const WelcomeScreen = props => {
             }),
           )
           Keyboard.dismiss()
-          if (user?.role === 'admin') {
+          if (!user?.role || user.role === 'breeder' && !user.kennelId){
+            router.push('(onboarding)')
+            // router.push('/(tabs)')
+
+          } else if (user?.role === 'admin') {
             // navigation.reset({
             //   index: 0,
             //   routes: [{ name: 'AdminStack', params: { user } }],
             // })
             router.push('/(tabs)')
           } else {
-
             router.push('/(tabs)')
             // navigation.reset({
             //   index: 0,
@@ -121,61 +123,13 @@ const WelcomeScreen = props => {
   if (isLoading == true) {
     return (
       <View style={styles.container}>
-        {/* <ActivityIndicator /> */}
-        <Spinner size="large" />
+        <ActivityIndicator />
       </View>
     )
   }
 
   return (
-    // <View style={styles.container}>
-    //   {props.delayedMode && (
-    //     <DismissButton
-    //       style={styles.dismissButton}
-    //       tintColor={theme.colors[appearance].primaryForeground}
-    //       onPress={
-    //         () => router.back()
-    //       }
-    //     />
-    //   )}
-      // <View style={styles?.logo}>
-      //   <Image
-      //     style={styles.logoImage}
-      //     source={
-      //       props.delayedMode ? theme.icons.delayedLogo : theme.icons?.logo
-      //     }
-      //   />
-      // </View>
-      // <Text style={styles.title}>
-      //   {title ? title : config.onboardingConfig.welcomeTitle}
-      // </Text>
-      // <Text style={styles.caption}>
-      //   {caption ? caption : config.onboardingConfig.welcomeCaption}
-      // </Text>
 
-    //   <Button
-    //     text={localized('Log In')}
-    //     style={styles.loginContainer}
-    //     textStyle={styles.loginText}
-    //     onPress={
-    //       () => config.isSMSAuthEnabled
-    //        ? router.push({pathname: '/SmsAuthenticationScreen/SmsAuthenticationScreen', params: { isSigningUp: 'false' }}) 
-    //        : router.push('/LoginScreen/LoginScreen')
-    //     }>
-    //     {localized('Log In')}
-    //   </Button>
-
-    //   <Button
-    //     text={localized('Sign Up')}
-    //     style={styles.signupContainer}
-    //     textStyle={styles.signupText}
-    //     onPress={
-    //       () => config.isSMSAuthEnabled
-    //       ? router.push({pathname: '/SmsAuthenticationScreen/SmsAuthenticationScreen', params: { isSigningUp: 'true' }}) 
-    //       : router.push('/SignupScreen/SignupScreen')
-    //     }>
-    //     {localized('Sign Up')}
-    //   </Button>
     <TamaguiView  
       flex={1}
       alignItems="center"
@@ -322,3 +276,7 @@ const dynamicStyles = (theme, colorScheme) => {
 }
 
 export default WelcomeScreen
+function updateUser(userID: any, arg1: { badgeCount: number }) {
+  throw new Error('Function not implemented.')
+}
+
