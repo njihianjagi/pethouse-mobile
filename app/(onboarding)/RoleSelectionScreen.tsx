@@ -13,9 +13,9 @@ export default function RoleSelectionScreen() {
   const currentUser = useCurrentUser();
 
   const { localized } = useTranslations()
+  
   const { theme, appearance } = useTheme()
   const styles = dynamicStyles(theme, appearance)
-  
   const colorSet = theme?.colors[appearance]
 
   const [loading, setLoading] = useState(false)

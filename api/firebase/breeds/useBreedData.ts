@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { db } from '../../../firebase/config'; // Adjust the path as necessary
+import breedsData from '../../../assets/data/breeds_with_group.json';
 
 export const useBreedData = () => {
   const [allBreeds, setAllBreeds] = useState([] as any);
@@ -11,8 +12,8 @@ export const useBreedData = () => {
   const fetchAllBreeds = async () => {
     setLoading(true);
     try {
-      const response = await db.collection('breeds').get();
-      const breedsData: any = response.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // const response = await db.collection('breeds').get();
+      // const breedsData: any = response.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAllBreeds(breedsData);
       setError(null);
     } catch (err: any) {

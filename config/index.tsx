@@ -16,6 +16,7 @@ export const ConfigProvider = ({ children }) => {
     forgotPasswordEnabled: true,
     appIdentifier: `com.doghouse.ke`,
     facebookIdentifier: '285315185217069',
+    googleMapsApiKey: 'AIzaSyAsA_NXnLAmxVq4UGGpHyt3SmpyHveI-UE',
     webClientId:
       '1099201876026-7p9f7c1ukg55958ck45fc0bn0luilka4.apps.googleusercontent.com',
     onboardingConfig: {

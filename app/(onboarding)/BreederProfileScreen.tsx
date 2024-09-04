@@ -1,50 +1,120 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-import { View, YStack, Input, Button, Select, Text, Image, Sheet, Adapt } from 'tamagui';
-import { useBreedData } from '../../api/firebase/breeds/useBreedData';
-import { useKennelData } from '../../api/firebase/kennels/useKennelData';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet} from 'react-native';
+import {
+  View,
+  YStack,
+  Input,
+  Button,
+  Select,
+  Text,
+  Image,
+  Sheet,
+  Adapt,
+  Separator,
+  XStack,
+  styled,
+  Card,
+  Spinner,
+  CardProps,
+  H2,
+  Paragraph,
+  H3,
+} from 'tamagui';
+import {useBreedData} from '../../api/firebase/breeds/useBreedData';
+import {useKennelData} from '../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import { Check } from '@tamagui/lucide-icons';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { useTheme } from '../../dopebase';
-import { updateUser } from '../../api/firebase/users/userClient';
+import {Check, Plus} from '@tamagui/lucide-icons';
+import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
+import {ActivityIndicator, useTheme} from '../../dopebase';
+import {updateUser} from '../../api/firebase/users/userClient';
+import {useConfig} from '../../config';
+import {Heart, Home, Scissors, Bone} from '@tamagui/lucide-icons';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 const BreederProfileScreen = () => {
-  const { currentUser } = useCurrentUser();
-  const { allBreeds, loading: breedsLoading } = useBreedData();
-  const { addKennel, updateKennel, getKennelByUserId, loading: kennelLoading } = useKennelData();
+  const {currentUser} = useCurrentUser();
+  const {
+    addKennel,
+    updateKennel,
+    getKennelByUserId,
+    loading: kennelLoading,
+  } = useKennelData();
+
+  const {allBreeds, loading: breedsLoading, fetchAllBreeds} = useBreedData();
 
   const [kennelName, setKennelName] = useState('');
   const [location, setLocation] = useState('');
-  const [services, setServices] = useState([] as any);
+
+  const [selectedServices, setSelectedServices] = useState([] as any);
+
   const [selectedBreeds, setSelectedBreeds] = useState([] as any);
   const [existingKennel, setExistingKennel] = useState(null as any);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
 
-  const { theme, appearance } = useTheme();
+  const [servicesVisible, setServicesVisible] = useState(false);
+  const [breedsVisible, setBreedsVisible] = useState(false);
+
+  const {theme, appearance} = useTheme();
   const styles = dynamicStyles(theme, appearance);
   const colorSet = theme?.colors[appearance];
 
+  const config = useConfig();
+
   useEffect(() => {
     if (currentUser) {
-      getKennelByUserId(currentUser.uid).then(kennel => {
+      getKennelByUserId(currentUser.uid).then((kennel) => {
         if (kennel) {
           setExistingKennel(kennel);
           setKennelName(kennel.name);
           setLocation(kennel.location);
-          setServices(kennel.services || []);
+          setSelectedServices(kennel.services || []);
           setSelectedBreeds(kennel.breeds || []);
         }
       });
     }
   }, [currentUser]);
 
+  useEffect(() => {
+    fetchAllBreeds();
+  }, []);
+
+  const handleSelectService = (service) => {
+    if (selectedServices.find((s) => s.id === service.id)) {
+      setSelectedServices(selectedServices.filter((s) => s.id !== service.id));
+    } else {
+      setSelectedServices([...selectedServices, service]);
+    }
+    setServicesVisible(false);
+  };
+
+  const handleSelectBreed = (breed) => {
+    if (selectedBreeds.includes(breed)) {
+      setSelectedBreeds(selectedBreeds.filter((b) => b !== breed));
+    } else {
+      setSelectedBreeds([...selectedBreeds, breed]);
+    }
+    setBreedsVisible(false);
+  };
+
+  const IconButton = styled(Button, {
+    size: '$4',
+    borderRadius: 100,
+    paddingHorizontal: '$2',
+    backgroundColor: '$background',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    hoverStyle: {
+      backgroundColor: '$backgroundHover',
+    },
+  });
+
   const handleSave = async () => {
     const kennelData = {
       name: kennelName,
       location,
-      services,
+      services: selectedServices,
       breeds: selectedBreeds,
       userId: currentUser.uid,
     };
@@ -53,153 +123,148 @@ const BreederProfileScreen = () => {
       await updateKennel(existingKennel.id, kennelData);
     } else {
       const newKennelId = await addKennel(kennelData);
-      await updateUser(currentUser.uid, { kennelId: newKennelId });
+      await updateUser(currentUser.uid, {kennelId: newKennelId});
     }
 
     // Navigate to the next screen or dashboard
   };
 
+  if (breedsLoading == true) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
   return (
-    <View  
+    <View
       flex={1}
-      alignItems="center"
-      justifyContent="center"
+      alignItems='center'
+      justifyContent='center'
       backgroundColor={colorSet.primaryBackground}
     >
-      <YStack p="$8" gap="$6">
-        <YStack gap="$4">
-          <View style={styles?.logo}>
-            <Image
-              style={styles.logoImage}
-              source={theme.icons?.logo}
+      <KeyboardAwareScrollView style={{flex: 1, width: '100%'}}>
+        <YStack p='$8' gap='$6'>
+          <YStack gap='$4'>
+            <View style={styles?.logo}>
+              <Image style={styles.logoImage} source={theme.icons?.logo} />
+            </View>
+
+            <Text style={styles.title}>Awesome! Let's setup your kennel</Text>
+            <Text style={styles.caption}>
+              Complete your profile to connect with potential buyers and
+              showcase your kennel.
+            </Text>
+          </YStack>
+
+          <YStack gap='$4'>
+            <Input
+              placeholder='Kennel Name'
+              value={kennelName}
+              onChangeText={setKennelName}
             />
-          </View>
 
-          <Text style={styles.title}>
-            Awesome, almost there!
-          </Text>
-          <Text style={styles.caption}>
-            Complete your profile to connect with potential buyers and showcase your kennel.
-          </Text>
-        </YStack>
+            <Input
+              placeholder='Kennel Location'
+              value={location}
+              onFocus={() => setIsSheetOpen(true)}
+              onChangeText={setLocation}
+            />
 
-        <YStack gap="$4">
-          <Input
-            placeholder="Kennel Name"
-            value={kennelName}
-            onChangeText={setKennelName}
-          />
+            {/* <YStack gap="$4">
+              <Text>Services</Text>
 
-          <Input
-            placeholder="Kennel Location"
-            value={location}
-            onFocus={() => setIsSheetOpen(true)}
-            onChangeText={setLocation}
-          />
+              <XStack gap="$2" flexWrap="wrap">
 
-          <Select 
-            open={isSelectOpen} 
-            onOpenChange={setIsSelectOpen} 
-            value={services.join(',')} 
-            onValueChange={(value) => {
-              const newServices = services.includes(value)
-                ? services.filter((s) => s !== value)
-                : [...services, value];
-              setServices(newServices);
-            }}
-          >
-            <Select.Trigger>
-              <Select.Value placeholder="Select Services" />
-            </Select.Trigger>
-            <Select.Content>
-              <Select.Viewport>
-                {['breeding', 'boarding', 'training', 'grooming'].map((service, index) => (
-                  <Select.Item index={index} key={service} value={service}>
-                    <Select.ItemText>{service}</Select.ItemText>
-                    <Select.ItemIndicator>
-                      {services.includes(service) && <Check size={16} />}
-                    </Select.ItemIndicator>
-                  </Select.Item>
+                {selectedServices.map((service) => (
+                  <IconButton key={service.id} icon={service.icon} theme="active">
+                    <Text paddingHorizontal="$1">{service.name}</Text>
+                  </IconButton>
                 ))}
-              </Select.Viewport>
-            </Select.Content>
-          </Select>
 
-          <Select 
-            value={selectedBreeds.join(',')} 
-            onValueChange={(value) => {
-              const newSelectedBreeds = selectedBreeds.includes(value)
-                ? selectedBreeds.filter((b) => b !== value)
-                : [...selectedBreeds, value];
-              setSelectedBreeds(newSelectedBreeds);
-            }}
+                <IconButton variant="outlined" minWidth="$4" onPress={() => setServicesVisible(true)}>
+                  <Plus size={16} />
+                </IconButton>
+              </XStack>
+            </YStack> */}
+
+            <YStack gap='$4'>
+              <Text>Breeds</Text>
+
+              <XStack gap='$2' flexWrap='wrap'>
+                {selectedBreeds.map((breed) => (
+                  <IconButton
+                    key={breed.id}
+                    variant='outlined'
+                    minWidth='$4'
+                    onPress={() => setBreedsVisible(true)}
+                  >
+                    {breed.name}
+                  </IconButton>
+                ))}
+                <IconButton
+                  variant='outlined'
+                  minWidth='$4'
+                  onPress={() => setBreedsVisible(true)}
+                >
+                  <Plus size={16} />
+                </IconButton>
+              </XStack>
+            </YStack>
+
+            <ServicesSheet
+              visible={servicesVisible}
+              onClose={() => setServicesVisible(false)}
+              onSelectService={handleSelectService}
+              selectedServices={selectedServices}
+            />
+
+            {allBreeds && (
+              <BreedsSheet
+                visible={breedsVisible}
+                onClose={() => setBreedsVisible(false)}
+                allBreeds={allBreeds}
+                onSelectBreed={handleSelectBreed}
+                loadingBreeds={breedsLoading}
+              />
+            )}
+          </YStack>
+
+          <Button
+            onPress={handleSave}
+            theme='active'
+            backgroundColor={colorSet.secondaryForeground}
+            color={colorSet.primaryForeground}
           >
-            <Select.Trigger>
-              <Select.Value placeholder="Select Breeds" />
-            </Select.Trigger>
-
-            <Adapt when="sm" platform="touch">
-              <Sheet modal dismissOnSnapToBottom>
-                <Sheet.Frame>
-                  <Sheet.ScrollView>
-                    <Adapt.Contents />
-                  </Sheet.ScrollView>
-                </Sheet.Frame>
-                <Sheet.Overlay />
-              </Sheet>
-            </Adapt>
-
-            <Select.Content zIndex={200000}>
-              <Select.Viewport minWidth={200}>
-                <Select.Group>
-                  <Select.Label>Breeds</Select.Label>
-                  {allBreeds.map((breed, index) => (
-                    <Select.Item index={index} key={breed.id} value={breed.id}>
-                      <Select.ItemText>{breed.name}</Select.ItemText>
-                      <Select.ItemIndicator marginLeft="auto">
-                        {selectedBreeds.includes(breed.id) && <Check size={16} />}
-                      </Select.ItemIndicator>
-                    </Select.Item>
-                  ))}
-                </Select.Group>
-              </Select.Viewport>
-            </Select.Content>
-          </Select>
+            {existingKennel ? 'Update Profile' : 'Create Profile'}
+          </Button>
         </YStack>
 
-        <Button
-          onPress={handleSave} 
-          theme="active"  
-          backgroundColor={colorSet.secondaryForeground} 
-          color={colorSet.primaryForeground}
-        >
-          {existingKennel ? 'Update Profile' : 'Create Profile'}
-        </Button>
-      </YStack>
-
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <Sheet.Overlay />
-        <Sheet.Frame>
-          <View flex={1}>
-            <GooglePlacesAutocomplete
-              placeholder="Search for a location"
-              onPress={(data, details = null) => {
-                setLocation(data.description);
-                setIsSheetOpen(false); // Close the sheet after selection
-              }}
-              query={{
-                key: 'AIzaSyAsA_NXnLAmxVq4UGGpHyt3SmpyHveI-UE',
-                language: 'en',
-              }}
-              textInputProps={{
-                InputComp: Input,
-                leftIcon: { type: 'font-awesome', name: 'chevron-left' },
-                errorStyle: { color: 'red' },
-              }}
-            />
-          </View>
-        </Sheet.Frame>
-      </Sheet>
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <Sheet.Overlay />
+          <Sheet.Frame>
+            <View flex={1} padding='$4'>
+              <GooglePlacesAutocomplete
+                placeholder='Search for a location'
+                onPress={(data, details = null) => {
+                  setLocation(data.description);
+                  setIsSheetOpen(false); // Close the sheet after selection
+                }}
+                query={{
+                  key: config.googleMapsApiKey,
+                  language: 'en',
+                }}
+                textInputProps={{
+                  InputComp: Input,
+                  leftIcon: {type: 'font-awesome', name: 'chevron-left'},
+                  errorStyle: {color: 'red'},
+                }}
+              />
+            </View>
+          </Sheet.Frame>
+        </Sheet>
+      </KeyboardAwareScrollView>
     </View>
   );
 };
@@ -208,7 +273,13 @@ export default BreederProfileScreen;
 
 const dynamicStyles = (theme, colorScheme) => {
   const colorSet = theme.colors[colorScheme];
-  return StyleSheet.create({    
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colorSet.primaryBackground,
+    },
     title: {
       fontSize: 40,
       fontWeight: 'bold',
@@ -236,4 +307,143 @@ const dynamicStyles = (theme, colorScheme) => {
       tintColor: '',
     },
   });
+};
+
+const ServicesSheet = ({
+  visible,
+  onClose,
+  onSelectService,
+  selectedServices,
+}) => {
+  const {theme, appearance} = useTheme();
+
+  const colorSet = theme?.colors[appearance];
+
+  const services = [
+    {id: 1, name: 'Breeding', icon: <Heart size='$1' />},
+    {id: 2, name: 'Boarding', icon: <Home size='$1' />},
+    {id: 3, name: 'Grooming', icon: <Scissors size='$1' />},
+    {id: 4, name: 'Traning', icon: <Bone size='$1' />},
+  ];
+
+  return (
+    <Sheet modal open={visible} onOpenChange={onClose} snapPointsMode='fit'>
+      <Sheet.Frame>
+        <Sheet.ScrollView>
+          <YStack gap='$4' padding='$4'>
+            <Text fontSize='$6' fontWeight='bold'>
+              Select Services
+            </Text>
+
+            {services.map((service) => (
+              <Card
+                key={service.id}
+                onPress={() => onSelectService(service)}
+                padding='$4'
+                borderRadius='$4'
+                backgroundColor={
+                  selectedServices.includes(service)
+                    ? colorSet.background
+                    : colorSet.backgroundHover
+                }
+                borderColor={
+                  selectedServices.includes(service)
+                    ? colorSet.primary
+                    : colorSet.borderColor
+                }
+                borderWidth={2}
+              >
+                <XStack gap='$4'>
+                  {service.icon}
+                  <Text fontSize='$6'>{service.name}</Text>
+                </XStack>
+              </Card>
+            ))}
+          </YStack>
+        </Sheet.ScrollView>
+      </Sheet.Frame>
+      <Sheet.Overlay />
+    </Sheet>
+  );
+};
+
+const BreedsSheet = ({
+  visible,
+  onClose,
+  allBreeds,
+  onSelectBreed,
+  loadingBreeds,
+}) => {
+  const [searchText, setSearchText] = useState('');
+
+  let filteredBreeds = allBreeds || [];
+
+  const onSearchBreed = () => {
+    return (filteredBreeds = allBreeds.filter((breed) =>
+      breed.name.toLowerCase().includes(searchText.toLowerCase())
+    ));
+  };
+
+  return (
+    <Sheet
+      modal
+      open={visible}
+      onOpenChange={onClose}
+      snapPointsMode='mixed'
+      snapPoints={['80%', '95%']}
+    >
+      <Sheet.Frame>
+        <Sheet.ScrollView>
+          <YStack gap='$4' padding='$4'>
+            <Input
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholder='Search breeds'
+              onTextInput={onSearchBreed}
+            />
+            <Separator />
+            <YStack gap='$4' flexWrap='wrap' flexDirection='row'>
+              {filteredBreeds.map((breed, index) => (
+                <Card elevate size='$4' bordered key={breed?.id || index}>
+                  <Card.Header padded>
+                    <H3>{breed.name}</H3>
+                    <Paragraph theme='alt2'>{breed.breedGroup}</Paragraph>
+                  </Card.Header>
+                  <Card.Footer padded>
+                    <XStack flex={1} />
+                    <Button borderRadius='$10'>Select</Button>
+                  </Card.Footer>
+                  <Card.Background>
+                    <Image
+                      objectFit='contain'
+                      alignSelf='center'
+                      source={{
+                        width: 300,
+                        height: 300,
+                        uri: breed.image,
+                      }}
+                    />
+                  </Card.Background>
+                </Card>
+                // <XStack
+                //   key={breed.id}
+                //   alignItems="center"
+                //   padding="$4"
+                //   borderWidth={1}
+                //   borderColor="$gray4"
+                //   borderRadius="$4"
+                //   onPress={() => onSelectBreed(breed)}
+                //   width="50%"
+                // >
+                //   <Image src={breed.image} width={48} height={48} marginRight="$2" />
+                //   <Text>{breed.name}</Text>
+                // </XStack>
+              ))}
+            </YStack>
+          </YStack>
+        </Sheet.ScrollView>
+      </Sheet.Frame>
+      <Sheet.Overlay />
+    </Sheet>
+  );
 };

@@ -385,11 +385,7 @@ const router = useRouter();
           const user = response.user
           dispatch(setUserData({ user }))
           Keyboard.dismiss()
-          if (user.role){
-            router.replace('(tabs)')
-          } else {
             router.replace('(onboarding)')
-          }
         }
       })
     }
