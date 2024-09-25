@@ -23,13 +23,17 @@ import {
 import {useBreedData} from '../../api/firebase/breeds/useBreedData';
 import {useKennelData} from '../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import {Check, Plus} from '@tamagui/lucide-icons';
+import {Check, Plus, X} from '@tamagui/lucide-icons';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import {ActivityIndicator, useTheme} from '../../dopebase';
+import {ActivityIndicator, useTheme, useTranslations} from '../../dopebase';
 import {updateUser} from '../../api/firebase/users/userClient';
 import {useConfig} from '../../config';
 import {Heart, Home, Scissors, Bone} from '@tamagui/lucide-icons';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import allBreeds from '../../assets/data/breeds_with_group.json';
+
+// @ts-ignore
+navigator.geolocation = require('@react-native-community/geolocation');
 
 const BreederProfileScreen = () => {
   const {currentUser} = useCurrentUser();
@@ -40,8 +44,6 @@ const BreederProfileScreen = () => {
     loading: kennelLoading,
   } = useKennelData();
 
-  const {allBreeds, loading: breedsLoading, fetchAllBreeds} = useBreedData();
-
   const [kennelName, setKennelName] = useState('');
   const [location, setLocation] = useState('');
 
@@ -49,8 +51,7 @@ const BreederProfileScreen = () => {
 
   const [selectedBreeds, setSelectedBreeds] = useState([] as any);
   const [existingKennel, setExistingKennel] = useState(null as any);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isSelectOpen, setIsSelectOpen] = useState(false);
+  const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
 
   const [servicesVisible, setServicesVisible] = useState(false);
   const [breedsVisible, setBreedsVisible] = useState(false);
@@ -61,23 +62,21 @@ const BreederProfileScreen = () => {
 
   const config = useConfig();
 
-  useEffect(() => {
-    if (currentUser) {
-      getKennelByUserId(currentUser.uid).then((kennel) => {
-        if (kennel) {
-          setExistingKennel(kennel);
-          setKennelName(kennel.name);
-          setLocation(kennel.location);
-          setSelectedServices(kennel.services || []);
-          setSelectedBreeds(kennel.breeds || []);
-        }
-      });
-    }
-  }, [currentUser]);
+  const {localized} = useTranslations();
 
-  useEffect(() => {
-    fetchAllBreeds();
-  }, []);
+  // useEffect(() => {
+  //   if (currentUser) {
+  //     getKennelByUserId(currentUser.uid).then((kennel) => {
+  //       if (kennel) {
+  //         setExistingKennel(kennel);
+  //         setKennelName(kennel.name);
+  //         setLocation(kennel.location);
+  //         setSelectedServices(kennel.services || []);
+  //         setSelectedBreeds(kennel.breeds || []);
+  //       }
+  //     });
+  //   }
+  // }, [currentUser]);
 
   const handleSelectService = (service) => {
     if (selectedServices.find((s) => s.id === service.id)) {
@@ -129,14 +128,6 @@ const BreederProfileScreen = () => {
     // Navigate to the next screen or dashboard
   };
 
-  if (breedsLoading == true) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator />
-      </View>
-    );
-  }
-
   return (
     <View
       flex={1}
@@ -144,14 +135,17 @@ const BreederProfileScreen = () => {
       justifyContent='center'
       backgroundColor={colorSet.primaryBackground}
     >
-      <KeyboardAwareScrollView style={{flex: 1, width: '100%'}}>
+      <KeyboardAwareScrollView
+        style={{width: '100%', height: '100%'}}
+        keyboardShouldPersistTaps='always'
+      >
         <YStack p='$8' gap='$6'>
           <YStack gap='$4'>
             <View style={styles?.logo}>
               <Image style={styles.logoImage} source={theme.icons?.logo} />
             </View>
 
-            <Text style={styles.title}>Awesome! Let's setup your kennel</Text>
+            <Text style={styles.title}>Awesome! Let's create your kennel</Text>
             <Text style={styles.caption}>
               Complete your profile to connect with potential buyers and
               showcase your kennel.
@@ -168,7 +162,7 @@ const BreederProfileScreen = () => {
             <Input
               placeholder='Kennel Location'
               value={location}
-              onFocus={() => setIsSheetOpen(true)}
+              onFocus={() => setIsLocationSheetOpen(true)}
               onChangeText={setLocation}
             />
 
@@ -189,7 +183,7 @@ const BreederProfileScreen = () => {
               </XStack>
             </YStack> */}
 
-            <YStack gap='$4'>
+            {/* <YStack gap='$4'>
               <Text>Breeds</Text>
 
               <XStack gap='$2' flexWrap='wrap'>
@@ -211,24 +205,24 @@ const BreederProfileScreen = () => {
                   <Plus size={16} />
                 </IconButton>
               </XStack>
-            </YStack>
-
+            </YStack> */}
+            {/* 
             <ServicesSheet
               visible={servicesVisible}
               onClose={() => setServicesVisible(false)}
               onSelectService={handleSelectService}
               selectedServices={selectedServices}
-            />
+            /> */}
 
-            {allBreeds && (
+            {/* {allBreeds && (
               <BreedsSheet
                 visible={breedsVisible}
                 onClose={() => setBreedsVisible(false)}
                 allBreeds={allBreeds}
                 onSelectBreed={handleSelectBreed}
-                loadingBreeds={breedsLoading}
+                loadingBreeds={false}
               />
-            )}
+            )} */}
           </YStack>
 
           <Button
@@ -237,11 +231,16 @@ const BreederProfileScreen = () => {
             backgroundColor={colorSet.secondaryForeground}
             color={colorSet.primaryForeground}
           >
-            {existingKennel ? 'Update Profile' : 'Create Profile'}
+            {localized('Create Kennel')}
           </Button>
         </YStack>
 
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <Sheet
+          open={isLocationSheetOpen}
+          onOpenChange={setIsLocationSheetOpen}
+          snapPointsMode='percent'
+          snapPoints={[50]}
+        >
           <Sheet.Overlay />
           <Sheet.Frame>
             <View flex={1} padding='$4'>
@@ -249,17 +248,24 @@ const BreederProfileScreen = () => {
                 placeholder='Search for a location'
                 onPress={(data, details = null) => {
                   setLocation(data.description);
-                  setIsSheetOpen(false); // Close the sheet after selection
+                  setIsLocationSheetOpen(false);
                 }}
+                onFail={(error) => console.error(error)}
                 query={{
                   key: config.googleMapsApiKey,
                   language: 'en',
+                  components: 'country:ke',
                 }}
                 textInputProps={{
                   InputComp: Input,
-                  leftIcon: {type: 'font-awesome', name: 'chevron-left'},
-                  errorStyle: {color: 'red'},
                 }}
+                renderRightButton={() => (
+                  <Button
+                    onPress={() => setLocation('')}
+                    marginLeft='$2'
+                    iconAfter={<X size='$1' />}
+                  />
+                )}
               />
             </View>
           </Sheet.Frame>

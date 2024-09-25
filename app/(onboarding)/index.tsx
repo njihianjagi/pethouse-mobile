@@ -1,50 +1,38 @@
-import React, { useCallback, useEffect, useLayoutEffect } from 'react';
-import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
-import { useAuth } from '../../hooks/useAuth';
+import {useEffect} from 'react';
+import {View, Text, Button} from 'react-native';
+import {useRouter} from 'expo-router';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import { View } from 'tamagui';
+import {Spinner} from 'tamagui';
+import {useTheme} from '../../dopebase';
 
-const OnboardingScreen = () => {
-	const router = useRouter();
-	const currentUser = useCurrentUser();
-	const authManager = useAuth();
+export default function OnboardingModal() {
+  const router = useRouter();
+  const currentUser = useCurrentUser();
+  const {theme, appearance} = useTheme();
 
-  const navigation = useNavigation();
+  useEffect(() => {
+    checkUserOnboardingStage();
+  }, [currentUser]);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    })
-  }, [navigation])
-
-  useFocusEffect(
-    useCallback(() => {
-      checkUserRole()
-    }, [currentUser, router]),
-  )
-
-  
-  const checkUserRole = async () => {
-    if (currentUser) {
-      // Check if the user has a role
-      if (currentUser.role) {
-        // Redirect to the appropriate profile creation screen based on the role
-        if (currentUser.role === 'breeder') {
-          router.push('/BreederProfileScreen');
-        } else if (currentUser.role === 'seeker') {
-          router.push('/SeekerProfileScreen');
-        }
-      } else {
-        // If no role is assigned, navigate to the role selection screen
-        router.push('/RoleSelectionScreen');
+  const checkUserOnboardingStage = () => {
+    if (currentUser.role) {
+      if (currentUser.role === 'breeder') {
+        router.replace('/BreederProfileScreen');
+      } else if (currentUser.role === 'seeker') {
+        router.replace('/SeekerProfileScreen');
       }
     } else {
-      // If no user is logged in, you might want to redirect to the login screen
-      router.push('/WelcomeScreen');
+      console.log('no role');
+      router.replace('/RoleSelectionScreen');
     }
   };
 
-	return <View />
-};
-
-export default OnboardingScreen;
+  return (
+    <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+      <Spinner
+        size='large'
+        color={theme.colors[appearance].primaryForeground}
+      />
+    </View>
+  );
+}

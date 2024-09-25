@@ -1,139 +1,130 @@
-import React, { useState, useEffect } from 'react'
-import { Image, Keyboard, Platform, Text, View,StyleSheet, TouchableOpacity } from 'react-native'
-import { useDispatch } from 'react-redux'
-import messaging from '@react-native-firebase/messaging'
+import React, {useState, useEffect} from 'react';
 import {
-  useTheme,
-  useTranslations,
-  ActivityIndicator,
-} from '../../dopebase'
-import { setUserData } from '../../redux/auth'
+  Image,
+  Keyboard,
+  Platform,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
+import {useDispatch} from 'react-redux';
+import messaging from '@react-native-firebase/messaging';
+import {useTheme, useTranslations, ActivityIndicator} from '../../dopebase';
+import {setUserData} from '../../redux/auth';
 
+import {useAuth} from '../../hooks/useAuth';
+import useCurrentUser from '../../hooks/useCurrentUser';
+import {useConfig} from '../../config';
+import {Link, useRouter} from 'expo-router';
+import {
+  View,
+  YStack,
+  Button as TamaguiButton,
+  Text as TamaguiText,
+  Spinner,
+} from 'tamagui';
+import {updateUser} from '../../api/firebase/users/userClient';
 
-import { useAuth } from '../../hooks/useAuth'
-import useCurrentUser from '../../hooks/useCurrentUser'
-import { useConfig } from '../../config'
-import { Link, useRouter } from 'expo-router'
-import { View as TamaguiView, YStack, Button as TamaguiButton, Text as TamaguiText, Spinner } from 'tamagui'
-
-const WelcomeScreen = props => {
-  const currentUser = useCurrentUser()
+const WelcomeScreen = (props) => {
+  const currentUser = useCurrentUser();
   const router = useRouter();
-  
-  const dispatch = useDispatch()
-  const config = useConfig()
 
-  const { localized } = useTranslations()
-  const { theme, appearance } = useTheme()
-  const styles = dynamicStyles(theme, appearance)
+  const dispatch = useDispatch();
+  const config = useConfig();
 
-  const colorSet = theme.colors[appearance]
+  const {localized} = useTranslations();
+  const {theme, appearance} = useTheme();
+  const styles = dynamicStyles(theme, appearance);
 
-  const [isLoading, setIsLoading] = useState(true)
+  const colorSet = theme.colors[appearance];
 
-  const authManager = useAuth()
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { title, caption } = props
+  const authManager = useAuth();
+
+  const {title, caption} = props;
 
   useEffect(() => {
-    setIsLoading(true)
-    tryToLoginFirst()
-  }, [])
+    tryToLoginFirst();
+  }, []);
 
   const handleInitialNotification = async () => {
-    const userID = currentUser?.id || currentUser?.userID
-    const intialNotification = await messaging().getInitialNotification()
+    const userID = currentUser?.id || currentUser?.userID;
+    const intialNotification = await messaging().getInitialNotification();
 
     if (intialNotification && Platform.OS === 'android') {
       const {
         // @ts-ignore
-        data: { channelID, type },
-      } = intialNotification
+        data: {channelID, type},
+      } = intialNotification;
 
       if (type === 'chat_message') {
-        handleChatMessageType(channelID, currentUser.name)
+        handleChatMessageType(channelID, currentUser.name);
       }
     }
 
     if (userID && Platform.OS === 'ios') {
-      updateUser(userID, { badgeCount: 0 })
+      updateUser(userID, {badgeCount: 0});
     }
-  }
+  };
 
   const tryToLoginFirst = async () => {
+    setIsLoading(true);
+
     if (!authManager?.retrievePersistedAuthUser) {
       setIsLoading(false);
       return;
     }
-
-    authManager?.retrievePersistedAuthUser(config)
-      .then(response => {
-        console.log('res: ', response)
+    console.log('trying to login first');
+    authManager
+      ?.retrievePersistedAuthUser(config)
+      .then(async (response) => {
         if (response?.user) {
-          const user = response.user
-          dispatch(
+          await dispatch(
             setUserData({
               user: response.user,
-            }),
-          )
-          Keyboard.dismiss()
-          if (!user?.role || user.role === 'breeder' && !user.kennelId){
-            router.push('(onboarding)')
-            // router.push('/(tabs)')
-
-          } else if (user?.role === 'admin') {
-            // navigation.reset({
-            //   index: 0,
-            //   routes: [{ name: 'AdminStack', params: { user } }],
-            // })
-            router.push('/(tabs)')
-          } else {
-            router.push('/(tabs)')
-            // navigation.reset({
-            //   index: 0,
-            //   routes: [{ name: 'MainStack', params: { user } }],
-            // })
-          }
+            })
+          );
+          // if (user?.role === 'admin') {
+          //   // navigation.reset({
+          //   //   index: 0,
+          //   //   routes: [{ name: 'AdminStack', params: { user } }],
+          //   // })
+          //   router.push('/(tabs)')
+          // } else {
+          router.push('(onboarding)');
+          //}
           if (Platform.OS !== 'web') {
-            handleInitialNotification()
+            handleInitialNotification();
           }
-          return
+          return;
         }
-        setIsLoading(false)
+        setIsLoading(false);
       })
-      .catch(error => {
-        console.log(error)
-        setIsLoading(false)
-      })
-  }
+      .catch((error) => {
+        console.log(error);
+        setIsLoading(false);
+      });
+  };
 
   const handleChatMessageType = (channelID, name) => {
     const channel = {
       id: channelID,
       channelID,
       name,
-    }
+    };
 
     // navigation.navigate('PersonalChat', {
     //   channel,
     //   openedFromPushNotification: true,
     // })
-  }
-
-  if (isLoading == true) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator />
-      </View>
-    )
-  }
+  };
 
   return (
-
-    <TamaguiView  
+    <View
       flex={1}
-      alignItems="center"
-      justifyContent="center"
+      alignItems='center'
+      justifyContent='center'
       backgroundColor={colorSet.primaryBackground}
     >
       <View style={styles?.logo}>
@@ -145,50 +136,67 @@ const WelcomeScreen = props => {
         />
       </View>
 
-      {/* <TamaguiView display="flex" ></TamaguiView> */}
-
-      <YStack padding="$8" space="$4" {...props}>
+      <YStack padding='$8' space='$4' {...props}>
         <Text style={styles.title}>
           {title ? title : config.onboardingConfig.welcomeTitle}
         </Text>
         <Text style={styles.caption}>
           {caption ? caption : config.onboardingConfig.welcomeCaption}
         </Text>
-        
-        <TamaguiButton 
-          theme="active" 
-          backgroundColor={colorSet.secondaryForeground} 
-          color={colorSet.primaryForeground}
-          onPress={
-          () => config.isSMSAuthEnabled
-           ? router.push({pathname: '/SmsAuthenticationScreen', params: { isSigningUp: 'true' }}) 
-           : router.push('/SignupScreen')
-        }>
-          {localized('Get Started')}
-        </TamaguiButton>
 
+        {!isLoading && (
+          <TamaguiButton
+            theme='active'
+            backgroundColor={colorSet.secondaryForeground}
+            color={colorSet.primaryForeground}
+            onPress={() =>
+              config.isSMSAuthEnabled
+                ? router.push({
+                    pathname: '/SmsAuthenticationScreen',
+                    params: {isSigningUp: 'true'},
+                  })
+                : router.push('/SignupScreen')
+            }
+          >
+            {localized('Get Started')}
+          </TamaguiButton>
+        )}
 
-        <TouchableOpacity
+        {!isLoading && (
+          <TouchableOpacity
             style={styles.alreadyHaveAnAccountContainer}
-            onPress={
-              () => config.isSMSAuthEnabled
-              ? router.push({pathname: '/SmsAuthenticationScreen', params: { isSigningUp: 'false' }}) 
-              : router.push('/SignupScreen')
-            }>
+            onPress={() =>
+              config.isSMSAuthEnabled
+                ? router.push({
+                    pathname: '/SmsAuthenticationScreen',
+                    params: {isSigningUp: 'false'},
+                  })
+                : router.push('/SignupScreen')
+            }
+            disabled={isLoading}
+          >
             <Text style={styles.alreadyHaveAnAccountText}>
               {localized('Already have an account? ')}
-              <TamaguiText color={colorSet.primaryForeground} >Login</TamaguiText>
+              <TamaguiText color={colorSet.primaryForeground}>
+                Login
+              </TamaguiText>
             </Text>
-          </TouchableOpacity> 
-          
-      </YStack>
-     </TamaguiView>
+          </TouchableOpacity>
+        )}
 
-  )
-}
+        {isLoading && (
+          <Spinner
+            size='large'
+            color={theme.colors[appearance].primaryForeground}
+          />
+        )}
+      </YStack>
+    </View>
+  );
+};
 
 const dynamicStyles = (theme, colorScheme) => {
-  const colorSet = theme.colors[colorScheme]
+  const colorSet = theme.colors[colorScheme];
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -272,11 +280,7 @@ const dynamicStyles = (theme, colorScheme) => {
     alreadyHaveAnAccountText: {
       color: colorSet.secondaryText,
     },
-  })
-}
+  });
+};
 
-export default WelcomeScreen
-function updateUser(userID: any, arg1: { badgeCount: number }) {
-  throw new Error('Function not implemented.')
-}
-
+export default WelcomeScreen;

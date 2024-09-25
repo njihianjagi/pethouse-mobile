@@ -1,41 +1,49 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
+import {useFonts} from 'expo-font';
+import {Stack} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import 'react-native-reanimated';
-import { MenuProvider } from 'react-native-popup-menu'
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { ActionSheetProvider } from '@expo/react-native-action-sheet';
-import { Provider } from 'react-redux';
-import { ConfigProvider, useConfig } from '../config';
-import { TranslationProvider, DopebaseProvider, extendTheme } from '../dopebase';
-import { AuthProvider } from '../hooks/useAuth';
-import { authManager } from '../api'
-import translations from '../translations'
-import configureStore from '../redux/store/dev'
+import {MenuProvider} from 'react-native-popup-menu';
+import {useColorScheme} from '@/hooks/useColorScheme';
+import {ActionSheetProvider} from '@expo/react-native-action-sheet';
+import {Provider} from 'react-redux';
+import {ConfigProvider, useConfig} from '../config';
+import {TranslationProvider, DopebaseProvider, extendTheme} from '../dopebase';
+import {AuthProvider} from '../hooks/useAuth';
+import {authManager} from '../api';
+import translations from '../translations';
+import configureStore from '../redux/store/dev';
 import DoghouseTheme from '../theme';
-import { TamaguiProvider, createTamagui } from 'tamagui' // or 'tamagui'
-import { config } from '@tamagui/config/v3'
+import {TamaguiProvider, createTamagui} from 'tamagui'; // or 'tamagui'
+import {config} from '@tamagui/config/v3';
+import {SafeAreaView} from 'react-native';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const store = configureStore()
+const store = configureStore();
 
-const tamaguiConfig = createTamagui(config)
+const tamaguiConfig = createTamagui(config);
 
 // make TypeScript type everything based on your config
-type Conf = typeof tamaguiConfig
-declare module '@tamagui/core' { // or 'tamagui'
+type Conf = typeof tamaguiConfig;
+declare module '@tamagui/core' {
+  // or 'tamagui'
   interface TamaguiCustomConfig extends Conf {}
 }
 
 export default function RootLayout() {
-  const theme = extendTheme(DoghouseTheme)
+  const theme = extendTheme(DoghouseTheme);
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/Oswald-Regular.ttf'),
   });
+
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     if (loaded) {
@@ -55,14 +63,32 @@ export default function RootLayout() {
             <AuthProvider authManager={authManager}>
               <MenuProvider>
                 <ActionSheetProvider>
-                  <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                    <TamaguiProvider config={tamaguiConfig} defaultTheme='light'>
-                      <Stack>
-                        <Stack.Screen name='(auth)' options={{ headerShown: false }} />
-                        <Stack.Screen name='(onboarding)' options={{ headerShown: false }} />
-                        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                        <Stack.Screen name="+not-found" />
-                      </Stack>
+                  <ThemeProvider
+                    value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+                  >
+                    <TamaguiProvider
+                      config={tamaguiConfig}
+                      defaultTheme='light'
+                    >
+                      <SafeAreaProvider>
+                        <SafeAreaView style={{flex: 1, paddingTop: insets.top}}>
+                          <Stack>
+                            <Stack.Screen
+                              name='(auth)'
+                              options={{headerShown: false}}
+                            />
+                            <Stack.Screen
+                              name='(onboarding)'
+                              options={{headerShown: false}}
+                            />
+                            <Stack.Screen
+                              name='(tabs)'
+                              options={{headerShown: false}}
+                            />
+                            <Stack.Screen name='+not-found' />
+                          </Stack>
+                        </SafeAreaView>
+                      </SafeAreaProvider>
                     </TamaguiProvider>
                   </ThemeProvider>
                 </ActionSheetProvider>

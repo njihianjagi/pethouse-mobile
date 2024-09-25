@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef } from 'react'
+import React, {useState, useEffect, useRef, forwardRef} from 'react';
 import {
   Image,
   Keyboard,
@@ -8,43 +8,44 @@ import {
   Dimensions,
   I18nManager,
   Platform,
-  StyleSheet
-} from 'react-native'
+  StyleSheet,
+} from 'react-native';
 import {
   CodeField,
   Cursor,
   useBlurOnFulfill,
   useClearByFocusCell,
-} from 'react-native-confirmation-code-field'
+} from 'react-native-confirmation-code-field';
 // import { useNavigation, useRoute } from '@react-navigation/core'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import appleAuth, {
   AppleButton,
-} from '@invertase/react-native-apple-authentication'
+} from '@invertase/react-native-apple-authentication';
+import {useTheme, useTranslations, Alert} from '../../dopebase';
+import {setUserData} from '../../redux/auth';
+import {useDispatch} from 'react-redux';
+import {localizedErrorMessage} from '../../api/ErrorCode';
+import TermsOfUseView from '../../components/TermsOfUseView';
+import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton';
+import {useAuth} from '../../hooks/useAuth';
+import {useLocalSearchParams, useRouter} from 'expo-router';
+import {useConfig} from '../../config';
 import {
-  useTheme,
-  useTranslations,
-  ActivityIndicator,
-  Alert,
-  ProfilePictureSelector,
-  CountriesModalPicker,
-} from '../../dopebase'
-import { setUserData } from '../../redux/auth'
-import { useDispatch } from 'react-redux'
-import { localizedErrorMessage } from '../../api/ErrorCode'
-import TermsOfUseView from '../../components/TermsOfUseView'
-import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton'
-import { useAuth } from '../../hooks/useAuth'
-import { router, useLocalSearchParams, useRouter } from 'expo-router'
-import { useConfig } from '../../config'
-import { Text, View as TamaguiView, XStack, Button as TamaguiButton, YStack, Sheet, Spinner, Input, styled } from 'tamagui'
-import { Toast, ToastViewport, useToastController, useToastState } from '@tamagui/toast'
-import { ChevronDown, ChevronUp } from '@tamagui/lucide-icons'
-import { ScrollView } from 'react-native'
+  Text,
+  View as TamaguiView,
+  XStack,
+  Button as TamaguiButton,
+  YStack,
+  Sheet,
+  Spinner,
+  Input,
+  styled,
+} from 'tamagui';
+import {ChevronDown} from '@tamagui/lucide-icons';
 import CountryPicker from 'react-native-country-picker-modal';
-import { CountryCode, parsePhoneNumber } from 'libphonenumber-js';
+import {CountryCode, parsePhoneNumber} from 'libphonenumber-js';
 
-const codeInputCellCount = 6
+const codeInputCellCount = 6;
 
 const StyledInput = styled(Input, {
   height: 48,
@@ -60,7 +61,10 @@ const StyledInput = styled(Input, {
 });
 
 // Forward the ref and specify the type
-const PhoneInput = forwardRef<TextInput, React.ComponentProps<typeof StyledInput>>((props, ref) => {
+const PhoneInput = forwardRef<
+  TextInput,
+  React.ComponentProps<typeof StyledInput>
+>((props, ref) => {
   return <StyledInput ref={ref} {...props} />;
 });
 
@@ -69,48 +73,45 @@ const FlagContainer = styled(View, {
   height: 48,
   justifyContent: 'center',
   alignItems: 'center',
+  backgroundColor: '$gray5Light',
+  paddingLeft: 16,
 });
 
-const DropdownIndicator = () => (
-  <ChevronDown size={16} />
-)
-
+const DropdownIndicator = () => <ChevronDown size={16} />;
 
 const SmsAuthenticationScreen = () => {
-const router = useRouter();
- const params = useLocalSearchParams()
+  const router = useRouter();
+  const params = useLocalSearchParams();
   const {
     isSigningUp,
     isConfirmSignUpCode,
     isConfirmResetPasswordCode,
     email,
     userInfo,
-  } = params
+  } = params;
 
-  const { localized } = useTranslations()
-  const { theme, appearance } = useTheme()
-  const authManager = useAuth()
-  const dispatch = useDispatch()
+  const {localized} = useTranslations();
+  const {theme, appearance} = useTheme();
+  const authManager = useAuth();
+  const dispatch = useDispatch();
 
-  const styles = dynamicStyles(theme, appearance)
+  const styles = dynamicStyles(theme, appearance);
   const config = useConfig();
-  
-  const colorSet = theme.colors[appearance]
 
-  const [inputFields, setInputFields] = useState({})
-  const [loading, setLoading] = useState(false)
-  const [isCodeInputVisible, setIsCodeInputVisible] = useState(
-    false
-  )
-  const [phoneNumber, setPhoneNumber] = useState('')
-  const [countriesPickerData, setCountriesPickerData] = useState(null)
-  const [verificationId, setVerificationId] = useState(null)
-  const [profilePictureFile, setProfilePictureFile] = useState(null)
-  const [countryModalVisible, setCountryModalVisible] = useState(false)
-  const [codeInputValue, setCodeInputValue] = useState('')
-  const [open, setOpen] = useState(false)
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const [selectedCountry, setSelectedCountry] = useState(null)
+  const colorSet = theme.colors[appearance];
+
+  const [inputFields, setInputFields] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [isCodeInputVisible, setIsCodeInputVisible] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [countriesPickerData, setCountriesPickerData] = useState(null);
+  const [verificationId, setVerificationId] = useState(null);
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const [countryModalVisible, setCountryModalVisible] = useState(false);
+  const [codeInputValue, setCodeInputValue] = useState('');
+  const [open, setOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(null);
   const [countryCode, setCountryCode] = useState('KE' as any); // Default country code
 
   const phoneRef = useRef(null); // Create a ref for the phone input
@@ -121,142 +122,139 @@ const router = useRouter();
     setPhoneNumber(code); // Append country code with + sign
     setCountryModalVisible(false); // Close modal after selection
   };
-  
+
   const myCodeInput = useBlurOnFulfill({
     //codeInputValue,
-     
+
     value: codeInputValue,
     cellCount: codeInputCellCount,
-  })
+  });
   const [codeInputProps, getCellOnLayoutHandler] = useClearByFocusCell({
     // @ts-ignore
     codeInputValue,
     value: codeInputValue,
     setCodeInputValue,
     setValue: setCodeInputValue,
-  })
+  });
 
   // const toast = useToastController()
 
   useEffect(() => {
     if (codeInputValue?.trim()?.length === codeInputCellCount) {
-      onFinishCheckingCode(codeInputValue)
+      onFinishCheckingCode(codeInputValue);
     }
-  }, [codeInputValue])
+  }, [codeInputValue]);
 
   useEffect(() => {
     if (phoneRef && phoneRef.current) {
-      setPhoneNumber('+254 ')
+      setPhoneNumber('+254 ');
     }
-  }, [phoneRef])
+  }, [phoneRef]);
 
   const onFBButtonPress = () => {
-    setLoading(true)
-    authManager.loginOrSignUpWithFacebook(config).then(response => {
+    setLoading(true);
+    authManager.loginOrSignUpWithFacebook(config).then((response) => {
       if (response?.user) {
-        const user = response.user
-        dispatch(setUserData({ user }))
-        Keyboard.dismiss()
+        const user = response.user;
+        dispatch(setUserData({user}));
+        Keyboard.dismiss();
         // navigation.reset({
         //   index: 0,
         //   routes: [{ name: 'MainStack', params: { user } }],
         // })
-        router.replace('/(tabs)')
+        router.replace('/(tabs)');
       } else {
-        setLoading(false)
+        setLoading(false);
         Alert.alert(
           '',
           localizedErrorMessage(response.error, localized),
-          [{ text: localized('OK') }],
+          [{text: localized('OK')}],
           {
             cancelable: false,
-          },
-        )
+          }
+        );
       }
-    })
-  }
+    });
+  };
 
   const onGoogleButtonPress = () => {
-    setLoading(true)
-    authManager.loginOrSignUpWithGoogle(config).then(response => {
+    setLoading(true);
+    authManager.loginOrSignUpWithGoogle(config).then((response) => {
       if (response?.user) {
-        const user = response.user
-        dispatch(setUserData({ user }))
-        Keyboard.dismiss()
+        const user = response.user;
+        dispatch(setUserData({user}));
+        Keyboard.dismiss();
         // navigation.reset({
         //   index: 0,
         //   routes: [{ name: 'MainStack', params: { user } }],
         // })
-        router.replace('/(tabs)')
+        router.replace('/(tabs)');
       } else {
-        setLoading(false)
+        setLoading(false);
         Alert.alert(
           '',
           localizedErrorMessage(response.error, localized),
-          [{ text: localized('OK') }],
+          [{text: localized('OK')}],
           {
             cancelable: false,
-          },
-        )
+          }
+        );
       }
-    })
-  }
+    });
+  };
 
   const onAppleButtonPress = async () => {
-    setLoading(true)
-    authManager.loginOrSignUpWithApple(config).then(response => {
+    setLoading(true);
+    authManager.loginOrSignUpWithApple(config).then((response) => {
       if (response?.user) {
-        const user = response.user
-        dispatch(setUserData({ user }))
-        Keyboard.dismiss()
+        const user = response.user;
+        dispatch(setUserData({user}));
+        Keyboard.dismiss();
         // navigation.reset({
         //   index: 0,
         //   routes: [{ name: 'MainStack', params: { user } }],
         // })
-        router.replace('/(tabs)')
-
+        router.replace('/(tabs)');
       } else {
-        setLoading(false)
+        setLoading(false);
         Alert.alert(
           '',
           localizedErrorMessage(response.error, localized),
-          [{ text: localized('OK') }],
+          [{text: localized('OK')}],
           {
             cancelable: false,
-          },
-        )
+          }
+        );
       }
-    })
-  }
+    });
+  };
 
-  const signInWithPhoneNumber = userValidPhoneNumber => {
+  const signInWithPhoneNumber = (userValidPhoneNumber) => {
+    setLoading(true);
 
-    setLoading(true)
-
-    authManager.sendSMSToPhoneNumber(userValidPhoneNumber).then(response => {
-      setLoading(false)
-      const confirmationResult = response.confirmationResult
+    authManager.sendSMSToPhoneNumber(userValidPhoneNumber).then((response) => {
+      setLoading(false);
+      const confirmationResult = response.confirmationResult;
       if (confirmationResult) {
         // SMS sent. Prompt user to type the code from the message, then sign the
         // user in with confirmationResult.confirm(code).
         // @ts-ignore
-        window['confirmationResult'] = confirmationResult
-        setVerificationId(confirmationResult.verificationId)
-        setIsCodeInputVisible(true)
+        window['confirmationResult'] = confirmationResult;
+        setVerificationId(confirmationResult.verificationId);
+        setIsCodeInputVisible(true);
         //setOpen(true);
         //showToast()
-
       } else {
         // Error; SMS not sent
         Alert.alert(
           '',
           localizedErrorMessage(response.error, localized),
-          [{ text: localized('OK') }],
-          { cancelable: false },
-        )
+          [{text: localized('OK')}],
+          {cancelable: false}
+        );
       }
-    })
-  }
+    });
+  };
 
   // const showToast = () => {
   //   toast.show(`Code sent to your phone.`, {
@@ -264,52 +262,53 @@ const router = useRouter();
   //   })
   // };
 
-  const trimFields = fields => {
-    var trimmedFields = {}
-    Object.keys(fields).forEach(key => {
+  const trimFields = (fields) => {
+    var trimmedFields = {};
+    Object.keys(fields).forEach((key) => {
       if (fields[key]) {
-        trimmedFields[key] = fields[key].trim()
+        trimmedFields[key] = fields[key].trim();
       }
-    })
-    return trimmedFields
-  }
+    });
+    return trimmedFields;
+  };
 
-  const signUpWithPhoneNumber = smsCode => {
+  const signUpWithPhoneNumber = (smsCode) => {
     const userDetails = {
       ...trimFields(inputFields),
       phoneNumber: phoneNumber?.trim(),
       photoFile: profilePictureFile,
-    }
+    };
     authManager
       .registerWithPhoneNumber(
         userDetails,
         smsCode,
         verificationId,
-        config.appIdentifier,
+        config.appIdentifier
       )
-      .then(response => {
-        setLoading(false)
+      .then((response) => {
+        setLoading(false);
         if (response.error) {
           Alert.alert(
             '',
             localizedErrorMessage(response.error, localized),
-            [{ text: localized('OK') }],
-            { cancelable: false },
-          )
+            [{text: localized('OK')}],
+            {cancelable: false}
+          );
         } else {
-          const user = response.user
-          console.log('user: ', user)
-          dispatch(setUserData({ user }))
-          Keyboard.dismiss()
-          router.replace('(onboarding)/role-selection')
-
+          const user = response.user;
+          dispatch(setUserData({user}));
+          Keyboard.dismiss();
+          router.replace('(onboarding)');
         }
-      })
-  }
+      });
+  };
 
   const isValidNumber = (phoneNumber: string, countryCode: string) => {
     try {
-      const parsedNumber = parsePhoneNumber(phoneNumber, countryCode as CountryCode);
+      const parsedNumber = parsePhoneNumber(
+        phoneNumber,
+        countryCode as CountryCode
+      );
       return parsedNumber.isValid();
     } catch (error) {
       return false;
@@ -318,90 +317,93 @@ const router = useRouter();
 
   const onPressSend = async () => {
     if (isValidNumber(phoneNumber, countryCode)) {
-      setLoading(true)
+      setLoading(true);
       if (isSigningUp === 'true') {
-        const { error } = await authManager.validateUsernameFieldIfNeeded(
+        const {error} = await authManager.validateUsernameFieldIfNeeded(
           trimFields(inputFields),
-          config,
-        )
+          config
+        );
 
         if (error) {
           Alert.alert(
             '',
             localized(error),
-            [{ text: localized('OK'), onPress: () => setLoading(false) }],
+            [{text: localized('OK'), onPress: () => setLoading(false)}],
             {
               cancelable: false,
-            },
-          )
-          return
+            }
+          );
+          return;
         }
       }
 
-      signInWithPhoneNumber(phoneNumber)
+      signInWithPhoneNumber(phoneNumber);
     } else {
       Alert.alert(
         '',
         localized('Please enter a valid phone number.'),
-        [{ text: localized('OK') }],
+        [{text: localized('OK')}],
         {
           cancelable: false,
-        },
-      )
+        }
+      );
     }
-  }
+  };
 
   const onPressFlag = () => {
-    setSheetOpen(true)
-  }
+    setSheetOpen(true);
+  };
 
   const onPressCancelContryModalPicker = () => {
-    setCountryModalVisible(false)
-  }
+    setCountryModalVisible(false);
+  };
 
-  const onFinishCheckingCode = newCode => {
+  const onFinishCheckingCode = (newCode) => {
     setIsCodeInputVisible(false);
-    setLoading(true)
+    setLoading(true);
 
     if (isSigningUp === 'true') {
-      signUpWithPhoneNumber(newCode)
-      return
+      signUpWithPhoneNumber(newCode);
+      return;
     }
 
     if (isSigningUp === 'false') {
-      authManager.loginWithSMSCode(newCode, verificationId).then(response => {
+      authManager.loginWithSMSCode(newCode, verificationId).then((response) => {
         if (response.error) {
           setIsCodeInputVisible(true);
-          setLoading(false)
+          setLoading(false);
           Alert.alert(
             '',
             localizedErrorMessage(response.error, localized),
-            [{ text: localized('OK') }],
-            { cancelable: false },
-          )
-          
-          router.push({pathname: '(auth)/SmsAuthenticationScreen', params: { isSigningUp: 'true' }}) 
+            [{text: localized('OK')}],
+            {cancelable: false}
+          );
+
+          router.push({
+            pathname: '(auth)/SmsAuthenticationScreen',
+            params: {isSigningUp: 'true'},
+          });
         } else {
-          const user = response.user
-          dispatch(setUserData({ user }))
-          Keyboard.dismiss()
-            router.replace('(onboarding)')
+          const user = response.user;
+          dispatch(setUserData({user}));
+          Keyboard.dismiss();
+          router.replace('(onboarding)');
         }
-      })
+      });
     }
-  }
+  };
 
   const onChangeInputFields = (text, key) => {
-    setInputFields(prevFields => ({
+    setInputFields((prevFields) => ({
       ...prevFields,
       [key]: text,
-    }))
-  }
+    }));
+  };
 
   const renderPhoneInput = () => {
     return (
       <>
-        <XStack width="80%" alignSelf="center" marginBottom={32}>
+        <XStack width='80%' alignSelf='center' marginBottom={32}>
           <TouchableOpacity onPress={onPressFlag}>
             <FlagContainer>
               <CountryPicker
@@ -415,7 +417,7 @@ const router = useRouter();
                 onOpen={() => setCountryModalVisible(true)}
                 onClose={() => setCountryModalVisible(false)}
                 modalProps={{
-                  style: { height: Dimensions.get('window').height * 0.75 },
+                  style: {height: Dimensions.get('window').height * 0.75},
                 }}
               />
             </FlagContainer>
@@ -424,18 +426,18 @@ const router = useRouter();
             ref={phoneRef}
             flex={1}
             placeholder={localized('Phone number')}
-            placeholderTextColor="$grey3"
+            placeholderTextColor='$grey3'
             value={phoneNumber}
             onChangeText={(text) => setPhoneNumber(text)}
           />
         </XStack>
 
-        <TamaguiButton 
-          theme="active" 
-          backgroundColor={colorSet.secondaryForeground} 
+        <TamaguiButton
+          theme='active'
+          backgroundColor={colorSet.secondaryForeground}
           color={colorSet.primaryForeground}
-          width="80%"
-          margin="auto"
+          width='80%'
+          margin='auto'
           onPress={onPressSend}
           iconAfter={loading ? <Spinner /> : <></>}
           disabled={loading}
@@ -443,26 +445,26 @@ const router = useRouter();
           {!loading && localized('Continue with phone number')}
         </TamaguiButton>
       </>
-    )
-  }
+    );
+  };
 
-  const renderCodeInputCell = ({ index, symbol, isFocused }) => {
-    let textChild = symbol
+  const renderCodeInputCell = ({index, symbol, isFocused}) => {
+    let textChild = symbol;
 
     if (isFocused) {
-      textChild = <Cursor />
+      textChild = <Cursor />;
     }
 
     return (
       <Text
         key={index}
         style={[styles.codeInputCell, isFocused && styles.focusCell]}
-        onLayout={
-          getCellOnLayoutHandler(index)}>
+        onLayout={getCellOnLayoutHandler(index)}
+      >
         {textChild}
       </Text>
-    )
-  }
+    );
+  };
 
   const renderCodeInput = () => {
     return (
@@ -471,49 +473,49 @@ const router = useRouter();
         modal={true}
         open={isCodeInputVisible}
         snapPoints={[50]}
-     
         dismissOnSnapToBottom
         zIndex={100_000}
-        animation="medium"
+        animation='medium'
       >
         <Sheet.Overlay
-          animation="lazy"
-          enterStyle={{ opacity: 0 }}
-          exitStyle={{ opacity: 0 }}
+          animation='lazy'
+          enterStyle={{opacity: 0}}
+          exitStyle={{opacity: 0}}
         />
         <Sheet.Handle />
-        
-        <Sheet.Frame 
-          padding="$4" 
-          justifyContent="center" 
-          alignItems="center"
-          space="$5" 
+
+        <Sheet.Frame
+          padding='$4'
+          justifyContent='center'
+          alignItems='center'
+          space='$5'
           backgroundColor={colorSet.primaryBackground}
         >
-            <Text color={colorSet.primaryForeground} fontSize="$4" >Enter code sent to {phoneNumber} </Text>
-            
-            <CodeField
-              ref={myCodeInput}
-              {...codeInputProps}
-              value={codeInputValue}
-              onChangeText={setCodeInputValue}
-              cellCount={codeInputCellCount}
-              keyboardType="number-pad"
-              textContentType="oneTimeCode"
-              renderCell={renderCodeInputCell}
-            />
+          <Text color={colorSet.primaryForeground} fontSize='$4'>
+            Enter code sent to {phoneNumber}{' '}
+          </Text>
 
-            <TouchableOpacity onPress={onPressSend}>
-              <Text color={colorSet.secondaryText}>{localized("Didn't get a code? ")}
-                <Text color={colorSet.primaryForeground} >Resend</Text>
-              </Text>
+          <CodeField
+            ref={myCodeInput}
+            {...codeInputProps}
+            value={codeInputValue}
+            onChangeText={setCodeInputValue}
+            cellCount={codeInputCellCount}
+            keyboardType='number-pad'
+            textContentType='oneTimeCode'
+            renderCell={renderCodeInputCell}
+          />
 
-            </TouchableOpacity>
+          <TouchableOpacity onPress={onPressSend}>
+            <Text color={colorSet.secondaryText}>
+              {localized("Didn't get a code? ")}
+              <Text color={colorSet.primaryForeground}>Resend</Text>
+            </Text>
+          </TouchableOpacity>
         </Sheet.Frame>
       </Sheet>
-      
-    )
-  }
+    );
+  };
 
   const renderInputField = (field, index) => {
     return (
@@ -521,30 +523,32 @@ const router = useRouter();
         key={index?.toString()}
         style={styles.InputContainer}
         placeholder={field.placeholder}
-        placeholderTextColor="#aaaaaa"
-        onChangeText={text => onChangeInputFields(text, field.key)}
+        placeholderTextColor='#aaaaaa'
+        onChangeText={(text) => onChangeInputFields(text, field.key)}
         value={inputFields[field.key]}
-        underlineColorAndroid="transparent"
+        underlineColorAndroid='transparent'
       />
-    )
-  }
+    );
+  };
 
   const renderAsSignUpState = () => {
     return (
       <>
-        <Text style={styles.title}>{localized('Let\'s create your account')}</Text>
-  
+        <Text style={styles.title}>
+          {localized("Let's create your account")}
+        </Text>
+
         {!isConfirmSignUpCode && config.smsSignupFields.map(renderInputField)}
-        
-        { renderPhoneInput() }
-        {isCodeInputVisible && renderCodeInput()  }
+
+        {renderPhoneInput()}
+        {isCodeInputVisible && renderCodeInput()}
 
         {isConfirmSignUpCode && (
           <Text style={styles.orTextStyle}>
             {localized('Please check your phone for a confirmation code.')}
           </Text>
         )}
-{/* 
+        {/* 
         {!isConfirmSignUpCode && (
           <>
             <Text style={styles.orTextStyle}> {localized('OR')}</Text>
@@ -559,31 +563,33 @@ const router = useRouter();
           </>
         )} */}
       </>
-    )
-  }
+    );
+  };
 
   const renderAsLoginState = () => {
     const appleButtonStyle = config.isAppleAuthEnabled
       ? {
-        dark: AppleButton?.Style?.WHITE,
-        light: AppleButton?.Style?.BLACK,
-        'no-preference': AppleButton?.Style?.WHITE,
-      }
-      : {}
+          dark: AppleButton?.Style?.WHITE,
+          light: AppleButton?.Style?.BLACK,
+          'no-preference': AppleButton?.Style?.WHITE,
+        }
+      : {};
 
     return (
-      <YStack space="$2">
+      <YStack space='$2'>
         {isConfirmResetPasswordCode ? (
-          <Text padding="$8" style={styles.title}>{localized('Reset Password')}</Text>
+          <Text padding='$8' style={styles.title}>
+            {localized('Reset Password')}
+          </Text>
         ) : (
-          <Text paddingHorizontal="$8" style={styles.title}>{localized('Login to your account')}</Text>
+          <Text paddingHorizontal='$8' style={styles.title}>
+            {localized('Login to your account')}
+          </Text>
         )}
-
 
         {renderPhoneInput()}
 
-        
-        {isCodeInputVisible && renderCodeInput() }
+        {isCodeInputVisible && renderCodeInput()}
 
         {isConfirmResetPasswordCode && (
           <Text style={styles.orTextStyle}>
@@ -596,7 +602,8 @@ const router = useRouter();
 
             <TouchableOpacity
               style={styles.facebookContainer}
-              onPress={() => onFBButtonPress()}>
+              onPress={() => onFBButtonPress()}
+            >
               <Text style={styles.facebookText}>
                 {localized('Login With Facebook')}
               </Text>
@@ -621,60 +628,59 @@ const router = useRouter();
 
         <TouchableOpacity
           style={styles.alreadyHaveAnAccountContainer}
-          onPress={
-            () => config.isSMSAuthEnabled
-            ? router.push({pathname: '/SmsAuthenticationScreen', params: { isSigningUp: 'false' }}) 
-            : router.push('/SignupScreen')
-          }>
+          onPress={() =>
+            config.isSMSAuthEnabled
+              ? router.push({
+                  pathname: '/SmsAuthenticationScreen',
+                  params: {isSigningUp: 'false'},
+                })
+              : router.push('/SignupScreen')
+          }
+        >
           <Text style={styles.alreadyHaveAnAccountText}>
-            {localized('Don\'t have an account? ')}
-            <Text color={colorSet.primaryForeground} >Sign Up</Text>
+            {localized("Don't have an account? ")}
+            <Text color={colorSet.primaryForeground}>Sign Up</Text>
           </Text>
-        </TouchableOpacity> 
+        </TouchableOpacity>
       </YStack>
-    )
-  }
+    );
+  };
 
   return (
-    <TamaguiView  
+    <TamaguiView
       flex={1}
-      alignItems="center"
-      justifyContent="center"
+      alignItems='center'
+      justifyContent='center'
       backgroundColor={colorSet.primaryBackground}
     >
       <KeyboardAwareScrollView
-        style={{ width: '100%' }}
-        keyboardShouldPersistTaps="always"
+        style={{width: '100%'}}
+        keyboardShouldPersistTaps='always'
       >
+        <YStack padding='$8' space='$4'>
+          <View style={styles?.logo}>
+            <Image style={styles.logoImage} source={theme.icons?.logo} />
+          </View>
+        </YStack>
 
-      <YStack padding="$8" space="$4">
-        <View style={styles?.logo}>
-          <Image
-            style={styles.logoImage}
-            source={ theme.icons?.logo}
+        {isSigningUp === 'true' && renderAsSignUpState()}
+
+        {isSigningUp === 'false' && renderAsLoginState()}
+
+        {isSigningUp === 'true' && (
+          <TermsOfUseView
+            tosLink={config.tosLink}
+            privacyPolicyLink={config.privacyPolicyLink}
+            style={styles.tos}
           />
-        </View>
-      </YStack>
-
-      {isSigningUp === 'true' && renderAsSignUpState()}
-
-      {isSigningUp === 'false' && renderAsLoginState()}
-
-      {isSigningUp === 'true' && (
-        <TermsOfUseView
-          tosLink={config.tosLink}
-          privacyPolicyLink={config.privacyPolicyLink}
-          style={styles.tos}
-        />
-      )}
+        )}
       </KeyboardAwareScrollView>
       {/* {loading && <ActivityIndicator />} */}
     </TamaguiView>
-  )
-}
+  );
+};
 
-export default SmsAuthenticationScreen
-
+export default SmsAuthenticationScreen;
 
 // const CurrentToast = () => {
 //   const currentToast: any = useToastState()
@@ -704,11 +710,11 @@ export default SmsAuthenticationScreen
 
 // }
 
-const width = Dimensions.get('window').width
-const codeInptCellWidth = width * 0.13
+const width = Dimensions.get('window').width;
+const codeInptCellWidth = width * 0.13;
 
 const dynamicStyles = (theme, colorScheme) => {
-  const colorSet = theme.colors[colorScheme]
+  const colorSet = theme.colors[colorScheme];
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -724,7 +730,7 @@ const dynamicStyles = (theme, colorScheme) => {
       marginBottom: 50,
       alignSelf: 'stretch',
       textAlign: 'center',
-      paddingHorizontal: 8
+      paddingHorizontal: 8,
     },
     sendContainer: {
       width: '70%',
@@ -755,10 +761,10 @@ const dynamicStyles = (theme, colorScheme) => {
     flagStyle: {
       width: 35,
       height: 25,
-      borderColor: colorSet.secondaryForeground7,
+      borderColor: colorSet.secondaryForeground,
       borderBottomLeftRadius: 0,
       borderTopLeftRadius: 0,
-      transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
+      transform: [{scaleX: I18nManager.isRTL ? -1 : 1}],
     },
     phoneInputTextStyle: {
       borderLeftWidth: I18nManager.isRTL ? 0 : 1,
@@ -859,7 +865,7 @@ const dynamicStyles = (theme, colorScheme) => {
       height: 25,
       marginTop: Platform.OS === 'ios' ? 50 : 20,
       marginLeft: 10,
-      transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
+      transform: [{scaleX: I18nManager.isRTL ? -1 : 1}],
     },
     logo: {
       width: 'auto',
@@ -880,5 +886,5 @@ const dynamicStyles = (theme, colorScheme) => {
     alreadyHaveAnAccountText: {
       color: colorSet.secondaryText,
     },
-  })
-}
+  });
+};

@@ -1,13 +1,13 @@
-import React, { useContext } from 'react'
-import { Platform } from 'react-native'
-import { useTranslations } from '../dopebase'
+import React, {useContext} from 'react';
+import {Platform} from 'react-native';
+import {useTranslations} from '../dopebase';
 
-const regexForNames = /^[a-zA-Z]{2,25}$/
+const regexForNames = /^[a-zA-Z]{2,25}$/;
 
-export const ConfigContext = React.createContext({} as any)
+export const ConfigContext = React.createContext({} as any);
 
-export const ConfigProvider = ({ children }) => {
-  const { localized } = useTranslations()
+export const ConfigProvider = ({children}) => {
+  const {localized} = useTranslations();
   const config = {
     isSMSAuthEnabled: true,
     isGoogleAuthEnabled: false,
@@ -22,28 +22,28 @@ export const ConfigProvider = ({ children }) => {
     onboardingConfig: {
       welcomeTitle: localized('Your home for quality breeds'),
       welcomeCaption: localized(
-        'Discover your ideal furry companion and start a journey of love and companionship',
+        'Discover your ideal furry companion and start a journey of love and companionship'
       ),
       walkthroughScreens: [
         {
           icon: require('../assets/icons/firebase-icon.png'),
           title: localized('Firebase'),
           description: localized(
-            'Save weeks of hard work by using our codebase.',
+            'Save weeks of hard work by using our codebase.'
           ),
         },
         {
           icon: require('../assets/icons/login-icon.png'),
           title: localized('Authentication & Registration'),
           description: localized(
-            'Fully integrated login and sign up flows backed by Firebase.',
+            'Fully integrated login and sign up flows backed by Firebase.'
           ),
         },
         {
           icon: require('../assets/icons/sms-icon.png'),
           title: localized('SMS Authentication'),
           description: localized(
-            'End-to-end SMS OTP verification for your users.',
+            'End-to-end SMS OTP verification for your users.'
           ),
         },
         {
@@ -55,28 +55,28 @@ export const ConfigProvider = ({ children }) => {
           icon: require('../assets/icons/reset-password-icon.png'),
           title: localized('Reset Password'),
           description: localized(
-            'Fully coded ability to reset password via e-mail.',
+            'Fully coded ability to reset password via e-mail.'
           ),
         },
         {
           icon: require('../assets/images/instagram.png'),
           title: localized('Profile Photo Upload'),
           description: localized(
-            'Ability to upload profile photos to Firebase Storage.',
+            'Ability to upload profile photos to Firebase Storage.'
           ),
         },
         {
           icon: require('../assets/images/pin.png'),
           title: localized('Geolocation'),
           description: localized(
-            'Automatically store user location to Firestore via Geolocation API.',
+            'Automatically store user location to Firestore via Geolocation API.'
           ),
         },
         {
           icon: require('../assets/images/notification.png'),
           title: localized('Notifications'),
           description: localized(
-            'Automatically update and store push notification tokens into Firestore.',
+            'Automatically update and store push notification tokens into Firestore.'
           ),
         },
       ],
@@ -156,11 +156,11 @@ export const ConfigProvider = ({ children }) => {
         autoCapitalize: 'none',
       },
     ],
-  }
+  };
 
   return (
-    <ConfigContext.Provider value={ config }>{ children }</ConfigContext.Provider>
-  )
-}
+    <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
+  );
+};
 
-export const useConfig = () => useContext(ConfigContext)
+export const useConfig = () => useContext(ConfigContext);
