@@ -85,15 +85,7 @@ const WelcomeScreen = (props) => {
               user: response.user,
             })
           );
-          // if (user?.role === 'admin') {
-          //   // navigation.reset({
-          //   //   index: 0,
-          //   //   routes: [{ name: 'AdminStack', params: { user } }],
-          //   // })
-          //   router.push('/(tabs)')
-          // } else {
           router.push('(onboarding)');
-          //}
           if (Platform.OS !== 'web') {
             handleInitialNotification();
           }
