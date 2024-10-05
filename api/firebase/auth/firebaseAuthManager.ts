@@ -204,6 +204,8 @@ const loginOrSignUpWithGoogle = (appConfig) => {
   return new Promise(async (resolve, _reject) => {
     try {
       const {idToken} = await GoogleSignin.signIn();
+
+      console.log(idToken);
       authAPI
         .loginWithGoogle(idToken, appConfig.appIdentifier)
         .then(async (response: any) => {
@@ -222,6 +224,7 @@ const loginOrSignUpWithGoogle = (appConfig) => {
               });
             });
           } else {
+            console.log(response);
             resolve({error: ErrorCode.googleSigninFailed});
           }
         });

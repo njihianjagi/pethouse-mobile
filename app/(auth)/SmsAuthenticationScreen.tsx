@@ -2,9 +2,7 @@ import React, {useState, useEffect, useRef, forwardRef} from 'react';
 import {
   Image,
   Keyboard,
-  TextInput,
   TouchableOpacity,
-  View,
   Dimensions,
   I18nManager,
   Platform,
@@ -16,25 +14,19 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
-// import { useNavigation, useRoute } from '@react-navigation/core'
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import appleAuth, {
-  AppleButton,
-} from '@invertase/react-native-apple-authentication';
 import {useTheme, useTranslations, Alert} from '../../dopebase';
 import {setUserData} from '../../redux/auth';
 import {useDispatch} from 'react-redux';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 import TermsOfUseView from '../../components/TermsOfUseView';
-import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton';
 import {useAuth} from '../../hooks/useAuth';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import {useConfig} from '../../config';
 import {
   Text,
-  View as TamaguiView,
-  XStack,
-  Button as TamaguiButton,
+  View,
+  Button,
   YStack,
   Sheet,
   Spinner,
@@ -42,38 +34,8 @@ import {
   styled,
 } from 'tamagui';
 import {ChevronDown} from '@tamagui/lucide-icons';
-import CountryPicker from 'react-native-country-picker-modal';
 import {CountryCode, parsePhoneNumber} from 'libphonenumber-js';
-
-const codeInputCellCount = 6;
-
-const StyledInput = styled(Input, {
-  height: 48,
-  borderWidth: 1,
-  paddingLeft: 10,
-  borderRadius: 9,
-  // Remove left border radius to align with flag container
-  borderTopLeftRadius: 0,
-  borderBottomLeftRadius: 0,
-});
-
-// Forward the ref and specify the type
-const PhoneInput = forwardRef<
-  TextInput,
-  React.ComponentProps<typeof StyledInput>
->((props, ref) => {
-  return <StyledInput ref={ref} {...props} />;
-});
-
-const FlagContainer = styled(View, {
-  width: 48,
-  height: 48,
-  justifyContent: 'center',
-  alignItems: 'center',
-  paddingLeft: 16,
-});
-
-const DropdownIndicator = () => <ChevronDown size={16} />;
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 const SmsAuthenticationScreen = () => {
   const router = useRouter();
@@ -112,16 +74,21 @@ const SmsAuthenticationScreen = () => {
 
   const phoneRef = useRef(null); // Create a ref for the phone input
 
-  const onSelectCountry = (country) => {
-    const code = `+${country.callingCode[0]} `;
-    setCountryCode(country.cca2);
-    setPhoneNumber(code); // Append country code with + sign
-    setCountryModalVisible(false); // Close modal after selection
-  };
+  const codeInputCellCount = 6;
+
+  const StyledInput = styled(Input, {
+    height: 48,
+    borderWidth: 1,
+    paddingLeft: 10,
+    borderRadius: 9,
+    backgroundColor: colorSet.primaryBackground,
+    borderColor: colorSet.grey3,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+  });
 
   const myCodeInput = useBlurOnFulfill({
     //codeInputValue,
-
     value: codeInputValue,
     cellCount: codeInputCellCount,
   });
@@ -132,8 +99,6 @@ const SmsAuthenticationScreen = () => {
     setCodeInputValue,
     setValue: setCodeInputValue,
   });
-
-  // const toast = useToastController()
 
   useEffect(() => {
     if (codeInputValue?.trim()?.length === codeInputCellCount) {
@@ -176,6 +141,7 @@ const SmsAuthenticationScreen = () => {
   const onGoogleButtonPress = () => {
     setLoading(true);
     authManager.loginOrSignUpWithGoogle(config).then((response) => {
+      console.log(response);
       if (response?.user) {
         const user = response.user;
         dispatch(setUserData({user}));
@@ -402,55 +368,6 @@ const SmsAuthenticationScreen = () => {
     }));
   };
 
-  const renderPhoneInput = () => {
-    return (
-      <>
-        <XStack width='80%' alignSelf='center' marginBottom={32}>
-          <TouchableOpacity onPress={onPressFlag}>
-            <FlagContainer>
-              <CountryPicker
-                countryCode={countryCode}
-                onSelect={onSelectCountry}
-                withFlag
-                withCallingCode
-                withCountryNameButton={false}
-                withFilter
-                visible={countryModalVisible}
-                onOpen={() => setCountryModalVisible(true)}
-                onClose={() => setCountryModalVisible(false)}
-                modalProps={{
-                  style: {height: Dimensions.get('window').height * 0.75},
-                }}
-              />
-            </FlagContainer>
-          </TouchableOpacity>
-          <PhoneInput
-            ref={phoneRef}
-            flex={1}
-            placeholder={localized('Phone number')}
-            placeholderTextColor='$grey3'
-            keyboardType='numeric'
-            value={phoneNumber}
-            onChangeText={(text) => setPhoneNumber(text)}
-          />
-        </XStack>
-
-        <TamaguiButton
-          theme='active'
-          backgroundColor={colorSet.secondaryForeground}
-          color={colorSet.primaryForeground}
-          width='80%'
-          margin='auto'
-          onPress={onPressSend}
-          iconAfter={loading ? <Spinner /> : <></>}
-          disabled={loading}
-        >
-          {!loading && localized('Continue with phone number')}
-        </TamaguiButton>
-      </>
-    );
-  };
-
   const renderCodeInputCell = ({index, symbol, isFocused}) => {
     let textChild = symbol;
 
@@ -520,30 +437,50 @@ const SmsAuthenticationScreen = () => {
     );
   };
 
-  const renderInputField = (field, index) => {
-    return (
-      <TextInput
-        key={index?.toString()}
-        style={styles.InputContainer}
-        placeholder={field.placeholder}
-        placeholderTextColor='#aaaaaa'
-        onChangeText={(text) => onChangeInputFields(text, field.key)}
-        value={inputFields[field.key]}
-        underlineColorAndroid='transparent'
-      />
-    );
-  };
-
   const renderAsSignUpState = () => {
     return (
-      <>
+      <YStack gap='$4' paddingHorizontal='$8'>
         <Text style={styles.title} paddingHorizontal='$8'>
           {localized("Let's create your account")}
         </Text>
 
-        {!isConfirmSignUpCode && config.smsSignupFields.map(renderInputField)}
+        <YStack>
+          {!isConfirmSignUpCode &&
+            config.smsSignupFields.map((field, index) => (
+              <Input
+                key={index?.toString()}
+                style={styles.InputContainer}
+                placeholder={field.placeholder}
+                placeholderTextColor='#aaaaaa'
+                onChangeText={(text) => onChangeInputFields(text, field.key)}
+                value={inputFields[field.key]}
+                underlineColorAndroid='transparent'
+              />
+            ))}
 
-        {renderPhoneInput()}
+          <Input
+            ref={phoneRef}
+            flex={1}
+            style={styles.InputContainer}
+            placeholder={localized('Phone number')}
+            placeholderTextColor={colorSet.grey3}
+            keyboardType='numeric'
+            value={phoneNumber}
+            onChangeText={(text) => setPhoneNumber(text)}
+          />
+
+          <Button
+            theme='active'
+            backgroundColor={colorSet.secondaryForeground}
+            color={colorSet.primaryForeground}
+            onPress={onPressSend}
+            iconAfter={loading ? <Spinner /> : <></>}
+            disabled={loading}
+          >
+            {!loading && localized('Continue with phone number')}
+          </Button>
+        </YStack>
+
         {isCodeInputVisible && renderCodeInput()}
 
         {isConfirmSignUpCode && (
@@ -551,35 +488,50 @@ const SmsAuthenticationScreen = () => {
             {localized('Please check your phone for a confirmation code.')}
           </Text>
         )}
-        {/* 
-        {!isConfirmSignUpCode && (
-          <>
+
+        {config.isGoogleAuthEnabled && (
+          <YStack gap='$4'>
             <Text style={styles.orTextStyle}> {localized('OR')}</Text>
-            <TouchableOpacity
-              style={styles.signWithEmailContainer}
-              onPress={
-                () => {}
-                //() => navigation.navigate('Signup')
-                }>
-              <Text>{localized('Sign up with E-mail')}</Text>
-            </TouchableOpacity>
-          </>
-        )} */}
-      </>
+            <Button
+              icon={
+                <FontAwesome
+                  name='google'
+                  size={24}
+                  color={colorSet.primaryForeground}
+                />
+              }
+              themeInverse
+              color={colorSet.primaryForeground}
+              onPress={onGoogleButtonPress}
+            >
+              Login with Google
+            </Button>
+          </YStack>
+        )}
+
+        {config.isFacebookAuthEnabled && (
+          <Button
+            icon={
+              <FontAwesome
+                name='facebook'
+                size={24}
+                color={colorSet.primaryForeground}
+              />
+            }
+            color={colorSet.primaryForeground}
+            themeInverse
+            onPress={onFBButtonPress}
+          >
+            Login with Facebook
+          </Button>
+        )}
+      </YStack>
     );
   };
 
   const renderAsLoginState = () => {
-    const appleButtonStyle = config.isAppleAuthEnabled
-      ? {
-          dark: AppleButton?.Style?.WHITE,
-          light: AppleButton?.Style?.BLACK,
-          'no-preference': AppleButton?.Style?.WHITE,
-        }
-      : {};
-
     return (
-      <YStack space='$2'>
+      <YStack gap='$4' paddingHorizontal='$8'>
         {isConfirmResetPasswordCode ? (
           <Text padding='$8' style={styles.title}>
             {localized('Reset Password')}
@@ -590,7 +542,29 @@ const SmsAuthenticationScreen = () => {
           </Text>
         )}
 
-        {renderPhoneInput()}
+        <YStack>
+          <Input
+            ref={phoneRef}
+            flex={1}
+            style={styles.InputContainer}
+            placeholder={localized('Phone number')}
+            placeholderTextColor={colorSet.grey3}
+            keyboardType='numeric'
+            value={phoneNumber}
+            onChangeText={(text) => setPhoneNumber(text)}
+          />
+
+          <Button
+            theme='active'
+            backgroundColor={colorSet.secondaryForeground}
+            color={colorSet.primaryForeground}
+            onPress={onPressSend}
+            iconAfter={loading ? <Spinner /> : <></>}
+            disabled={loading}
+          >
+            {!loading && localized('Continue with phone number')}
+          </Button>
+        </YStack>
 
         {isCodeInputVisible && renderCodeInput()}
 
@@ -599,34 +573,42 @@ const SmsAuthenticationScreen = () => {
             {localized('Please check your e-mail for a confirmation code.')}
           </Text>
         )}
-        {config.isFacebookAuthEnabled && (
-          <>
-            <Text style={styles.orTextStyle}> {localized('OR')}</Text>
 
-            <TouchableOpacity
-              style={styles.facebookContainer}
-              onPress={() => onFBButtonPress()}
-            >
-              <Text style={styles.facebookText}>
-                {localized('Login With Facebook')}
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
         {config.isGoogleAuthEnabled && (
-          <IMGoogleSignInButton
-            containerStyle={styles.googleButtonStyle}
-            onPress={onGoogleButtonPress}
-          />
+          <YStack gap='$4'>
+            <Text style={styles.orTextStyle}> {localized('OR')}</Text>
+            <Button
+              icon={
+                <FontAwesome
+                  name='google'
+                  size={24}
+                  color={colorSet.primaryForeground}
+                />
+              }
+              themeInverse
+              color={colorSet.primaryForeground}
+              onPress={onGoogleButtonPress}
+            >
+              Login with Google
+            </Button>
+          </YStack>
         )}
-        {config.isAppleAuthEnabled && appleAuth.isSupported && (
-          <AppleButton
-            cornerRadius={25}
-            style={styles.appleButtonContainer}
-            buttonStyle={appleButtonStyle[appearance]}
-            buttonType={AppleButton.Type.SIGN_IN}
-            onPress={() => onAppleButtonPress()}
-          />
+
+        {config.isFacebookAuthEnabled && (
+          <Button
+            icon={
+              <FontAwesome
+                name='facebook'
+                size={24}
+                color={colorSet.primaryForeground}
+              />
+            }
+            color={colorSet.primaryForeground}
+            themeInverse
+            onPress={onFBButtonPress}
+          >
+            Login with Facebook
+          </Button>
         )}
 
         <TouchableOpacity
@@ -635,7 +617,7 @@ const SmsAuthenticationScreen = () => {
             config.isSMSAuthEnabled
               ? router.push({
                   pathname: '/SmsAuthenticationScreen',
-                  params: {isSigningUp: 'false'},
+                  params: {isSigningUp: 'true'},
                 })
               : router.push('/SignupScreen')
           }
@@ -658,7 +640,7 @@ const SmsAuthenticationScreen = () => {
   };
 
   return (
-    <TamaguiView
+    <View
       flex={1}
       alignItems='center'
       justifyContent='center'
@@ -668,7 +650,7 @@ const SmsAuthenticationScreen = () => {
         style={{width: '100%'}}
         keyboardShouldPersistTaps='always'
       >
-        <YStack padding='$8' space='$4'>
+        <YStack padding='$8' gap='$2'>
           <View style={styles?.logo}>
             <Image style={styles.logoImage} source={theme.icons?.logo} />
           </View>
@@ -686,7 +668,7 @@ const SmsAuthenticationScreen = () => {
           />
         )}
       </KeyboardAwareScrollView>
-    </TamaguiView>
+    </View>
   );
 };
 
@@ -761,9 +743,9 @@ const dynamicStyles = (theme, colorScheme) => {
       backgroundColor: colorSet.primaryBackground,
       paddingLeft: 10,
       color: colorSet.primaryText,
-      width: '80%',
+      width: '100%',
       alignSelf: 'center',
-      marginBottom: 32,
+      marginBottom: 16,
       alignItems: 'center',
       borderRadius: 9,
     },
@@ -825,8 +807,6 @@ const dynamicStyles = (theme, colorScheme) => {
       borderColor: '#000',
     },
     orTextStyle: {
-      marginTop: 40,
-      marginBottom: 10,
       alignSelf: 'center',
       color: colorSet.primaryText,
     },

@@ -39,6 +39,8 @@ declare module '@tamagui/core' {
 export default function RootLayout() {
   const theme = extendTheme(DoghouseTheme);
   const colorScheme = useColorScheme();
+
+  console.log('color scheme: ', colorScheme);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/Oswald-Regular.ttf'),
   });
@@ -68,7 +70,7 @@ export default function RootLayout() {
                   >
                     <TamaguiProvider
                       config={tamaguiConfig}
-                      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
+                      defaultTheme={colorScheme === 'dark' ? 'light' : 'light'}
                     >
                       <SafeAreaProvider>
                         <SafeAreaView style={{flex: 1, paddingTop: insets.top}}>

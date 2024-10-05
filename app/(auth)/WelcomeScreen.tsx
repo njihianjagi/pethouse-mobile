@@ -85,7 +85,6 @@ const WelcomeScreen = (props) => {
               user: response.user,
             })
           );
-          console.log('persisted user: ', response.user);
           router.push('(onboarding)');
           if (Platform.OS !== 'web') {
             handleInitialNotification();
@@ -164,7 +163,7 @@ const WelcomeScreen = (props) => {
                     pathname: '/SmsAuthenticationScreen',
                     params: {isSigningUp: 'false'},
                   })
-                : router.push('/SignupScreen')
+                : router.push('/LoginScreen')
             }
             disabled={isLoading}
           >
