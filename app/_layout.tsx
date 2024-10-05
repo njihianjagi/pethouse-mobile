@@ -11,7 +11,7 @@ import {Provider} from 'react-redux';
 import {ConfigProvider, useConfig} from '../config';
 import {TranslationProvider, DopebaseProvider, extendTheme} from '../dopebase';
 import {AuthProvider} from '../hooks/useAuth';
-import {authManager} from '../api';
+import {authManager} from '../api/firebase/auth';
 import translations from '../translations';
 import configureStore from '../redux/store/dev';
 import DoghouseTheme from '../theme';
@@ -68,7 +68,7 @@ export default function RootLayout() {
                   >
                     <TamaguiProvider
                       config={tamaguiConfig}
-                      defaultTheme='light'
+                      defaultTheme={colorScheme === 'dark' ? 'dark' : 'light'}
                     >
                       <SafeAreaProvider>
                         <SafeAreaView style={{flex: 1, paddingTop: insets.top}}>

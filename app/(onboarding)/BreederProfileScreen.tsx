@@ -13,40 +13,77 @@ import {
   ScrollView,
   Label,
   Spinner,
+  Tabs,
+  Circle,
+  ListItem,
+  YGroup,
+  Paragraph,
 } from 'tamagui';
 import {useKennelData} from '../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import {Plus, X} from '@tamagui/lucide-icons';
+import {
+  CheckCircle2,
+  Heart,
+  Home,
+  Plus,
+  Scissors,
+  Upload,
+  X,
+} from '@tamagui/lucide-icons';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import {ActivityIndicator, useTheme, useTranslations} from '../../dopebase';
+import {useTheme, useTranslations} from '../../dopebase';
 import {updateUser} from '../../api/firebase/users/userClient';
 import {useConfig} from '../../config';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import allBreeds from '../../assets/data/breeds_with_group.json';
 import debounce from 'lodash/debounce';
+import * as ImagePicker from 'expo-image-picker';
+import {storageAPI} from '../../api/firebase/media';
+import {useRouter} from 'expo-router';
+import {setUserData} from '../../redux/auth';
+import {useDispatch} from 'react-redux';
 
 // @ts-ignore
 navigator.geolocation = require('@react-native-community/geolocation');
 
 const BreederProfileScreen = () => {
   const currentUser = useCurrentUser();
+  const router = useRouter();
+
   const {
     addKennel,
     updateKennel,
     getKennelByUserId,
     loading: kennelLoading,
+    error,
   } = useKennelData();
 
   const [kennelName, setKennelName] = useState('');
   const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const [selectedServices, setSelectedServices] = useState([] as any);
-  const [selectedBreeds, setSelectedBreeds] = useState([] as any);
+  const [selectedBreed, setSelectedBreed] = useState(null as any);
   const [existingKennel, setExistingKennel] = useState(null as any);
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
   const [isBreedsSheetOpen, setIsBreedsSheetOpen] = useState(false);
 
-  const [inputErrors, setInputErrors] = useState({} as any);
+  const [activeTab, setActiveTab] = useState('tab1');
+
+  const tabs = ['tab1', 'tab2', 'tab3'];
+  const currentIndex = tabs.indexOf(activeTab);
+
+  const handleBack = () => {
+    if (currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
+    }
+  };
 
   const {theme, appearance} = useTheme();
   const styles = dynamicStyles(theme, appearance);
@@ -55,21 +92,43 @@ const BreederProfileScreen = () => {
   const config = useConfig();
 
   const {localized} = useTranslations();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (currentUser) {
-      getKennelByUserId(currentUser.id).then((kennel) => {
+      getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
         if (kennel) {
-          console.log('kennel', kennel);
+          console.log(kennel);
           setExistingKennel(kennel);
           setKennelName(kennel.name);
           setLocation(kennel.location);
           setSelectedServices(kennel.services || []);
-          setSelectedBreeds(kennel.breeds || []);
+          setSelectedBreed(kennel.breeds[0] || []);
+          setBreedImages(
+            kennel.breeds[0].images?.length ? kennel.breeds[0].images : []
+          );
         }
       });
     }
   }, [currentUser?.id]);
+
+  const services = [
+    {name: 'Breeding', subtitle: 'Responsible breeding programs', icon: Heart},
+    {name: 'Boarding', subtitle: 'Short-term care for dogs', icon: Home},
+    {
+      name: 'Grooming',
+      subtitle: 'Professional grooming services',
+      icon: Scissors,
+    },
+  ];
+
+  const handleSelectService = (service: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(service)
+        ? prev.filter((s) => s !== service)
+        : [...prev, service]
+    );
+  };
 
   const [searchText, setSearchText] = useState('');
   const [filteredBreeds, setFilteredBreeds] = useState(allBreeds.slice(0, 10)); // Use slice instead of splice to avoid mutating original array
@@ -117,32 +176,89 @@ const BreederProfileScreen = () => {
   };
 
   const handleSelectBreed = (breed) => {
-    if (selectedBreeds.includes(breed)) {
-      setSelectedBreeds(selectedBreeds.filter((b) => b !== breed));
-    } else {
-      setSelectedBreeds([...selectedBreeds, breed]);
-    }
+    setSelectedBreed(breed);
     setIsBreedsSheetOpen(false);
     Keyboard.dismiss();
   };
 
-  const handleSave = async () => {
-    const kennelData = {
-      name: kennelName,
-      location,
-      services: selectedServices,
-      breeds: selectedBreeds,
-      userId: currentUser.id,
-    };
+  const handleRemoveBreed = () => {
+    setSelectedBreed(null);
+    setBreedImages([]);
+  };
 
-    if (existingKennel) {
-      await updateKennel(existingKennel.id, kennelData);
-    } else {
-      const newKennelId = await addKennel(kennelData);
-      await updateUser(currentUser.id, {kennelId: newKennelId});
+  const [breedImages, setBreedImages] = useState([] as any);
+
+  const handleSelectImage = useCallback(async () => {
+    if (!selectedBreed) return;
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const imageUri = result.assets[0].uri;
+      setBreedImages((prev) => [...prev, imageUri]);
     }
+  }, [selectedBreed]);
 
-    // Navigate to the next screen or dashboard
+  const handleSave = async () => {
+    if (!selectedBreed) return;
+
+    setLoading(true);
+    try {
+      const uploadedImageUrls = await Promise.all(
+        breedImages.map(async (uri) => storageAPI.uploadMedia({uri}))
+      );
+      console.log(uploadedImageUrls);
+
+      const kennelData = {
+        name: kennelName,
+        location,
+        services: selectedServices,
+        breeds: selectedBreed
+          ? [{name: selectedBreed.name, images: uploadedImageUrls}]
+          : [],
+        userId: currentUser.id || currentUser.uid,
+      };
+
+      console.log(JSON.stringify(kennelData));
+
+      if (existingKennel) {
+        await updateKennel(existingKennel.id, {
+          ...existingKennel,
+          ...kennelData,
+        });
+      } else {
+        const newKennel: any = await addKennel(kennelData);
+        const response: any = await updateUser(currentUser.id, {
+          kennelId: newKennel.id,
+        });
+        await dispatch(
+          setUserData({
+            user: response.user,
+          })
+        );
+      }
+
+      router.replace('(tabs)');
+
+      // Toast.show({
+      //   title: 'Success',
+      //   description: 'Breed and images saved successfully!',
+      //   status: 'success',
+      // });
+    } catch (error) {
+      // Toast.show({
+      //   title: 'Error',
+      //   description: 'Failed to save breed and images.',
+      //   status: 'error',
+      // });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -169,12 +285,12 @@ const BreederProfileScreen = () => {
               </View>
 
               <Text style={styles.title}>Awesome! Let's setup your kennel</Text>
-              {/* <Text style={styles.caption}>
-              Complete your profile to connect with potential buyers and
-              showcase your kennel.
-            </Text> */}
+              <Text style={styles.caption}>
+                Complete your profile to connect with potential buyers and
+                showcase your kennel.
+              </Text>
             </YStack>
-
+            {/* 
             <YStack gap='$2'>
               <YStack gap='$0'>
                 <Label htmlFor='name'>Kennel Name</Label>
@@ -228,18 +344,172 @@ const BreederProfileScreen = () => {
                   </Button>
                 </XStack>
               </YStack>
-            </YStack>
+            </YStack> */}
 
-            <Button
-              onPress={handleSave}
-              theme='active'
-              backgroundColor={colorSet.secondaryForeground}
-              color={colorSet.primaryForeground}
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              flexDirection='column'
+              width='100%'
             >
-              {existingKennel
-                ? localized('Update Kennel')
-                : localized('Create Kennel')}
-            </Button>
+              <Tabs.List
+                disablePassBorderRadius='bottom'
+                aria-label='Manage your account'
+                marginBottom='$4'
+              >
+                <Tabs.Tab flex={1} value='tab1'>
+                  <Text fontFamily='$body'>Profile</Text>
+                </Tabs.Tab>
+                <Separator vertical />
+                <Tabs.Tab flex={1} value='tab2'>
+                  <Text fontFamily='$body'>Services</Text>
+                </Tabs.Tab>
+                <Separator vertical />
+                <Tabs.Tab flex={1} value='tab3'>
+                  <Text fontFamily='$body'>Breeds</Text>
+                </Tabs.Tab>
+              </Tabs.List>
+
+              <Tabs.Content value='tab1'>
+                <YStack gap='$2'>
+                  <YStack gap='$0'>
+                    <Label htmlFor='name'>Kennel Name</Label>
+                    <Input
+                      placeholder='Kennel Name'
+                      value={kennelName}
+                      onChangeText={setKennelName}
+                    />
+                  </YStack>
+
+                  <YStack gap='$0' paddingBottom='$2'>
+                    <Label htmlFor='location'>Kennel Location</Label>
+                    <Input
+                      placeholder='Kennel Location'
+                      value={location}
+                      onFocus={() => setIsLocationSheetOpen(true)}
+                      onChangeText={setLocation}
+                      onPress={Keyboard.dismiss}
+                      flex={1}
+                    />
+                  </YStack>
+                </YStack>
+              </Tabs.Content>
+
+              <Tabs.Content value='tab2'>
+                <YGroup bordered separator={<Separator />}>
+                  {services.map((service) => (
+                    <YGroup.Item key={service.name}>
+                      <ListItem
+                        title={service.name}
+                        subTitle={service.subtitle}
+                        icon={service.icon}
+                        pressTheme
+                        color={
+                          selectedServices.includes(service.name)
+                            ? colorSet.primaryForeground
+                            : undefined
+                        }
+                        onPress={() => handleSelectService(service.name)}
+                        iconAfter={
+                          selectedServices.includes(service.name) ? (
+                            <CheckCircle2
+                              size='$1'
+                              color={colorSet.primaryForeground}
+                            />
+                          ) : (
+                            <Circle size='$1' />
+                          )
+                        }
+                      ></ListItem>
+                    </YGroup.Item>
+                  ))}
+                </YGroup>
+              </Tabs.Content>
+
+              <Tabs.Content value='tab3'>
+                <YStack gap='$2' width='100%'>
+                  {selectedBreed ? (
+                    <YGroup bordered separator={<Separator />}>
+                      <YGroup.Item>
+                        <ListItem
+                          title={selectedBreed.name}
+                          subTitle={`${selectedBreed.breedGroup} group`}
+                          iconAfter={
+                            <X size='$1' onPress={handleRemoveBreed} />
+                          }
+                        />
+                      </YGroup.Item>
+                      <YGroup.Item>
+                        <XStack flexWrap='wrap' gap='$2' padding='$2'>
+                          {breedImages.map((uri, index) => (
+                            <Image
+                              key={index}
+                              source={{uri}}
+                              width={100}
+                              height={100}
+                              borderRadius='$2'
+                            />
+                          ))}
+                          <Button
+                            onPress={handleSelectImage}
+                            icon={<Upload size='$1' />}
+                            width={100}
+                            height={100}
+                            borderRadius='$2'
+                            backgroundColor='$gray5'
+                          >
+                            Upload
+                          </Button>
+                        </XStack>
+                      </YGroup.Item>
+                    </YGroup>
+                  ) : (
+                    <Button
+                      onPress={() => setIsBreedsSheetOpen(true)}
+                      iconAfter={<Plus size='$1' />}
+                      width='100%'
+                    >
+                      Select breed
+                    </Button>
+                  )}
+
+                  <Paragraph size='$2' color='$gray10'>
+                    Note: You can select one breed now. You'll be able to add
+                    more breeds later in your profile.
+                  </Paragraph>
+                </YStack>
+              </Tabs.Content>
+            </Tabs>
+
+            <XStack justifyContent='space-between' padding='$2'>
+              <Button
+                onPress={handleBack}
+                disabled={currentIndex === 0}
+                opacity={currentIndex === 0 ? 0.5 : 1}
+              >
+                Back
+              </Button>
+
+              {currentIndex !== tabs.length - 1 && (
+                <Button
+                  onPress={handleNext}
+                  disabled={currentIndex === tabs.length - 1}
+                  opacity={currentIndex === tabs.length - 1 ? 0.5 : 1}
+                >
+                  Next
+                </Button>
+              )}
+
+              {currentIndex == tabs.length - 1 && (
+                <Button
+                  onPress={handleSave}
+                  disabled={loading}
+                  iconAfter={loading ? <Spinner /> : null}
+                >
+                  {loading ? '' : 'Save'}
+                </Button>
+              )}
+            </XStack>
           </YStack>
 
           <Sheet
@@ -249,7 +519,7 @@ const BreederProfileScreen = () => {
             snapPoints={[50]}
           >
             <Sheet.Overlay />
-            <Sheet.Frame padding='$4'>
+            <Sheet.Frame padding='$4' backgroundColor='$background'>
               <ScrollView
                 flex={1}
                 contentContainerStyle={{flex: 1}}

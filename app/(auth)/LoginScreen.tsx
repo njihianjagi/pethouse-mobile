@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, {useState} from 'react';
 import {
   I18nManager,
   Image,
@@ -9,52 +9,52 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native'
+} from 'react-native';
 // import { useNavigation } from '@react-navigation/core'
 import appleAuth, {
   AppleButton,
-} from '@invertase/react-native-apple-authentication'
+} from '@invertase/react-native-apple-authentication';
 // import IMGoogleSignInButton from '../../../components/IMGoogleSignInButton/IMGoogleSignInButton'
-import { useDispatch } from 'react-redux'
+import {useDispatch} from 'react-redux';
 import {
   useTheme,
   useTranslations,
   ActivityIndicator,
   Alert,
-} from '../../dopebase'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { setUserData } from '../../redux/auth'
-import { localizedErrorMessage } from '../../api/ErrorCode'
-import { useAuth } from '../../hooks/useAuth'
-import { useConfig } from '../../config'
-import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton'
+} from '../../dopebase';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {setUserData} from '../../redux/auth';
+import {localizedErrorMessage} from '../../utils/ErrorCode';
+import {useAuth} from '../../hooks/useAuth';
+import {useConfig} from '../../config';
+import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton';
 
 const LoginScreen = () => {
   // const navigation = useNavigation()
-  const authManager = useAuth()
-  const dispatch = useDispatch()
+  const authManager = useAuth();
+  const dispatch = useDispatch();
 
-  const { localized } = useTranslations()
-  const { theme, appearance } = useTheme()
+  const {localized} = useTranslations();
+  const {theme, appearance} = useTheme();
   const config = useConfig();
-  const [loading, setLoading] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const styles = dynamicStyles(theme, appearance)
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const styles = dynamicStyles(theme, appearance);
 
   const onPressLogin = () => {
-    setLoading(true)
+    setLoading(true);
     authManager
       .loginWithEmailAndPassword(
         email && email.trim(),
         password && password.trim(),
-        config,
+        config
       )
-      .then(response => {
+      .then((response) => {
         if (response?.user) {
-          const user = response.user
-          dispatch(setUserData({ user }))
-          Keyboard.dismiss()
+          const user = response.user;
+          dispatch(setUserData({user}));
+          Keyboard.dismiss();
           if (user?.role === 'admin') {
             // navigation.reset({
             //   index: 0,
@@ -67,29 +67,29 @@ const LoginScreen = () => {
             // })
           }
         } else {
-          setLoading(false)
+          setLoading(false);
           Alert.alert(
             '',
             localizedErrorMessage(response.error, localized),
-            [{ text: localized('OK') }],
+            [{text: localized('OK')}],
             {
               cancelable: false,
-            },
-          )
+            }
+          );
         }
-      })
-  }
+      });
+  };
 
   const onFBButtonPress = () => {
-    setLoading(true)
+    setLoading(true);
     authManager
       .loginOrSignUpWithFacebook(config)
-      .then(response => {
-        setLoading(false)
+      .then((response) => {
+        setLoading(false);
         if (response?.user) {
-          const user = response.user
-          dispatch(setUserData({ user }))
-          Keyboard.dismiss()
+          const user = response.user;
+          dispatch(setUserData({user}));
+          Keyboard.dismiss();
           if (user?.role === 'admin') {
             // navigation.reset({
             //   index: 0,
@@ -105,138 +105,140 @@ const LoginScreen = () => {
           Alert.alert(
             '',
             localizedErrorMessage(response.error, localized),
-            [{ text: localized('OK') }],
+            [{text: localized('OK')}],
             {
               cancelable: false,
-            },
-          )
+            }
+          );
         }
       })
-      .catch(error => {
-        setLoading(false)
-        console.log('error', error)
+      .catch((error) => {
+        setLoading(false);
+        console.log('error', error);
         Alert.alert(
           '',
           localizedErrorMessage(error, localized),
-          [{ text: localized('OK') }],
+          [{text: localized('OK')}],
           {
             cancelable: false,
-          },
-        )
-      })
-  }
+          }
+        );
+      });
+  };
 
   const onGoogleButtonPress = () => {
-    setLoading(true)
+    setLoading(true);
     authManager
       .loginOrSignUpWithGoogle(config)
-      .then(response => {
-        setLoading(false)
+      .then((response) => {
+        setLoading(false);
         if (response?.user) {
-          const user = response.user
-          dispatch(setUserData({ user }))
-          Keyboard.dismiss()
+          const user = response.user;
+          dispatch(setUserData({user}));
+          Keyboard.dismiss();
           // navigation.reset({
           //   index: 0,
           //   routes: [{ name: 'MainStack', params: { user } }],
           // })
         } else {
-          setLoading(false)
+          setLoading(false);
           Alert.alert(
             '',
             localizedErrorMessage(response.error, localized),
-            [{ text: localized('OK') }],
+            [{text: localized('OK')}],
             {
               cancelable: false,
-            },
-          )
+            }
+          );
         }
       })
-      .catch(error => {
-        setLoading(false)
+      .catch((error) => {
+        setLoading(false);
         Alert.alert(
           '',
           localizedErrorMessage(error, localized),
-          [{ text: localized('OK') }],
+          [{text: localized('OK')}],
           {
             cancelable: false,
-          },
-        )
-      })
-  }
+          }
+        );
+      });
+  };
 
   const onAppleButtonPress = async () => {
-    setLoading(true)
-    authManager.loginOrSignUpWithApple(config).then(response => {
+    setLoading(true);
+    authManager.loginOrSignUpWithApple(config).then((response) => {
       if (response?.user) {
-        const user = response.user
-        dispatch(setUserData({ user }))
-        Keyboard.dismiss()
+        const user = response.user;
+        dispatch(setUserData({user}));
+        Keyboard.dismiss();
         // navigation.reset({
         //   index: 0,
         //   routes: [{ name: 'MainStack', params: { user } }],
         // })
       } else {
-        setLoading(false)
+        setLoading(false);
         Alert.alert(
           '',
           localizedErrorMessage(response.error, localized),
-          [{ text: localized('OK') }],
+          [{text: localized('OK')}],
           {
             cancelable: false,
-          },
-        )
+          }
+        );
       }
-    })
-  }
+    });
+  };
 
   const onForgotPassword = async () => {
     // navigation.push('ResetPassword', {
     //   isResetPassword: true,
     // })
-  }
+  };
 
   const appleButtonStyle = config.isAppleAuthEnabled
     ? {
-      dark: AppleButton?.Style?.WHITE,
-      light: AppleButton?.Style?.BLACK,
-      'no-preference': AppleButton?.Style?.WHITE,
-    }
-    : {}
+        dark: AppleButton?.Style?.WHITE,
+        light: AppleButton?.Style?.BLACK,
+        'no-preference': AppleButton?.Style?.WHITE,
+      }
+    : {};
 
   return (
     <View style={styles.container}>
       <KeyboardAwareScrollView
-        style={{ flex: 1, width: '100%' }}
-        keyboardShouldPersistTaps="always">
+        style={{flex: 1, width: '100%'}}
+        keyboardShouldPersistTaps='always'
+      >
         <TouchableOpacity
-          style={{ alignSelf: 'flex-start' }}
+          style={{alignSelf: 'flex-start'}}
           onPress={
             () => {}
             // () => navigation.goBack()
-            }>
+          }
+        >
           <Image style={styles.backArrowStyle} source={theme.icons.backArrow} />
         </TouchableOpacity>
         <Text style={styles.title}>{localized('Sign In')}</Text>
         <TextInput
           style={styles.InputContainer}
           placeholder={localized('E-mail')}
-          keyboardType="email-address"
-          placeholderTextColor="#aaaaaa"
-          onChangeText={text => setEmail(text)}
+          keyboardType='email-address'
+          placeholderTextColor='#aaaaaa'
+          onChangeText={(text) => setEmail(text)}
           value={email}
-          underlineColorAndroid="transparent"
-          autoCapitalize="none"
+          underlineColorAndroid='transparent'
+          autoCapitalize='none'
         />
         <TextInput
           style={styles.InputContainer}
-          placeholderTextColor="#aaaaaa"
+          placeholderTextColor='#aaaaaa'
           secureTextEntry
           placeholder={localized('Password')}
-          onChangeText={text => setPassword(text)}
+          onChangeText={(text) => setPassword(text)}
           value={password}
-          underlineColorAndroid="transparent"
-          autoCapitalize="none"
+          underlineColorAndroid='transparent'
+          autoCapitalize='none'
         />
         {config.forgotPasswordEnabled && (
           <View style={styles.forgotPasswordContainer}>
@@ -249,7 +251,8 @@ const LoginScreen = () => {
         )}
         <TouchableOpacity
           style={styles.loginContainer}
-          onPress={() => onPressLogin()}>
+          onPress={() => onPressLogin()}
+        >
           <Text style={styles.loginText}>{localized('Log In')}</Text>
         </TouchableOpacity>
         {config.isFacebookAuthEnabled && (
@@ -257,7 +260,8 @@ const LoginScreen = () => {
             <Text style={styles.orTextStyle}> {localized('OR')}</Text>
             <TouchableOpacity
               style={styles.facebookContainer}
-              onPress={() => onFBButtonPress()}>
+              onPress={() => onFBButtonPress()}
+            >
               <Text style={styles.facebookText}>
                 {localized('Login With Facebook')}
               </Text>
@@ -285,7 +289,8 @@ const LoginScreen = () => {
             onPress={
               () => {}
               //() => navigation.navigate('Sms', { isSigningUp: false })
-            }>
+            }
+          >
             <Text style={styles.phoneNumber}>
               {localized('Login with phone number')}
             </Text>
@@ -294,15 +299,13 @@ const LoginScreen = () => {
         {loading && <ActivityIndicator />}
       </KeyboardAwareScrollView>
     </View>
-  )
-}
+  );
+};
 
-export default LoginScreen
-
-
+export default LoginScreen;
 
 const dynamicStyles = (theme, colorScheme) => {
-  const colorSet = theme.colors[colorScheme]
+  const colorSet = theme.colors[colorScheme];
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -405,7 +408,7 @@ const dynamicStyles = (theme, colorScheme) => {
       height: 25,
       marginTop: Platform.OS === 'ios' ? 50 : 20,
       marginLeft: 10,
-      transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
+      transform: [{scaleX: I18nManager.isRTL ? -1 : 1}],
     },
-  })
-}
+  });
+};

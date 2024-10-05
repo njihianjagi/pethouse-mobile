@@ -17,9 +17,17 @@ export default function OnboardingModal() {
   const checkUserOnboardingStage = () => {
     if (currentUser.role) {
       if (currentUser.role === 'breeder') {
-        router.replace('/BreederProfileScreen');
+        if (!currentUser.kennelId) {
+          router.replace('/BreederProfileScreen');
+        } else {
+          router.replace('(tabs)');
+        }
       } else if (currentUser.role === 'seeker') {
-        router.replace('/SeekerProfileScreen');
+        if (!currentUser.preferredBreeds) {
+          router.replace('/SeekerProfileScreen');
+        } else {
+          router.replace('(tabs)');
+        }
       }
     } else {
       console.log('no role');

@@ -63,6 +63,7 @@ export const useKennelData = () => {
       const response = await db.collection('kennels').add(kennel);
       setKennels((prev) => [...prev, {id: response.id, ...kennel}]);
       setLoading(false);
+      return response;
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
@@ -74,6 +75,7 @@ export const useKennelData = () => {
   const updateKennel = async (id, updatedData) => {
     try {
       setLoading(true);
+      console.log(updatedData);
       await db.collection('kennels').doc(id).update(updatedData);
       setKennels((prev) =>
         prev.map((kennel) =>

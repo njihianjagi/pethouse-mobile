@@ -1,7 +1,7 @@
-import { Platform } from 'react-native'
+import {Platform} from 'react-native';
 
-const HORIZONTAL_SPACING_BASE = Platform.OS === 'web' ? 4 : 2
-const VERTICAL_SPACING_BASE = 4
+const HORIZONTAL_SPACING_BASE = Platform.OS === 'web' ? 4 : 2;
+const VERTICAL_SPACING_BASE = 4;
 
 const icons = {
   logo: require('../assets/images/logo.png'),
@@ -20,7 +20,7 @@ const icons = {
   logout: require('../assets/icons/logout-drawer.png'),
   users_android: require('../assets/icons/users-icon-48.png'),
   user_android: require('../assets/icons/account-detail.png'),
-}
+};
 
 const lightColors = {
   primaryBackground: '#f0f0f0',
@@ -36,27 +36,29 @@ const lightColors = {
   grey6: '#d6d6d6',
   grey9: '#939393',
   red: '#ea0606',
-}
+};
+
+const darkColors = {
+  primaryBackground: '#121212',
+  secondaryBackground: '#000000',
+  primaryForeground: '#85643D',
+  secondaryForeground: '#DFBD99',
+  foregroundContrast: 'white',
+  primaryText: '#ffffff',
+  secondaryText: '#c5c5c5',
+  hairline: '#222222',
+  grey0: '#0a0a0a',
+  grey3: '#2a2a2a',
+  grey6: '#f5f5f5',
+  grey9: '#eaeaea',
+  red: '#ea0606',
+};
 
 const DoghouseTheme = {
   colors: {
     light: lightColors,
     'no-preference': lightColors,
-    dark: {
-      primaryBackground: '#121212',
-      secondaryBackground: '#000000',
-      primaryForeground: '#6546d7',
-      secondaryForeground: '#8442bd',
-      foregroundContrast: 'white',
-      primaryText: '#ffffff',
-      secondaryText: '#c5c5c5',
-      hairline: '#222222',
-      grey0: '#0a0a0a',
-      grey3: '#2a2a2a',
-      grey6: '#f5f5f5',
-      grey9: '#eaeaea',
-      red: '#ea0606',
-    },
+    dark: darkColors,
   },
   spaces: {
     horizontal: {
@@ -91,6 +93,6 @@ const DoghouseTheme = {
   button: {
     borderRadius: 8,
   },
-}
+};
 
-export default DoghouseTheme
+export default DoghouseTheme;

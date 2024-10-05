@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, {useState} from 'react';
 import {
   Dimensions,
   I18nManager,
@@ -10,120 +10,120 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native'
+} from 'react-native';
 // import { useNavigation } from '@react-navigation/core'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { useDispatch } from 'react-redux'
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {useDispatch} from 'react-redux';
 import {
   useTheme,
   useTranslations,
   ActivityIndicator,
   Alert,
   ProfilePictureSelector,
-} from '../../dopebase'
-import { setUserData } from '../../redux/auth'
-import { localizedErrorMessage } from '../../api/ErrorCode'
-import TermsOfUseView from '../../components/TermsOfUseView'
-import { useAuth } from '../../hooks/useAuth'
-import { useConfig } from '../../config'
+} from '../../dopebase';
+import {setUserData} from '../../redux/auth';
+import {localizedErrorMessage} from '../../utils/ErrorCode';
+import TermsOfUseView from '../../components/TermsOfUseView';
+import {useAuth} from '../../hooks/useAuth';
+import {useConfig} from '../../config';
 
 const SignupScreen = () => {
   // const navigation = useNavigation()
-  const authManager = useAuth()
-  const dispatch = useDispatch()
+  const authManager = useAuth();
+  const dispatch = useDispatch();
 
   const config = useConfig();
-  const { localized } = useTranslations()
-  const { theme, appearance } = useTheme()
-  const styles = dynamicStyles(theme, appearance)
+  const {localized} = useTranslations();
+  const {theme, appearance} = useTheme();
+  const styles = dynamicStyles(theme, appearance);
 
-  const [inputFields, setInputFields] = useState({} as any)
+  const [inputFields, setInputFields] = useState({} as any);
 
-  const [profilePictureFile, setProfilePictureFile] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const validateEmail = text => {
+  const validateEmail = (text) => {
     let reg =
-      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    return reg.test(String(text).toLowerCase()) ? true : false
-  }
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return reg.test(String(text).toLowerCase()) ? true : false;
+  };
 
-  const validatePassword = text => {
-    let reg = /^(?=.*[A-Z])(?=.*[a-z])/
-    return reg.test(String(text)) ? true : false
-  }
+  const validatePassword = (text) => {
+    let reg = /^(?=.*[A-Z])(?=.*[a-z])/;
+    return reg.test(String(text)) ? true : false;
+  };
 
-  const trimFields = fields => {
-    var trimmedFields = {}
-    Object.keys(fields).forEach(key => {
+  const trimFields = (fields) => {
+    var trimmedFields = {};
+    Object.keys(fields).forEach((key) => {
       if (fields[key]) {
-        trimmedFields[key] = fields[key].trim()
+        trimmedFields[key] = fields[key].trim();
       }
-    })
-    return trimmedFields
-  }
+    });
+    return trimmedFields;
+  };
 
   const onRegister = async () => {
-    const { error: usernameError } =
-      await authManager.validateUsernameFieldIfNeeded(inputFields, config)
+    const {error: usernameError} =
+      await authManager.validateUsernameFieldIfNeeded(inputFields, config);
     if (usernameError) {
-      Alert.alert('', localized(usernameError), [{ text: localized('OK') }], {
+      Alert.alert('', localized(usernameError), [{text: localized('OK')}], {
         cancelable: false,
-      })
-      setInputFields(prevFields => ({
+      });
+      setInputFields((prevFields) => ({
         ...prevFields,
         password: '',
-      }))
-      return
+      }));
+      return;
     }
 
     if (!validateEmail(inputFields?.email?.trim())) {
       Alert.alert(
         '',
         localized('Please enter a valid email address.'),
-        [{ text: localized('OK') }],
+        [{text: localized('OK')}],
         {
           cancelable: false,
-        },
-      )
-      return
+        }
+      );
+      return;
     }
 
     if (inputFields?.password?.trim() == '') {
       Alert.alert(
         '',
         localized('Password cannot be empty.'),
-        [{ text: localized('OK') }],
+        [{text: localized('OK')}],
         {
           cancelable: false,
-        },
-      )
-      setInputFields(prevFields => ({
+        }
+      );
+      setInputFields((prevFields) => ({
         ...prevFields,
         password: '',
-      }))
-      return
+      }));
+      return;
     }
 
     if (inputFields?.password?.trim()?.length < 6) {
       Alert.alert(
         '',
         localized(
-          'Password is too short. Please use at least 6 characters for security reasons.',
+          'Password is too short. Please use at least 6 characters for security reasons.'
         ),
-        [{ text: localized('OK') }],
+        [{text: localized('OK')}],
         {
           cancelable: false,
-        },
-      )
-      setInputFields(prevFields => ({
+        }
+      );
+      setInputFields((prevFields) => ({
         ...prevFields,
         password: '',
-      }))
-      return
+      }));
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     const userDetails = {
       ...trimFields(inputFields),
@@ -131,40 +131,40 @@ const SignupScreen = () => {
       appIdentifier: config.appIdentifier,
     } as any;
     if (userDetails.username) {
-      userDetails.username = userDetails.username?.toLowerCase()
+      userDetails.username = userDetails.username?.toLowerCase();
     }
 
     authManager
       .createAccountWithEmailAndPassword(userDetails, config)
-      .then(response => {
-        const user = response.user
+      .then((response) => {
+        const user = response.user;
         if (user) {
-          dispatch(setUserData({ user }))
-          Keyboard.dismiss()
+          dispatch(setUserData({user}));
+          Keyboard.dismiss();
           // navigation.reset({
           //   index: 0,
           //   routes: [{ name: 'MainStack', params: { user } }],
           // })
         } else {
-          setLoading(false)
+          setLoading(false);
           Alert.alert(
             '',
             localizedErrorMessage(response.error, localized),
-            [{ text: localized('OK') }],
+            [{text: localized('OK')}],
             {
               cancelable: false,
-            },
-          )
+            }
+          );
         }
-      })
-  }
+      });
+  };
 
   const onChangeInputFields = (text, key) => {
-    setInputFields(prevFields => ({
+    setInputFields((prevFields) => ({
       ...prevFields,
       [key]: text,
-    }))
-  }
+    }));
+  };
 
   const renderInputField = (field, index) => {
     return (
@@ -172,16 +172,16 @@ const SignupScreen = () => {
         key={index?.toString()}
         style={styles.InputContainer}
         placeholder={field.placeholder}
-        placeholderTextColor="#aaaaaa"
+        placeholderTextColor='#aaaaaa'
         secureTextEntry={field.secureTextEntry}
-        onChangeText={text => onChangeInputFields(text, field.key)}
+        onChangeText={(text) => onChangeInputFields(text, field.key)}
         value={inputFields[field.key]}
         keyboardType={field.type}
-        underlineColorAndroid="transparent"
+        underlineColorAndroid='transparent'
         autoCapitalize={field.autoCapitalize}
       />
-    )
-  }
+    );
+  };
 
   const renderSignupWithEmail = () => {
     return (
@@ -191,18 +191,21 @@ const SignupScreen = () => {
           <Text style={styles.signupText}>{localized('Sign Up')}</Text>
         </TouchableOpacity>
       </>
-    )
-  }
+    );
+  };
 
   return (
     <View style={styles.container}>
       <KeyboardAwareScrollView
-        style={{ flex: 1, width: '100%' }}
-        keyboardShouldPersistTaps="always">
-        <TouchableOpacity onPress={
-          () => {}
-          //() => navigation.goBack()
-        }>
+        style={{flex: 1, width: '100%'}}
+        keyboardShouldPersistTaps='always'
+      >
+        <TouchableOpacity
+          onPress={
+            () => {}
+            //() => navigation.goBack()
+          }
+        >
           <Image style={styles.backArrowStyle} source={theme.icons.backArrow} />
         </TouchableOpacity>
         <Text style={styles.title}>{localized('Create new account')}</Text>
@@ -210,7 +213,6 @@ const SignupScreen = () => {
 
         {renderSignupWithEmail()}
 
-        
         {config.isSMSAuthEnabled && (
           <>
             <Text style={styles.orTextStyle}>{localized('OR')}</Text>
@@ -218,8 +220,9 @@ const SignupScreen = () => {
               style={styles.PhoneNumberContainer}
               onPress={
                 () => {}
-               //</> () => navigation.navigate('Sms', { isSigningUp: true })
-              }>
+                //</> () => navigation.navigate('Sms', { isSigningUp: true })
+              }
+            >
               <Text>{localized('Sign up with phone number')}</Text>
             </TouchableOpacity>
           </>
@@ -232,17 +235,17 @@ const SignupScreen = () => {
       </KeyboardAwareScrollView>
       {loading && <ActivityIndicator />}
     </View>
-  )
-}
+  );
+};
 
-export default SignupScreen
+export default SignupScreen;
 
-const { height } = Dimensions.get('window')
-const imageSize = height * 0.232
-const photoIconSize = imageSize * 0.27
+const {height} = Dimensions.get('window');
+const imageSize = height * 0.232;
+const photoIconSize = imageSize * 0.27;
 
 const dynamicStyles = (theme, colorScheme) => {
-  const colorSet = theme.colors[colorScheme]
+  const colorSet = theme.colors[colorScheme];
   return StyleSheet.create({
     container: {
       flex: 1,
@@ -378,7 +381,7 @@ const dynamicStyles = (theme, colorScheme) => {
       height: 25,
       marginTop: Platform.OS === 'ios' ? 50 : 20,
       marginLeft: 10,
-      transform: [{ scaleX: I18nManager.isRTL ? -1 : 1 }],
+      transform: [{scaleX: I18nManager.isRTL ? -1 : 1}],
     },
-  })
-}
+  });
+};

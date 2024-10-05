@@ -7,9 +7,9 @@ import appleAuth, {
 } from '@invertase/react-native-apple-authentication';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
 
-import {storageAPI} from '../../../media';
+import {storageAPI} from '../media';
 import * as authAPI from './authClient';
-import {ErrorCode} from '../../ErrorCode';
+import {ErrorCode} from '../../../utils/ErrorCode';
 import {updateUser} from '../users/userClient';
 
 const defaultProfilePhotoURL =
@@ -67,7 +67,7 @@ const createAccountWithEmailAndPassword = (userDetails, appConfig) => {
             if (photoFile) {
               storageAPI
                 .processAndUploadMediaFile(photoFile)
-                .then((response) => {
+                .then((response: any) => {
                   if (response.error) {
                     // if account gets created, but photo upload fails, we still log the user in
                     resolve({
@@ -324,7 +324,7 @@ const registerWithPhoneNumber = (
             if (photoFile) {
               storageAPI
                 .processAndUploadMediaFile(photoFile)
-                .then((response) => {
+                .then((response: any) => {
                   if (response.error) {
                     // if account gets created, but photo upload fails, we still log the user in
                     resolve({

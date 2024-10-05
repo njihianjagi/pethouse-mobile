@@ -85,6 +85,7 @@ const WelcomeScreen = (props) => {
               user: response.user,
             })
           );
+          console.log('persisted user: ', response.user);
           router.push('(onboarding)');
           if (Platform.OS !== 'web') {
             handleInitialNotification();

@@ -1,40 +1,42 @@
-import { db } from '../../../firebase/config'
-import { getUnixTimeStamp } from '../../../helpers/timeFormat'
+import {db} from '../../../firebase/config';
+import {getUnixTimeStamp} from '../../../helpers/timeFormat';
 
-export const usersRef = db.collection('users')
+export const usersRef = db.collection('users');
 
 export const updateUser = async (userID, newData) => {
   const dataWithOnlineStatus = {
     ...newData,
     lastOnlineTimestamp: getUnixTimeStamp(),
-  }
+  };
   try {
-    await usersRef.doc(userID).set({ ...dataWithOnlineStatus }, { merge: true })
-    return { success: true }
-  } catch (error) {
-    return error
-  }
-}
+    await usersRef.doc(userID).set({...dataWithOnlineStatus}, {merge: true});
+    const updatedUser = await usersRef.doc(userID).get();
 
-export const getUserByID = async userID => {
-  try {
-    const document = await usersRef.doc(userID).get()
-    if (document) {
-      return document.data()
-    }
-    return null
+    return {success: true, user: updatedUser.data()};
   } catch (error) {
-    console.log(error)
-    return null
+    return error;
   }
-}
+};
+
+export const getUserByID = async (userID) => {
+  try {
+    const document = await usersRef.doc(userID).get();
+    if (document) {
+      return document.data();
+    }
+    return null;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
 
 export const updateProfilePhoto = async (userID, profilePictureURL) => {
   try {
-    await usersRef.doc(userID).update({ profilePictureURL: profilePictureURL })
-    return { success: true }
+    await usersRef.doc(userID).update({profilePictureURL: profilePictureURL});
+    return {success: true};
   } catch (error) {
-    console.log(error)
-    return { error: error }
+    console.log(error);
+    return {error: error};
   }
-}
+};

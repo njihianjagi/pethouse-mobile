@@ -24,7 +24,7 @@ import appleAuth, {
 import {useTheme, useTranslations, Alert} from '../../dopebase';
 import {setUserData} from '../../redux/auth';
 import {useDispatch} from 'react-redux';
-import {localizedErrorMessage} from '../../api/ErrorCode';
+import {localizedErrorMessage} from '../../utils/ErrorCode';
 import TermsOfUseView from '../../components/TermsOfUseView';
 import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton';
 import {useAuth} from '../../hooks/useAuth';
@@ -40,6 +40,10 @@ import {
   Spinner,
   Input,
   styled,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogDescription,
+  AlertDialogTitle,
 } from 'tamagui';
 import {ChevronDown} from '@tamagui/lucide-icons';
 import CountryPicker from 'react-native-country-picker-modal';
@@ -50,9 +54,6 @@ const codeInputCellCount = 6;
 const StyledInput = styled(Input, {
   height: 48,
   borderWidth: 1,
-  borderColor: '$grey3',
-  backgroundColor: '$gray5Light',
-  color: '$primaryText',
   paddingLeft: 10,
   borderRadius: 9,
   // Remove left border radius to align with flag container
@@ -73,7 +74,6 @@ const FlagContainer = styled(View, {
   height: 48,
   justifyContent: 'center',
   alignItems: 'center',
-  backgroundColor: '$gray5Light',
   paddingLeft: 16,
 });
 
@@ -275,7 +275,6 @@ const SmsAuthenticationScreen = () => {
   const signUpWithPhoneNumber = (smsCode) => {
     const userDetails = {
       ...trimFields(inputFields),
-      phoneNumber: phoneNumber?.trim(),
       photoFile: profilePictureFile,
     };
     authManager
@@ -288,13 +287,19 @@ const SmsAuthenticationScreen = () => {
       .then((response) => {
         setLoading(false);
         if (response.error) {
-          Alert.alert(
-            '',
-            localizedErrorMessage(response.error, localized),
-            [{text: localized('OK')}],
-            {cancelable: false}
-          );
+          showAlert(localizedErrorMessage(response.error, localized));
+
+          // Alert.alert(
+          //   '',
+          //   localizedErrorMessage(response.error, localized),
+          //   [{text: localized('OK')}],
+          //   {cancelable: false}
+          // );
         } else {
+          console.log(
+            'register resp: ',
+            JSON.stringify(response.user, null, 1)
+          );
           const user = response.user;
           dispatch(setUserData({user}));
           Keyboard.dismiss();
@@ -384,6 +389,7 @@ const SmsAuthenticationScreen = () => {
             params: {isSigningUp: 'true'},
           });
         } else {
+          console.log('login res:', JSON.stringify(response.user));
           const user = response.user;
           dispatch(setUserData({user}));
           Keyboard.dismiss();
@@ -427,6 +433,7 @@ const SmsAuthenticationScreen = () => {
             flex={1}
             placeholder={localized('Phone number')}
             placeholderTextColor='$grey3'
+            keyboardType='numeric'
             value={phoneNumber}
             onChangeText={(text) => setPhoneNumber(text)}
           />
@@ -534,7 +541,7 @@ const SmsAuthenticationScreen = () => {
   const renderAsSignUpState = () => {
     return (
       <>
-        <Text style={styles.title}>
+        <Text style={styles.title} paddingHorizontal='$8'>
           {localized("Let's create your account")}
         </Text>
 
@@ -646,6 +653,14 @@ const SmsAuthenticationScreen = () => {
     );
   };
 
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showAlert = (message) => {
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
+
   return (
     <TamaguiView
       flex={1}
@@ -675,7 +690,14 @@ const SmsAuthenticationScreen = () => {
           />
         )}
       </KeyboardAwareScrollView>
-      {/* {loading && <ActivityIndicator />} */}
+
+      <AlertDialog open={alertVisible} onOpenChange={setAlertVisible}>
+        <AlertDialogTitle>{localized('Alert')}</AlertDialogTitle>
+        <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
+        <AlertDialogAction onPress={() => setAlertVisible(false)}>
+          <Text>{localized('OK')}</Text>
+        </AlertDialogAction>
+      </AlertDialog>
     </TamaguiView>
   );
 };
@@ -797,7 +819,7 @@ const dynamicStyles = (theme, colorScheme) => {
       alignItems: 'center',
     },
     codeFieldContainer: {
-      marginTop: 20,
+      //marginTop: 20,
       alignItems: 'center',
     },
     codeInputCell: {

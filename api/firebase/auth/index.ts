@@ -6,8 +6,7 @@
 // import {authManager} from './backend/authManager';
 // export { authManager };
 
-
 // Remove these lines if you want to remove firebase and add your own custom backend:
-import authManager from './firebase/auth/firebaseAuthManager'
+import authManager from './firebaseAuthManager';
 
-export { authManager }
+export {authManager};
