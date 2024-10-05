@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "838635783062",
+    "project_id": "doghouse-c77c1",
+    "storage_bucket": "doghouse-c77c1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838635783062:android:40a16ab72ef48566c213b7",
+        "android_client_info": {
+          "package_name": "com.doghouse.ke"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "838635783062-lum2hnj0eujchm0hrac0e7iimbmraenb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOzWQrJbqgqFHXy3CKOFzN4Vdcwq2maCc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "838635783062-5u4n4gerafbra1qlaakuadi30mq7sv84.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
