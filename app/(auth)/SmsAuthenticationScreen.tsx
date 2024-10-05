@@ -40,10 +40,6 @@ import {
   Spinner,
   Input,
   styled,
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogDescription,
-  AlertDialogTitle,
 } from 'tamagui';
 import {ChevronDown} from '@tamagui/lucide-icons';
 import CountryPicker from 'react-native-country-picker-modal';
@@ -690,14 +686,6 @@ const SmsAuthenticationScreen = () => {
           />
         )}
       </KeyboardAwareScrollView>
-
-      <AlertDialog open={alertVisible} onOpenChange={setAlertVisible}>
-        <AlertDialogTitle>{localized('Alert')}</AlertDialogTitle>
-        <AlertDialogDescription>{alertMessage}</AlertDialogDescription>
-        <AlertDialogAction onPress={() => setAlertVisible(false)}>
-          <Text>{localized('OK')}</Text>
-        </AlertDialogAction>
-      </AlertDialog>
     </TamaguiView>
   );
 };

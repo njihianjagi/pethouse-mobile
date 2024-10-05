@@ -356,6 +356,7 @@ const BreederProfileScreen = () => {
                 disablePassBorderRadius='bottom'
                 aria-label='Manage your account'
                 marginBottom='$4'
+                borderColor={colorSet.primaryForeground}
               >
                 <Tabs.Tab flex={1} value='tab1'>
                   <Text fontFamily='$body'>Profile</Text>

@@ -20,6 +20,8 @@ export default function OnboardingModal() {
         if (!currentUser.kennelId) {
           router.replace('/BreederProfileScreen');
         } else {
+          console.log('user has kennel');
+
           router.replace('(tabs)');
         }
       } else if (currentUser.role === 'seeker') {
