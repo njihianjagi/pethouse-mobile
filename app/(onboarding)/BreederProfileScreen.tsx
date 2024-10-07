@@ -212,7 +212,6 @@ const BreederProfileScreen = () => {
       const uploadedImageUrls = await Promise.all(
         breedImages.map(async (uri) => storageAPI.uploadMedia({uri}))
       );
-      console.log(uploadedImageUrls);
 
       const kennelData = {
         name: kennelName,
@@ -223,8 +222,6 @@ const BreederProfileScreen = () => {
           : [],
         userId: currentUser.id || currentUser.uid,
       };
-
-      console.log(JSON.stringify(kennelData));
 
       if (existingKennel) {
         await updateKennel(existingKennel.id, {

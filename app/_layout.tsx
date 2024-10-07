@@ -66,11 +66,11 @@ export default function RootLayout() {
               <MenuProvider>
                 <ActionSheetProvider>
                   <ThemeProvider
-                    value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+                    value={colorScheme === 'dark' ? DefaultTheme : DefaultTheme}
                   >
                     <TamaguiProvider
                       config={tamaguiConfig}
-                      defaultTheme={colorScheme === 'dark' ? 'light' : 'light'}
+                      defaultTheme={colorScheme as string | undefined}
                     >
                       <SafeAreaProvider>
                         <SafeAreaView style={{flex: 1, paddingTop: insets.top}}>

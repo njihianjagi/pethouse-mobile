@@ -203,16 +203,15 @@ const loginOrSignUpWithApple = (appConfig) => {
 
 const loginOrSignUpWithGoogle = (appConfig) => {
   GoogleSignin.configure({
-    //webClientId: appConfig.webClientId,
+    webClientId: appConfig.webClientId,
   });
 
   return new Promise(async (resolve, _reject) => {
     try {
       const response = await GoogleSignin.signIn();
       let idToken;
-
       if (isSuccessResponse(response)) {
-        console.log(response.data);
+        idToken = response.data.idToken;
       }
 
       authAPI
@@ -233,12 +232,10 @@ const loginOrSignUpWithGoogle = (appConfig) => {
               });
             });
           } else {
-            console.log(response.message);
             resolve({error: ErrorCode.googleSigninFailed});
           }
         });
     } catch (error: any) {
-      console.log('login error: ', error.message);
       resolve({
         error: ErrorCode.googleSigninFailed,
       });
