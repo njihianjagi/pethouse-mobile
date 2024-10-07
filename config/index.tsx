@@ -14,11 +14,11 @@ export const ConfigProvider = ({children}) => {
     isFacebookAuthEnabled: false,
     isAppleAuthEnabled: false,
     forgotPasswordEnabled: true,
-    appIdentifier: `com.doghouse.ke`,
+    appIdentifier: 'com.doghouse.ke',
     facebookIdentifier: '285315185217069',
     googleMapsApiKey: 'AIzaSyAsA_NXnLAmxVq4UGGpHyt3SmpyHveI-UE',
     webClientId:
-      '1099201876026-7p9f7c1ukg55958ck45fc0bn0luilka4.apps.googleusercontent.com',
+      '838635783062-5u4n4gerafbra1qlaakuadi30mq7sv84.apps.googleusercontent.com',
     onboardingConfig: {
       welcomeTitle: localized('Your home for quality breeds'),
       welcomeCaption: localized(
@@ -82,7 +82,7 @@ export const ConfigProvider = ({children}) => {
       ],
     },
     tosLink: 'https://www.doghouse.co.ke/terms-of-service/',
-    isUsernameFieldEnabled: false,
+    isUsernameFieldEnabled: true,
     smsSignupFields: [
       // {
       //   displayName: localized('First Name'),

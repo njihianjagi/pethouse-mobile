@@ -2787,10 +2787,10 @@
   resolved "https://registry.yarnpkg.com/@react-native-firebase/storage/-/storage-21.0.0.tgz#0905fd67c74629d947f176bfb988d7cc4d85e244"
   integrity sha512-meft5Pu0nI7zxhpnP49ko9Uw8GaIy9hXGJfa/fCFrpf2vA9OXdTr3CvgloH/b9DpbkwQGcGTshRqltuttXI67w==
 
-"@react-native-google-signin/google-signin@^10.0.1":
-  version "10.1.2"
-  resolved "https://registry.yarnpkg.com/@react-native-google-signin/google-signin/-/google-signin-10.1.2.tgz#0b26e98f52e5b11bcba05580472a134143cddf74"
-  integrity sha512-8EFCKg6Wwd+75/gZoZ1NNpFYNHJ5xAtQUjUDAI1MqowbfUa1HpU7w8xguGFCOOEnqLkkwOVP1l2LnvVm9OOYlg==
+"@react-native-google-signin/google-signin@^13.1.0":
+  version "13.1.0"
+  resolved "https://registry.yarnpkg.com/@react-native-google-signin/google-signin/-/google-signin-13.1.0.tgz#6482b89acf2ac88a6c68bc1304a265d5b7c3bb3a"
+  integrity sha512-C2/sqb0/s0c+Dwc/mykASZsRuHxGqn7SFrCxCY9D8p8IOQO05haInhCc7lzraJshRixGva5c/4usQZ71HMYSEQ==
 
 "@react-native-picker/picker@2.7.5":
   version "2.7.5"

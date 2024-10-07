@@ -5,7 +5,11 @@ import appleAuth, {
   AppleAuthRequestScope,
   AppleAuthRequestOperation,
 } from '@invertase/react-native-apple-authentication';
-import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {
+  GoogleSignin,
+  isSuccessResponse,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 
 import {storageAPI} from '../media';
 import * as authAPI from './authClient';
@@ -199,13 +203,18 @@ const loginOrSignUpWithApple = (appConfig) => {
 
 const loginOrSignUpWithGoogle = (appConfig) => {
   GoogleSignin.configure({
-    webClientId: appConfig.webClientId,
+    //webClientId: appConfig.webClientId,
   });
+
   return new Promise(async (resolve, _reject) => {
     try {
-      const {idToken} = await GoogleSignin.signIn();
+      const response = await GoogleSignin.signIn();
+      let idToken;
 
-      console.log(idToken);
+      if (isSuccessResponse(response)) {
+        console.log(response.data);
+      }
+
       authAPI
         .loginWithGoogle(idToken, appConfig.appIdentifier)
         .then(async (response: any) => {
@@ -224,12 +233,12 @@ const loginOrSignUpWithGoogle = (appConfig) => {
               });
             });
           } else {
-            console.log(response);
+            console.log(response.message);
             resolve({error: ErrorCode.googleSigninFailed});
           }
         });
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      console.log('login error: ', error.message);
       resolve({
         error: ErrorCode.googleSigninFailed,
       });

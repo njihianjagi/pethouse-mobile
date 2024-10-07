@@ -46,7 +46,6 @@ export const useKennelData = () => {
         return null;
       }
 
-      console.log(response.docs[0].data());
       const kennelData = response.docs[0].data();
       setLoading(false);
       return {id: response.docs[0].id, ...kennelData};
