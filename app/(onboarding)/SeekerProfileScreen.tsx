@@ -164,7 +164,7 @@ const SeekerProfileScreen = () => {
               </View>
 
               <Text style={styles.title}>
-                Awesome! Let's setup your profile
+                Awesome! Let's set up your profile
               </Text>
               <Text style={styles.caption}>
                 Complete your profile to connect with potential breeders and
@@ -195,16 +195,20 @@ const SeekerProfileScreen = () => {
                 </Tabs.Tab>
                 <Separator vertical />
                 <Tabs.Tab flex={1} value='tab2'>
-                  <Text fontFamily='$body'>Breeds</Text>
+                  <Text fontFamily='$body'>Desired Traits</Text>
                 </Tabs.Tab>
                 <Separator vertical />
                 <Tabs.Tab flex={1} value='tab3'>
-                  <Text fontFamily='$body'>Traits</Text>
+                  <Text fontFamily='$body'>Breeds</Text>
                 </Tabs.Tab>
               </Tabs.List>
 
               <Tabs.Content value='tab1'>
                 <YStack gap='$2'>
+                  <Text fontSize='$6' fontWeight='bold' color='$gray9'>
+                    Tell us a bit about yourself
+                  </Text>
+
                   <YStack gap='$0'>
                     <Label htmlFor='name'> Name</Label>
                     <Input
@@ -229,7 +233,15 @@ const SeekerProfileScreen = () => {
               </Tabs.Content>
 
               <Tabs.Content value='tab2'>
+                <YStack p='$4'>
+                  <Text>Descrbibe your perfect pawtner</Text>
+                  {/* Add form fields for desired traits */}
+                </YStack>
+              </Tabs.Content>
+
+              <Tabs.Content value='tab3'>
                 <YStack gap='$4'>
+                  <Text>Select your preferred breed</Text>
                   {selectedBreed ? (
                     <YGroup bordered>
                       <YGroup.Item>
@@ -321,13 +333,6 @@ const SeekerProfileScreen = () => {
                     Note: You can select one breed now. You'll be able to add
                     more breeds later in your profile.
                   </Paragraph>
-                </YStack>
-              </Tabs.Content>
-
-              <Tabs.Content value='tab3'>
-                <YStack p='$4'>
-                  <Text>Desired Traits Form</Text>
-                  {/* Add form fields for desired traits */}
                 </YStack>
               </Tabs.Content>
             </Tabs>
