@@ -21,17 +21,20 @@ import {
   YGroup,
   Paragraph,
   ToggleGroup,
+  Accordion,
+  Square,
+  Switch,
 } from 'tamagui';
 import {useRouter} from 'expo-router';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import {useConfig} from '../../config';
 import {useTheme} from '../../dopebase';
-import allBreeds from '../../assets/data/breeds_with_group.json';
+import allBreeds from '../../assets/data/breeds_with_group_and_traits.json';
 import {updateUser} from '../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/auth';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import {X, Plus} from '@tamagui/lucide-icons';
+import {X, Plus, ChevronDown} from '@tamagui/lucide-icons';
 
 const SeekerProfileScreen = () => {
   const currentUser = useCurrentUser();
@@ -56,6 +59,354 @@ const SeekerProfileScreen = () => {
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
 
   const dispatch = useDispatch();
+
+  const [breeds, setBreeds] = useState<DogBreed[]>(allBreeds as DogBreed[]);
+
+  const traitCategories = [
+    {
+      name: 'Lifestyle Fit',
+      options: [
+        {
+          name: 'apartment_friendly',
+          type: 'switch',
+          label: 'Apartment Friendly',
+          defaultValue: true,
+        },
+        {
+          name: 'novice_friendly',
+          type: 'switch',
+          label: 'Good for Novice Owners',
+          defaultValue: true,
+        },
+        {
+          name: 'independent',
+          type: 'switch',
+          label: 'Can Be Left Alone',
+          defaultValue: false,
+        },
+        {
+          name: 'sensitivity_level',
+          type: 'toggle',
+          values: ['Low', 'Medium', 'High'],
+          defaultValue: 1, // Medium
+        },
+      ],
+    },
+    {
+      name: 'Care Requirements',
+      options: [
+        {
+          name: 'low_shedding',
+          type: 'switch',
+          label: 'Low Shedding',
+          defaultValue: true,
+        },
+        {
+          name: 'low_drooling',
+          type: 'switch',
+          label: 'Low Drooling',
+          defaultValue: true,
+        },
+        {
+          name: 'easy_grooming',
+          type: 'switch',
+          label: 'Easy to Groom',
+          defaultValue: true,
+        },
+        {
+          name: 'general_health',
+          type: 'toggle',
+          values: ['Prone to Issues', 'Average', 'Very Healthy'],
+          defaultValue: 2, // Very Healthy
+        },
+        {
+          name: 'weight_gain_prone',
+          type: 'switch',
+          label: 'Prone to Weight Gain',
+          defaultValue: false,
+        },
+      ],
+    },
+    {
+      name: 'Temperament',
+      options: [
+        {
+          name: 'affectionate',
+          type: 'switch',
+          label: 'Affectionate with Family',
+          defaultValue: true,
+        },
+        {
+          name: 'kid_friendly',
+          type: 'switch',
+          label: 'Kid Friendly',
+          defaultValue: true,
+        },
+        {
+          name: 'dog_friendly',
+          type: 'switch',
+          label: 'Dog Friendly',
+          defaultValue: true,
+        },
+        {
+          name: 'stranger_friendly',
+          type: 'switch',
+          label: 'Stranger Friendly',
+          defaultValue: false,
+        },
+        {
+          name: 'energy_level',
+          type: 'toggle',
+          values: ['Low', 'Moderate', 'High'],
+          defaultValue: 1, // Moderate
+        },
+        {
+          name: 'intensity',
+          type: 'toggle',
+          values: ['Laid-Back', 'Medium', 'Vigorous'],
+          defaultValue: 1, // Medium
+        },
+        {
+          name: 'playfulness',
+          type: 'toggle',
+          values: ['Reserved', 'Playful', 'Very Playful'],
+          defaultValue: 1, // Playful
+        },
+      ],
+    },
+    {
+      name: 'Training & Intelligence',
+      options: [
+        {
+          name: 'easy_to_train',
+          type: 'switch',
+          label: 'Easy to Train',
+          defaultValue: true,
+        },
+        {
+          name: 'intelligence',
+          type: 'toggle',
+          values: ['Average', 'Bright', 'Highly Intelligent'],
+          defaultValue: 1, // Bright
+        },
+        {
+          name: 'mouthiness',
+          type: 'switch',
+          label: 'Mouthy',
+          defaultValue: false,
+        },
+      ],
+    },
+    {
+      name: 'Physical Characteristics',
+      options: [
+        {
+          name: 'size',
+          type: 'toggle',
+          values: ['Small', 'Medium', 'Large'],
+          defaultValue: 1, // Medium
+        },
+        {
+          name: 'adaptable_to_weather',
+          type: 'switch',
+          label: 'Adaptable to Weather',
+          defaultValue: true,
+        },
+      ],
+    },
+    {
+      name: 'Behavioral Traits',
+      options: [
+        {
+          name: 'high_prey_drive',
+          type: 'switch',
+          label: 'High Prey Drive',
+          defaultValue: false,
+        },
+        {
+          name: 'barks_a_lot',
+          type: 'switch',
+          label: 'Tends to Bark or Howl',
+          defaultValue: false,
+        },
+        {
+          name: 'wanderlust',
+          type: 'switch',
+          label: 'Wanderlust Potential',
+          defaultValue: false,
+        },
+      ],
+    },
+  ];
+
+  const traitMapping = {
+    apartment_friendly: 'adapts_well_to_apartment_living',
+    novice_friendly: 'good_for_novice_dog_owners',
+    independent: 'tolerates_being_alone',
+    sensitivity_level: 'sensitivity_level',
+    low_shedding: 'shedding',
+    low_drooling: 'drooling_potential',
+    easy_grooming: 'easy_to_groom',
+    general_health: 'general_health',
+    weight_gain_prone: 'potential_for_weight_gain',
+    affectionate: 'best_family_dogs',
+    kid_friendly: 'kid-friendly',
+    dog_friendly: 'dog_friendly',
+    stranger_friendly: 'friendly_toward_strangers',
+    energy_level: 'high_energy_level',
+    intensity: 'intensity',
+    playfulness: 'potential_for_playfulness',
+    easy_to_train: 'easy_to_train',
+    intelligence: 'intelligence',
+    mouthiness: 'potential_for_mouthiness',
+    size: 'size',
+    adaptable_to_weather: ['tolerates_cold_weather', 'tolerates_hot_weather'],
+    high_prey_drive: 'prey_drive',
+    barks_a_lot: 'tendency_to_bark_or_howl',
+    wanderlust: 'wanderlust_potential',
+  };
+
+  interface TraitPreferences {
+    [key: string]: number | boolean;
+  }
+
+  const [traitPreferences, setTraitPreferences] = useState<TraitPreferences>(
+    () => {
+      // Initialize traitPreferences with default values
+      const initialPreferences = {} as TraitPreferences;
+      traitCategories.forEach((category) => {
+        category.options.forEach((option) => {
+          initialPreferences[option.name] = option.defaultValue;
+        });
+      });
+      return initialPreferences;
+    }
+  );
+
+  const handleTraitChange = (trait, value) => {
+    setTraitPreferences((prev) => ({
+      ...prev,
+      [trait]: value,
+    }));
+  };
+
+  interface DogBreed {
+    name: string;
+    description: string;
+    height: string;
+    lifeSpan: string;
+    weight: string;
+    image: string;
+    traits: {
+      [key: string]: {
+        name: string;
+        score: number;
+      };
+    };
+  }
+
+  const [filteredBreeds, setFilteredBreeds] = useState(
+    allBreeds.slice(0, 10) as DogBreed[]
+  ); // Use slice instead of splice to avoid mutating original array
+
+  const filterBreeds = useCallback(
+    debounce((preferences) => {
+      const filtered = breeds.filter((breed) => {
+        return Object.entries(preferences).every(([trait, preference]) => {
+          const mappedTrait = traitMapping[trait] || trait;
+
+          if (Array.isArray(mappedTrait)) {
+            // Handle multiple mapped traits
+            return mappedTrait.every((subTrait) => {
+              const breedTrait =
+                breed && breed.traits && breed.traits[subTrait];
+              if (!breedTrait) return true;
+              return evaluateTrait(breedTrait, preference, subTrait);
+            });
+          } else {
+            const breedTrait =
+              breed && breed.traits && breed.traits[mappedTrait];
+            if (!breedTrait) return true;
+            return evaluateTrait(breedTrait, preference, mappedTrait);
+          }
+        });
+      });
+      setFilteredBreeds(filtered);
+    }, 300),
+    [breeds]
+  );
+
+  const evaluateTrait = (breedTrait, preference, traitName) => {
+    if (typeof preference === 'boolean') {
+      const reverseLogic = [
+        'shedding',
+        'drooling_potential',
+        'potential_for_weight_gain',
+        'potential_for_mouthiness',
+      ];
+      const desiredValue = reverseLogic.includes(traitName)
+        ? breedTrait.score <= 3
+        : breedTrait.score > 3;
+      return preference === desiredValue;
+    } else {
+      switch (preference) {
+        case 0:
+          return breedTrait.score <= 2;
+        case 1:
+          return breedTrait.score === 3;
+        case 2:
+          return breedTrait.score >= 4;
+        default:
+          return true;
+      }
+    }
+  };
+
+  const renderTraitOption = (option) => {
+    if (option.type === 'switch') {
+      return (
+        <XStack key={option.name} gap='$2' justifyContent='space-between'>
+          <Label htmlFor={option.name}>{option.label}</Label>
+          <Switch
+            id={option.name}
+            checked={!!traitPreferences[option.name]}
+            onCheckedChange={(value) => handleTraitChange(option.name, value)}
+          />
+        </XStack>
+      );
+    } else if (option.type === 'toggle') {
+      return (
+        <YStack key={option.name} gap='$2'>
+          <Label htmlFor={option.name}>
+            {option.name
+              .replace(/_/g, ' ')
+              .replace(/\b\w/g, (l) => l.toUpperCase())}
+          </Label>
+          {/* <ToggleGroup
+            id={option.name}
+            type='single'
+            value={traitPreferences[option.name].toString()}
+            onValueChange={(value) =>
+              handleTraitChange(option.name, parseInt(value))
+            }
+          >
+            {option.values.map((value, index) => (
+              <ToggleGroup.Item key={value} value={index.toString()} size='$3'>
+                <Text>{value}</Text>
+              </ToggleGroup.Item>
+            ))}
+          </ToggleGroup> */}
+        </YStack>
+      );
+    }
+  };
+
+  useEffect(() => {
+    filterBreeds(traitPreferences);
+    return () => {
+      filterBreeds.cancel();
+    };
+  }, [traitPreferences, filterBreeds]);
 
   const handleSave = async () => {
     const response: any = await updateUser(currentUser.id, {
@@ -82,63 +433,6 @@ const SeekerProfileScreen = () => {
       setActiveTab(tabs[currentIndex + 1]);
     }
   };
-
-  const [isBreedsSheetOpen, setIsBreedsSheetOpen] = useState(false);
-  const [selectedBreed, setSelectedBreed] = useState(null as any);
-
-  // Handle search text change
-  const handleSearchTextChange = (text: string) => {
-    setSearchText(text);
-    debouncedSearch(text);
-  };
-
-  const handleSelectBreed = (breed) => {
-    setSelectedBreed(breed);
-    setIsBreedsSheetOpen(false);
-    Keyboard.dismiss();
-  };
-
-  const handleRemoveBreed = () => {
-    setSelectedBreed(null);
-  };
-
-  const [searchText, setSearchText] = useState('');
-  const [filteredBreeds, setFilteredBreeds] = useState(allBreeds.slice(0, 10)); // Use slice instead of splice to avoid mutating original array
-
-  // Debounced search function using Lodash
-  const debouncedSearch = useCallback(
-    debounce((text: string) => {
-      if (typeof text !== 'string') {
-        console.error('Search text is not a string:', text);
-        return;
-      }
-
-      const sanitizedText = text.trim().toLowerCase();
-      if (sanitizedText === '') {
-        setFilteredBreeds(allBreeds.slice(0, 10)); // Reset to initial state
-        return;
-      }
-
-      const searchRegex = new RegExp(sanitizedText, 'i');
-
-      const matches = allBreeds.filter((breed) => {
-        if (typeof breed.name !== 'string') {
-          console.warn('Breed name is not a string:', breed.name);
-          return false;
-        }
-        return searchRegex.test(breed.name);
-      });
-
-      setFilteredBreeds(matches.length > 0 ? matches : []);
-    }, 300),
-    []
-  );
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [debouncedSearch]);
 
   return (
     <View
@@ -195,11 +489,7 @@ const SeekerProfileScreen = () => {
                 </Tabs.Tab>
                 <Separator vertical />
                 <Tabs.Tab flex={1} value='tab2'>
-                  <Text fontFamily='$body'>Desired Traits</Text>
-                </Tabs.Tab>
-                <Separator vertical />
-                <Tabs.Tab flex={1} value='tab3'>
-                  <Text fontFamily='$body'>Breeds</Text>
+                  <Text fontFamily='$body'>Breed Preferences</Text>
                 </Tabs.Tab>
               </Tabs.List>
 
@@ -233,107 +523,46 @@ const SeekerProfileScreen = () => {
               </Tabs.Content>
 
               <Tabs.Content value='tab2'>
-                <YStack p='$4'>
-                  <Text>Descrbibe your perfect pawtner</Text>
-                  {/* Add form fields for desired traits */}
-                </YStack>
-              </Tabs.Content>
-
-              <Tabs.Content value='tab3'>
-                <YStack gap='$4'>
-                  <Text>Select your preferred breed</Text>
-                  {selectedBreed ? (
-                    <YGroup bordered>
-                      <YGroup.Item>
-                        <ListItem
-                          title={selectedBreed.name}
-                          subTitle={`${selectedBreed.breedGroup} group`}
-                          iconAfter={
-                            <X size='$1' onPress={handleRemoveBreed} />
-                          }
-                        />
-                      </YGroup.Item>
-                      <Separator />
-                      <YGroup.Item>
-                        <YStack gap='$4' paddingTop='$4' paddingHorizontal='$4'>
-                          <Text>Gender</Text>
-                          <ToggleGroup
-                            type='single'
-                            value={gender}
-                            onValueChange={(value) => setGender(value)}
+                <ScrollView>
+                  <YStack gap='$4'>
+                    <Text fontSize='$6' fontWeight='bold'>
+                      Select Your Preferred Traits
+                    </Text>
+                    <Text fontSize='$4'>
+                      Matched Breeds: {filteredBreeds.length}
+                    </Text>
+                    <Accordion type='multiple'>
+                      {traitCategories.map((category) => (
+                        <Accordion.Item
+                          key={category.name}
+                          value={category.name}
+                        >
+                          <Accordion.Trigger
+                            flexDirection='row'
+                            justifyContent='space-between'
                           >
-                            <ToggleGroup.Item
-                              flex={1}
-                              value='male'
-                              aria-label='Male'
-                            >
-                              <Text>Male</Text>
-                            </ToggleGroup.Item>
-                            <ToggleGroup.Item
-                              flex={1}
-                              value='female'
-                              aria-label='Female'
-                            >
-                              <Text>Female</Text>
-                            </ToggleGroup.Item>
-                            <ToggleGroup.Item
-                              flex={1}
-                              value='any'
-                              aria-label='Any'
-                            >
-                              <Text>Any</Text>
-                            </ToggleGroup.Item>
-                          </ToggleGroup>
-                        </YStack>
-                      </YGroup.Item>
-                      <YGroup.Item>
-                        <YStack gap='$4' padding='$4'>
-                          <Text>Age</Text>
-                          <ToggleGroup
-                            type='single'
-                            value={age}
-                            onValueChange={(value) => setAge(value)}
-                          >
-                            <ToggleGroup.Item
-                              flex={1}
-                              value='puppy'
-                              aria-label='Puppy'
-                            >
-                              <Text>Puppy</Text>
-                            </ToggleGroup.Item>
-                            <ToggleGroup.Item
-                              flex={1}
-                              value='adolescent'
-                              aria-label='Adolescent'
-                            >
-                              <Text>Adolescent</Text>
-                            </ToggleGroup.Item>
-                            <ToggleGroup.Item
-                              flex={1}
-                              value='adult'
-                              aria-label='Adult'
-                            >
-                              <Text>Adult</Text>
-                            </ToggleGroup.Item>
-                          </ToggleGroup>
-                        </YStack>
-                      </YGroup.Item>
-                    </YGroup>
-                  ) : (
-                    <Button
-                      onPress={() => setIsBreedsSheetOpen(true)}
-                      iconAfter={<Plus size='$1' />}
-                      width='100%'
-                    >
-                      Select breed
-                    </Button>
-                  )}
-
-                  <Paragraph size='$2' color='$gray10'>
-                    Note: You can select one breed now. You'll be able to add
-                    more breeds later in your profile.
-                  </Paragraph>
-                </YStack>
+                            {({open}: {open: boolean}) => (
+                              <>
+                                <Paragraph>{category.name}</Paragraph>
+                                <Square
+                                  animation='quick'
+                                  rotate={open ? '180deg' : '0deg'}
+                                >
+                                  <ChevronDown size='$1' />
+                                </Square>
+                              </>
+                            )}
+                          </Accordion.Trigger>
+                          <Accordion.Content>
+                            <YGroup gap='$4'>
+                              {category.options.map(renderTraitOption)}
+                            </YGroup>
+                          </Accordion.Content>
+                        </Accordion.Item>
+                      ))}
+                    </Accordion>
+                  </YStack>
+                </ScrollView>
               </Tabs.Content>
             </Tabs>
 
@@ -401,41 +630,6 @@ const SeekerProfileScreen = () => {
                 />
               </ScrollView>
             </Sheet.Frame>
-          </Sheet>
-
-          <Sheet
-            modal
-            open={isBreedsSheetOpen}
-            onOpenChange={setIsBreedsSheetOpen}
-            snapPointsMode='percent'
-            snapPoints={[60]}
-          >
-            <Sheet.Frame>
-              <Sheet.ScrollView keyboardShouldPersistTaps='handled'>
-                <YStack gap='$4' padding='$4'>
-                  <Input
-                    value={searchText}
-                    onChangeText={handleSearchTextChange}
-                    placeholder='Search breeds'
-                  />
-                  <Separator />
-                  <YStack gap='$4'>
-                    {filteredBreeds.map((breed, index) => (
-                      <YStack key={index}>
-                        <TouchableOpacity
-                          onPress={() => handleSelectBreed(breed)}
-                        >
-                          <Text color={colorSet.secondaryText}>
-                            {breed.name}
-                          </Text>
-                        </TouchableOpacity>
-                      </YStack>
-                    ))}
-                  </YStack>
-                </YStack>
-              </Sheet.ScrollView>
-            </Sheet.Frame>
-            <Sheet.Overlay />
           </Sheet>
         </KeyboardAwareScrollView>
       )}
