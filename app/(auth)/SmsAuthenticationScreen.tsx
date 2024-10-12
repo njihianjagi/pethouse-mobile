@@ -14,7 +14,6 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {useTheme, useTranslations, Alert} from '../../dopebase';
 import {setUserData} from '../../redux/auth';
 import {useDispatch} from 'react-redux';
@@ -32,6 +31,7 @@ import {
   Spinner,
   Input,
   styled,
+  ScrollView,
 } from 'tamagui';
 import {ChevronDown} from '@tamagui/lucide-icons';
 import {CountryCode, parsePhoneNumber} from 'libphonenumber-js';
@@ -249,14 +249,15 @@ const SmsAuthenticationScreen = () => {
       .then((response) => {
         setLoading(false);
         if (response.error) {
+          console.log(response.error);
           showAlert(localizedErrorMessage(response.error, localized));
 
-          // Alert.alert(
-          //   '',
-          //   localizedErrorMessage(response.error, localized),
-          //   [{text: localized('OK')}],
-          //   {cancelable: false}
-          // );
+          Alert.alert(
+            '',
+            localizedErrorMessage(response.error, localized),
+            [{text: localized('OK')}],
+            {cancelable: false}
+          );
         } else {
           console.log(
             'register resp: ',
@@ -408,7 +409,7 @@ const SmsAuthenticationScreen = () => {
           padding='$4'
           justifyContent='center'
           alignItems='center'
-          space='$5'
+          gap='$5'
           backgroundColor={colorSet.primaryBackground}
         >
           <Text color={colorSet.primaryForeground} fontSize='$4'>
@@ -439,12 +440,31 @@ const SmsAuthenticationScreen = () => {
 
   const renderAsSignUpState = () => {
     return (
-      <YStack gap='$4' paddingHorizontal='$8'>
-        <Text style={styles.title} paddingHorizontal='$8'>
-          {localized("Let's create your account")}
-        </Text>
-
+      <YStack gap='$8'>
         <YStack>
+          <Text style={styles.title}>
+            {localized("Let's create your account")}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.alreadyHaveAnAccountContainer}
+            onPress={() =>
+              config.isSMSAuthEnabled
+                ? router.push({
+                    pathname: '/SmsAuthenticationScreen',
+                    params: {isSigningUp: 'false'},
+                  })
+                : router.push('/LoginScreen')
+            }
+          >
+            <Text style={styles.alreadyHaveAnAccountText}>
+              {localized('Already have an account? ')}
+              <Text color={colorSet.primaryForeground}>Login</Text>
+            </Text>
+          </TouchableOpacity>
+        </YStack>
+
+        <YStack gap='$4'>
           {!isConfirmSignUpCode &&
             config.smsSignupFields.map((field, index) => (
               <Input
@@ -460,7 +480,6 @@ const SmsAuthenticationScreen = () => {
 
           <Input
             ref={phoneRef}
-            flex={1}
             style={styles.InputContainer}
             placeholder={localized('Phone number')}
             placeholderTextColor={colorSet.grey3}
@@ -477,75 +496,80 @@ const SmsAuthenticationScreen = () => {
             iconAfter={loading ? <Spinner /> : <></>}
             disabled={loading}
           >
-            {!loading && localized('Continue with phone number')}
+            {!loading && localized('Continue with phone')}
           </Button>
-        </YStack>
 
-        {isCodeInputVisible && renderCodeInput()}
+          {isCodeInputVisible && renderCodeInput()}
 
-        {isConfirmSignUpCode && (
-          <Text style={styles.orTextStyle}>
-            {localized('Please check your phone for a confirmation code.')}
-          </Text>
-        )}
+          {isConfirmSignUpCode && (
+            <Text style={styles.orTextStyle}>
+              {localized('Please check your phone for a confirmation code.')}
+            </Text>
+          )}
 
-        {config.isGoogleAuthEnabled && (
-          <YStack gap='$4'>
-            <Text style={styles.orTextStyle}> {localized('OR')}</Text>
+          {config.isGoogleAuthEnabled && (
+            <YStack gap='$4'>
+              <Text style={styles.orTextStyle}> {localized('OR')}</Text>
+              <Button
+                icon={
+                  <FontAwesome
+                    name='google'
+                    size={24}
+                    color={colorSet.primaryForeground}
+                  />
+                }
+                themeShallow
+                color={colorSet.primaryForeground}
+                onPress={onGoogleButtonPress}
+                iconAfter={loading ? <Spinner /> : <></>}
+                disabled={loading}
+              >
+                Sign up with Google
+              </Button>
+            </YStack>
+          )}
+
+          {config.isFacebookAuthEnabled && (
             <Button
               icon={
                 <FontAwesome
-                  name='google'
+                  name='facebook'
                   size={24}
                   color={colorSet.primaryForeground}
                 />
               }
-              themeInverse
               color={colorSet.primaryForeground}
-              onPress={onGoogleButtonPress}
+              themeInverse
+              onPress={onFBButtonPress}
             >
-              Login with Google
+              Login with Facebook
             </Button>
-          </YStack>
-        )}
-
-        {config.isFacebookAuthEnabled && (
-          <Button
-            icon={
-              <FontAwesome
-                name='facebook'
-                size={24}
-                color={colorSet.primaryForeground}
-              />
-            }
-            color={colorSet.primaryForeground}
-            themeInverse
-            onPress={onFBButtonPress}
-          >
-            Login with Facebook
-          </Button>
-        )}
+          )}
+        </YStack>
       </YStack>
     );
   };
 
   const renderAsLoginState = () => {
     return (
-      <YStack gap='$4' paddingHorizontal='$8'>
+      <YStack gap='$6'>
         {isConfirmResetPasswordCode ? (
-          <Text padding='$8' style={styles.title}>
-            {localized('Reset Password')}
-          </Text>
+          <Text style={styles.title}>{localized('Reset Password')}</Text>
         ) : (
-          <Text paddingHorizontal='$8' style={styles.title}>
-            {localized('Login to your account')}
-          </Text>
+          <YStack gap='$2' marginBottom='$4'>
+            <Text style={styles.title}>
+              {localized('Log in to your account')}
+            </Text>
+            {/* 
+            <Text style={styles.caption}>
+              {localized('Login to your account')}
+            </Text> */}
+          </YStack>
         )}
 
-        <YStack>
+        <YStack gap='$4'>
           <Input
             ref={phoneRef}
-            flex={1}
             style={styles.InputContainer}
             placeholder={localized('Phone number')}
             placeholderTextColor={colorSet.grey3}
@@ -562,54 +586,54 @@ const SmsAuthenticationScreen = () => {
             iconAfter={loading ? <Spinner /> : <></>}
             disabled={loading}
           >
-            {!loading && localized('Continue with phone number')}
+            {!loading && localized('Continue with phone')}
           </Button>
-        </YStack>
 
-        {isCodeInputVisible && renderCodeInput()}
+          {isCodeInputVisible && renderCodeInput()}
 
-        {isConfirmResetPasswordCode && (
-          <Text style={styles.orTextStyle}>
-            {localized('Please check your e-mail for a confirmation code.')}
-          </Text>
-        )}
+          {isConfirmResetPasswordCode && (
+            <Text style={styles.orTextStyle}>
+              {localized('Please check your e-mail for a confirmation code.')}
+            </Text>
+          )}
 
-        {config.isGoogleAuthEnabled && (
-          <YStack gap='$4'>
-            <Text style={styles.orTextStyle}> {localized('OR')}</Text>
+          {config.isGoogleAuthEnabled && (
+            <YStack gap='$4'>
+              <Text style={styles.orTextStyle}> {localized('OR')}</Text>
+              <Button
+                icon={
+                  <FontAwesome
+                    name='google'
+                    size={24}
+                    color={colorSet.primaryForeground}
+                  />
+                }
+                themeShallow
+                color={colorSet.primaryForeground}
+                onPress={onGoogleButtonPress}
+              >
+                Login with Google
+              </Button>
+            </YStack>
+          )}
+
+          {config.isFacebookAuthEnabled && (
             <Button
               icon={
                 <FontAwesome
-                  name='google'
+                  name='facebook'
                   size={24}
                   color={colorSet.primaryForeground}
                 />
               }
-              themeInverse
               color={colorSet.primaryForeground}
-              onPress={onGoogleButtonPress}
+              themeInverse
+              onPress={onFBButtonPress}
             >
-              Login with Google
+              Login with Facebook
             </Button>
-          </YStack>
-        )}
-
-        {config.isFacebookAuthEnabled && (
-          <Button
-            icon={
-              <FontAwesome
-                name='facebook'
-                size={24}
-                color={colorSet.primaryForeground}
-              />
-            }
-            color={colorSet.primaryForeground}
-            themeInverse
-            onPress={onFBButtonPress}
-          >
-            Login with Facebook
-          </Button>
-        )}
+          )}
+        </YStack>
 
         <TouchableOpacity
           style={styles.alreadyHaveAnAccountContainer}
@@ -640,17 +664,16 @@ const SmsAuthenticationScreen = () => {
   };
 
   return (
-    <View
-      flex={1}
-      alignItems='center'
-      justifyContent='center'
-      backgroundColor={colorSet.primaryBackground}
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: colorSet.primaryBackground,
+      }}
     >
-      <KeyboardAwareScrollView
-        style={{width: '100%'}}
-        keyboardShouldPersistTaps='always'
-      >
-        <YStack padding='$8' gap='$2'>
+      <YStack gap='$2' alignItems='center' paddingHorizontal='$8'>
+        <YStack gap='$2'>
           <View style={styles?.logo}>
             <Image style={styles.logoImage} source={theme.icons?.logo} />
           </View>
@@ -667,8 +690,8 @@ const SmsAuthenticationScreen = () => {
             style={styles.tos}
           />
         )}
-      </KeyboardAwareScrollView>
-    </View>
+      </YStack>
+    </ScrollView>
   );
 };
 
@@ -719,10 +742,15 @@ const dynamicStyles = (theme, colorScheme) => {
       fontWeight: 'bold',
       color: colorSet.primaryForeground,
       marginTop: 0,
-      marginBottom: 50,
       alignSelf: 'stretch',
       textAlign: 'center',
       paddingHorizontal: 8,
+    },
+    caption: {
+      fontSize: 16,
+      lineHeight: 24,
+      textAlign: 'center',
+      color: colorSet.grey6,
     },
     sendContainer: {
       width: '70%',
@@ -741,13 +769,10 @@ const dynamicStyles = (theme, colorScheme) => {
       borderWidth: 1,
       borderColor: colorSet.grey3,
       backgroundColor: colorSet.primaryBackground,
-      paddingLeft: 10,
       color: colorSet.primaryText,
       width: '100%',
       alignSelf: 'center',
-      marginBottom: 16,
       alignItems: 'center',
-      borderRadius: 9,
     },
 
     flagStyle: {

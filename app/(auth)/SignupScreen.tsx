@@ -26,6 +26,7 @@ import {localizedErrorMessage} from '../../utils/ErrorCode';
 import TermsOfUseView from '../../components/TermsOfUseView';
 import {useAuth} from '../../hooks/useAuth';
 import {useConfig} from '../../config';
+import {Input} from 'tamagui';
 
 const SignupScreen = () => {
   // const navigation = useNavigation()
@@ -168,7 +169,7 @@ const SignupScreen = () => {
 
   const renderInputField = (field, index) => {
     return (
-      <TextInput
+      <Input
         key={index?.toString()}
         style={styles.InputContainer}
         placeholder={field.placeholder}

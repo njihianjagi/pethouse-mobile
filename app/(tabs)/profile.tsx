@@ -33,6 +33,7 @@ import {
 import {logout} from '../../redux/auth';
 import {useRouter} from 'expo-router';
 import {useAuth} from '../../hooks/useAuth';
+import {ScrollView} from 'react-native-gesture-handler';
 
 const profile = () => {
   const currentUser = useCurrentUser();
@@ -90,9 +91,13 @@ const profile = () => {
           color={theme.colors[appearance].primaryForeground}
         />
       ) : (
-        <KeyboardAwareScrollView
-          style={{width: '100%', height: '100%'}}
-          keyboardShouldPersistTaps='always'
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: colorSet.primaryBackground,
+          }}
         >
           <YStack p='$4' gap='$6'>
             <YStack alignItems='center' gap='$4'>
@@ -173,7 +178,7 @@ const profile = () => {
               />
             </YGroup>
           </YStack>
-        </KeyboardAwareScrollView>
+        </ScrollView>
       )}
     </View>
   );

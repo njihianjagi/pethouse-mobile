@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Keyboard, StyleSheet, TouchableOpacity} from 'react-native';
+import {Alert, Keyboard, StyleSheet, TouchableOpacity} from 'react-native';
+import {localizedErrorMessage} from '../../utils/ErrorCode';
 
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
@@ -24,17 +25,31 @@ import {
   Accordion,
   Square,
   Switch,
+  Checkbox,
+  RadioGroup,
 } from 'tamagui';
 import {useRouter} from 'expo-router';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import {useConfig} from '../../config';
-import {useTheme} from '../../dopebase';
+import {useTheme, useTranslations} from '../../dopebase';
 import allBreeds from '../../assets/data/breeds_with_group_and_traits.json';
 import {updateUser} from '../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/auth';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import {X, Plus, ChevronDown} from '@tamagui/lucide-icons';
+import {
+  X,
+  Plus,
+  ChevronDown,
+  ChevronRight,
+  Home,
+  Heart,
+  Smile,
+  Brain,
+  Ruler,
+  Dog,
+  Check,
+} from '@tamagui/lucide-icons';
 
 const SeekerProfileScreen = () => {
   const currentUser = useCurrentUser();
@@ -54,7 +69,6 @@ const SeekerProfileScreen = () => {
   navigator.geolocation = require('@react-native-community/geolocation');
 
   const config = useConfig();
-  const [activeTab, setActiveTab] = useState('tab1');
 
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
 
@@ -62,9 +76,12 @@ const SeekerProfileScreen = () => {
 
   const [breeds, setBreeds] = useState<DogBreed[]>(allBreeds as DogBreed[]);
 
+  const {localized} = useTranslations();
+
   const traitCategories = [
     {
       name: 'Lifestyle Fit',
+      caption: 'Find a dog that suits your daily life',
       options: [
         {
           name: 'apartment_friendly',
@@ -82,18 +99,13 @@ const SeekerProfileScreen = () => {
           name: 'independent',
           type: 'switch',
           label: 'Can Be Left Alone',
-          defaultValue: false,
-        },
-        {
-          name: 'sensitivity_level',
-          type: 'toggle',
-          values: ['Low', 'Medium', 'High'],
-          defaultValue: 1, // Medium
+          // defaultValue: false,
         },
       ],
     },
     {
       name: 'Care Requirements',
+      caption: 'Consider the grooming and health needs',
       options: [
         {
           name: 'low_shedding',
@@ -113,92 +125,56 @@ const SeekerProfileScreen = () => {
           label: 'Easy to Groom',
           defaultValue: true,
         },
-        {
-          name: 'general_health',
-          type: 'toggle',
-          values: ['Prone to Issues', 'Average', 'Very Healthy'],
-          defaultValue: 2, // Very Healthy
-        },
-        {
-          name: 'weight_gain_prone',
-          type: 'switch',
-          label: 'Prone to Weight Gain',
-          defaultValue: false,
-        },
       ],
     },
     {
       name: 'Temperament',
+      caption: 'Choose your preferred temperament traits',
       options: [
         {
-          name: 'affectionate',
+          name: 'playfulness',
           type: 'switch',
-          label: 'Affectionate with Family',
-          defaultValue: true,
+          label: 'Playful',
         },
         {
           name: 'kid_friendly',
           type: 'switch',
           label: 'Kid Friendly',
-          defaultValue: true,
-        },
-        {
-          name: 'dog_friendly',
-          type: 'switch',
-          label: 'Dog Friendly',
-          defaultValue: true,
+          // defaultValue: true,
         },
         {
           name: 'stranger_friendly',
           type: 'switch',
           label: 'Stranger Friendly',
-          defaultValue: false,
-        },
-        {
-          name: 'energy_level',
-          type: 'toggle',
-          values: ['Low', 'Moderate', 'High'],
-          defaultValue: 1, // Moderate
-        },
-        {
-          name: 'intensity',
-          type: 'toggle',
-          values: ['Laid-Back', 'Medium', 'Vigorous'],
-          defaultValue: 1, // Medium
-        },
-        {
-          name: 'playfulness',
-          type: 'toggle',
-          values: ['Reserved', 'Playful', 'Very Playful'],
-          defaultValue: 1, // Playful
+          // defaultValue: false,
         },
       ],
     },
     {
-      name: 'Training & Intelligence',
+      name: 'Training & Obedience',
+      caption: 'Pick your preferred learning style',
       options: [
         {
           name: 'easy_to_train',
           type: 'switch',
           label: 'Easy to Train',
-          defaultValue: true,
         },
         {
-          name: 'intelligence',
-          type: 'toggle',
-          values: ['Average', 'Bright', 'Highly Intelligent'],
-          defaultValue: 1, // Bright
-        },
-        {
-          name: 'mouthiness',
+          name: 'intelligent',
           type: 'switch',
-          label: 'Mouthy',
-          defaultValue: false,
+          label: 'Highly Intelligent',
+        },
+        {
+          name: 'high_prey_drive',
+          type: 'switch',
+          label: 'High Prey Drive',
+          // defaultValue: false,
         },
       ],
     },
     {
       name: 'Physical Characteristics',
+      caption: "The dog's size and adaptability to different environments",
       options: [
         {
           name: 'size',
@@ -207,33 +183,10 @@ const SeekerProfileScreen = () => {
           defaultValue: 1, // Medium
         },
         {
-          name: 'adaptable_to_weather',
-          type: 'switch',
-          label: 'Adaptable to Weather',
-          defaultValue: true,
-        },
-      ],
-    },
-    {
-      name: 'Behavioral Traits',
-      options: [
-        {
-          name: 'high_prey_drive',
-          type: 'switch',
-          label: 'High Prey Drive',
-          defaultValue: false,
-        },
-        {
-          name: 'barks_a_lot',
-          type: 'switch',
-          label: 'Tends to Bark or Howl',
-          defaultValue: false,
-        },
-        {
-          name: 'wanderlust',
-          type: 'switch',
-          label: 'Wanderlust Potential',
-          defaultValue: false,
+          name: 'energy_level',
+          type: 'toggle',
+          values: ['Low', 'Moderate', 'High'],
+          defaultValue: 1, // Moderate
         },
       ],
     },
@@ -271,16 +224,7 @@ const SeekerProfileScreen = () => {
   }
 
   const [traitPreferences, setTraitPreferences] = useState<TraitPreferences>(
-    () => {
-      // Initialize traitPreferences with default values
-      const initialPreferences = {} as TraitPreferences;
-      traitCategories.forEach((category) => {
-        category.options.forEach((option) => {
-          initialPreferences[option.name] = option.defaultValue;
-        });
-      });
-      return initialPreferences;
-    }
+    {} as TraitPreferences
   );
 
   const handleTraitChange = (trait, value) => {
@@ -305,9 +249,7 @@ const SeekerProfileScreen = () => {
     };
   }
 
-  const [filteredBreeds, setFilteredBreeds] = useState(
-    allBreeds.slice(0, 10) as DogBreed[]
-  ); // Use slice instead of splice to avoid mutating original array
+  const [filteredBreeds, setFilteredBreeds] = useState({} as any);
 
   const filterBreeds = useCallback(
     debounce((preferences) => {
@@ -331,6 +273,7 @@ const SeekerProfileScreen = () => {
           }
         });
       });
+      console.log('Matched breeds: ', filtered.length);
       setFilteredBreeds(filtered);
     }, 300),
     [breeds]
@@ -365,38 +308,59 @@ const SeekerProfileScreen = () => {
   const renderTraitOption = (option) => {
     if (option.type === 'switch') {
       return (
-        <XStack key={option.name} gap='$2' justifyContent='space-between'>
-          <Label htmlFor={option.name}>{option.label}</Label>
-          <Switch
-            id={option.name}
+        <ListItem>
+          <ListItem.Text>{option.label}</ListItem.Text>
+          {/* <Checkbox
             checked={!!traitPreferences[option.name]}
             onCheckedChange={(value) => handleTraitChange(option.name, value)}
-          />
-        </XStack>
+          >
+            <Checkbox.Indicator>
+              <Check />
+            </Checkbox.Indicator>
+          </Checkbox> */}
+          <Switch
+            backgroundColor={
+              !!traitPreferences[option.name] ? colorSet.grey3 : colorSet.grey0
+            }
+            checked={!!traitPreferences[option.name]}
+            onCheckedChange={(value) => handleTraitChange(option.name, value)}
+          >
+            <Switch.Thumb
+              animation='quicker'
+              backgroundColor={colorSet.primaryForeground}
+            />
+          </Switch>
+        </ListItem>
       );
     } else if (option.type === 'toggle') {
       return (
-        <YStack key={option.name} gap='$2'>
-          <Label htmlFor={option.name}>
-            {option.name
-              .replace(/_/g, ' ')
-              .replace(/\b\w/g, (l) => l.toUpperCase())}
-          </Label>
-          {/* <ToggleGroup
-            id={option.name}
-            type='single'
-            value={traitPreferences[option.name].toString()}
-            onValueChange={(value) =>
-              handleTraitChange(option.name, parseInt(value))
-            }
-          >
-            {option.values.map((value, index) => (
-              <ToggleGroup.Item key={value} value={index.toString()} size='$3'>
-                <Text>{value}</Text>
-              </ToggleGroup.Item>
-            ))}
-          </ToggleGroup> */}
-        </YStack>
+        <ListItem key={option.name} width='100%'>
+          <YStack flex={1} gap='$4'>
+            <ListItem.Text>
+              {option.name
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (l) => l.toUpperCase())}
+            </ListItem.Text>
+            <ToggleGroup
+              type='single'
+              value={traitPreferences[option.name]?.toString()}
+              onValueChange={(value) =>
+                handleTraitChange(option.name, parseInt(value))
+              }
+              flex={1}
+            >
+              {option.values.map((value, index) => (
+                <ToggleGroup.Item
+                  key={value}
+                  value={index?.toString()}
+                  flex={1}
+                >
+                  <Text>{value}</Text>
+                </ToggleGroup.Item>
+              ))}
+            </ToggleGroup>
+          </YStack>
+        </ListItem>
       );
     }
   };
@@ -409,28 +373,48 @@ const SeekerProfileScreen = () => {
   }, [traitPreferences, filterBreeds]);
 
   const handleSave = async () => {
-    const response: any = await updateUser(currentUser.id, {
-      //kennelId: newKennel.id,
-    });
-    await dispatch(
-      setUserData({
-        user: response.user,
-      })
-    );
-  };
+    try {
+      setLoading(true);
 
-  const tabs = ['tab1', 'tab2', 'tab3'];
-  const currentIndex = tabs.indexOf(activeTab);
+      const response: any = await updateUser(currentUser.id, {
+        preferredBreeds: filteredBreeds.map((breed) => breed.name),
+        traitPreferences: traitPreferences,
+      });
 
-  const handleBack = () => {
-    if (currentIndex > 0) {
-      setActiveTab(tabs[currentIndex - 1]);
+      await dispatch(
+        setUserData({
+          user: response.user,
+        })
+      );
+      router.replace('(tabs)');
+    } catch (error: any) {
+      setLoading(false);
+      Alert.alert(
+        '',
+        localizedErrorMessage(error, localized),
+        [{text: localized('OK')}],
+        {
+          cancelable: false,
+        }
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
+  const [currentStep, setCurrentStep] = useState(0);
+
   const handleNext = () => {
-    if (currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1]);
+    if (currentStep < traitCategories.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      handleSave();
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
@@ -447,153 +431,92 @@ const SeekerProfileScreen = () => {
           color={theme.colors[appearance].primaryForeground}
         />
       ) : (
-        <KeyboardAwareScrollView
-          style={{width: '100%', height: '100%'}}
-          keyboardShouldPersistTaps='always'
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: colorSet.primaryBackground,
+          }}
         >
-          <YStack p='$8' gap='$6'>
-            <YStack gap='$4'>
+          <YStack padding='$4' gap='$4'>
+            <YStack gap='$4' padding='$4'>
               <View style={styles?.logo}>
                 <Image style={styles.logoImage} source={theme.icons?.logo} />
               </View>
 
-              <Text style={styles.title}>
-                Awesome! Let's set up your profile
-              </Text>
+              <Text style={styles.title}>Hey, {currentUser?.firstName}</Text>
               <Text style={styles.caption}>
-                Complete your profile to connect with potential breeders and
-                find your perfect canine companion.
+                Select your preferred dog traits to help us match you with
+                compatible breeds and find your perfect canine companion.
               </Text>
             </YStack>
-            <Tabs
-              defaultValue='tab1'
-              orientation='horizontal'
-              flexDirection='column'
-              width='100%'
-              value={activeTab}
-              onValueChange={setActiveTab}
-              // height='80%'
-              // borderRadius='$4'
-              // borderWidth={1}
-              // borderColor='$borderColor'
-              // overflow='hidden'
-            >
-              <Tabs.List
-                disablePassBorderRadius='bottom'
-                aria-label='Manage your account'
-                marginBottom='$4'
-                borderColor={colorSet.primaryForeground}
-              >
-                <Tabs.Tab flex={1} value='tab1'>
-                  <Text fontFamily='$body'>Profile</Text>
-                </Tabs.Tab>
-                <Separator vertical />
-                <Tabs.Tab flex={1} value='tab2'>
-                  <Text fontFamily='$body'>Breed Preferences</Text>
-                </Tabs.Tab>
-              </Tabs.List>
 
-              <Tabs.Content value='tab1'>
-                <YStack gap='$2'>
-                  <Text fontSize='$6' fontWeight='bold' color='$gray9'>
-                    Tell us a bit about yourself
-                  </Text>
-
-                  <YStack gap='$0'>
-                    <Label htmlFor='name'> Name</Label>
-                    <Input
-                      placeholder='Your Name'
-                      value={userName}
-                      onChangeText={setUserName}
-                    />
-                  </YStack>
-
-                  <YStack gap='$0' paddingBottom='$2'>
-                    <Label htmlFor='location'> Location</Label>
-                    <Input
-                      placeholder='Your Location'
-                      value={location}
-                      onFocus={() => setIsLocationSheetOpen(true)}
-                      onChangeText={setLocation}
-                      onPress={Keyboard.dismiss}
-                      flex={1}
-                    />
-                  </YStack>
-                </YStack>
-              </Tabs.Content>
-
-              <Tabs.Content value='tab2'>
-                <ScrollView>
-                  <YStack gap='$4'>
-                    <Text fontSize='$6' fontWeight='bold'>
-                      Select Your Preferred Traits
-                    </Text>
-                    <Text fontSize='$4'>
-                      Matched Breeds: {filteredBreeds.length}
-                    </Text>
-                    <Accordion type='multiple'>
-                      {traitCategories.map((category) => (
-                        <Accordion.Item
-                          key={category.name}
-                          value={category.name}
-                        >
-                          <Accordion.Trigger
-                            flexDirection='row'
-                            justifyContent='space-between'
+            {/* <YStack gap='$4'>
+              <Accordion type='multiple'>
+                {traitCategories.map((category) => (
+                  <Accordion.Item key={category.name} value={category.name}>
+                    <Accordion.Trigger
+                      flexDirection='row'
+                      justifyContent='space-between'
+                    >
+                      {({open}: {open: boolean}) => (
+                        <>
+                          <Paragraph>{category.name}</Paragraph>
+                          <Square
+                            animation='quick'
+                            rotate={open ? '180deg' : '0deg'}
                           >
-                            {({open}: {open: boolean}) => (
-                              <>
-                                <Paragraph>{category.name}</Paragraph>
-                                <Square
-                                  animation='quick'
-                                  rotate={open ? '180deg' : '0deg'}
-                                >
-                                  <ChevronDown size='$1' />
-                                </Square>
-                              </>
-                            )}
-                          </Accordion.Trigger>
-                          <Accordion.Content>
-                            <YGroup gap='$4'>
-                              {category.options.map(renderTraitOption)}
-                            </YGroup>
-                          </Accordion.Content>
-                        </Accordion.Item>
-                      ))}
-                    </Accordion>
-                  </YStack>
-                </ScrollView>
-              </Tabs.Content>
-            </Tabs>
+                            <ChevronDown size='$1' />
+                          </Square>
+                        </>
+                      )}
+                    </Accordion.Trigger>
+                    <Accordion.Content
+                      backgroundColor='$gray1'
+                      borderColor='$gray9'
+                    >
+                      <YGroup gap='$4'>
+                        {category.options.map(renderTraitOption)}
+                      </YGroup>
+                    </Accordion.Content>
+                  </Accordion.Item>
+                ))}
+              </Accordion>
+            </YStack> */}
+
+            <YStack gap='$4'>
+              <YGroup separator={<Separator />} gap='$2'>
+                <YGroup.Item>
+                  <ListItem
+                    title={traitCategories[currentStep].name}
+                    subTitle={traitCategories[currentStep].caption} // You'll need to define icons for each category
+                    iconAfter={ChevronRight}
+                  />
+                </YGroup.Item>
+                {traitCategories[currentStep].options.map(renderTraitOption)}
+              </YGroup>
+            </YStack>
 
             <XStack justifyContent='space-between' padding='$2'>
               <Button
                 onPress={handleBack}
-                disabled={currentIndex === 0}
-                opacity={currentIndex === 0 ? 0.5 : 1}
+                disabled={currentStep === 0}
+                chromeless
               >
                 Back
               </Button>
 
-              {currentIndex !== tabs.length - 1 && (
-                <Button
-                  onPress={handleNext}
-                  disabled={currentIndex === tabs.length - 1}
-                  opacity={currentIndex === tabs.length - 1 ? 0.5 : 1}
-                >
-                  Next
-                </Button>
-              )}
-
-              {currentIndex == tabs.length - 1 && (
-                <Button
-                  onPress={handleSave}
-                  disabled={loading}
-                  iconAfter={loading ? <Spinner /> : null}
-                >
-                  {loading ? '' : 'Save'}
-                </Button>
-              )}
+              <Button
+                onPress={handleNext}
+                iconAfter={<ChevronRight />}
+                themeShallow
+                icon={loading ? <Spinner /> : undefined}
+              >
+                {currentStep === traitCategories.length - 1
+                  ? 'Save'
+                  : traitCategories[currentStep + 1].name}
+              </Button>
             </XStack>
           </YStack>
 
@@ -631,7 +554,7 @@ const SeekerProfileScreen = () => {
               </ScrollView>
             </Sheet.Frame>
           </Sheet>
-        </KeyboardAwareScrollView>
+        </ScrollView>
       )}
     </View>
   );

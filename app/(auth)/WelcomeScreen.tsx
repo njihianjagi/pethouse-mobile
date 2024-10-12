@@ -75,21 +75,21 @@ const WelcomeScreen = (props) => {
       setIsLoading(false);
       return;
     }
-    console.log('trying to login first');
     authManager
       ?.retrievePersistedAuthUser(config)
       .then(async (response) => {
+        console.log('stored user: ', response.user);
         if (response?.user) {
           await dispatch(
             setUserData({
               user: response.user,
             })
           );
-          router.push('(onboarding)');
           if (Platform.OS !== 'web') {
             handleInitialNotification();
           }
-          return;
+
+          return router.push('(onboarding)');
         }
         setIsLoading(false);
       })
@@ -152,28 +152,6 @@ const WelcomeScreen = (props) => {
           >
             {localized('Get Started')}
           </TamaguiButton>
-        )}
-
-        {!isLoading && (
-          <TouchableOpacity
-            style={styles.alreadyHaveAnAccountContainer}
-            onPress={() =>
-              config.isSMSAuthEnabled
-                ? router.push({
-                    pathname: '/SmsAuthenticationScreen',
-                    params: {isSigningUp: 'false'},
-                  })
-                : router.push('/LoginScreen')
-            }
-            disabled={isLoading}
-          >
-            <Text style={styles.alreadyHaveAnAccountText}>
-              {localized('Already have an account? ')}
-              <TamaguiText color={colorSet.primaryForeground}>
-                Login
-              </TamaguiText>
-            </Text>
-          </TouchableOpacity>
         )}
 
         {isLoading && (

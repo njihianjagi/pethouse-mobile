@@ -368,6 +368,8 @@ export const registerWithPhoneNumber = (
     auth()
       .signInWithCredential(credential)
       .then(async (response: any) => {
+        console.log('res: ', response);
+        console.log('phoneNumber', phoneNumber);
         const phoneResponse: any = await retrieveUserByPhone(phoneNumber);
         if (phoneResponse?.success) {
           auth().currentUser?.delete();
@@ -402,13 +404,13 @@ export const registerWithPhoneNumber = (
             resolve({user: data});
           });
       })
-      .catch((error) => {
-        console.log(error);
+      .catch((error: any) => {
+        console.log(error.message);
         var errorCode = ErrorCode.serverError;
         if (error.code === 'auth/email-already-in-use') {
           errorCode = ErrorCode.emailInUse;
         }
-        resolve({error: errorCode});
+        resolve({error: error});
       });
   });
 };
