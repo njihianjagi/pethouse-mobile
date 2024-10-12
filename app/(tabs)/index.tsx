@@ -1,36 +1,54 @@
-import React, { memo, useEffect, useLayoutEffect, useCallback } from 'react'
-import { ScrollView, TouchableOpacity } from 'react-native'
-import FastImage from 'react-native-fast-image'
-import { useTheme, useTranslations, TouchableIcon } from '../../dopebase'
-import useCurrentUser from '../../hooks/useCurrentUser'
-import { useAuth } from '../../hooks/useAuth'
-import { StyleSheet } from 'react-native'
-import { useNavigation, useRouter } from 'expo-router'
-import { Text, View , XStack, Button , YStack, Input, Card, Paragraph, Image, H2} from 'tamagui'
-import { MapPin, ListFilter, ArrowRight, Bell, LogOut } from '@tamagui/lucide-icons'
-import { logout } from '../../api/firebase/auth/authClient'
+import React, {memo, useEffect, useLayoutEffect, useCallback} from 'react';
+import {FlatList, ScrollView, TouchableOpacity} from 'react-native';
+import FastImage from 'react-native-fast-image';
+import {useTheme, useTranslations, TouchableIcon} from '../../dopebase';
+import useCurrentUser from '../../hooks/useCurrentUser';
+import {useAuth} from '../../hooks/useAuth';
+import {StyleSheet} from 'react-native';
+import {useNavigation, useRouter} from 'expo-router';
+import {
+  Text,
+  View,
+  XStack,
+  Button,
+  YStack,
+  Input,
+  Card,
+  Paragraph,
+  Image,
+  H2,
+} from 'tamagui';
+import {
+  MapPin,
+  ListFilter,
+  ArrowRight,
+  Bell,
+  LogOut,
+} from '@tamagui/lucide-icons';
+import {logout} from '../../api/firebase/auth/authClient';
+import allBreeds from '../../assets/data/breeds_with_group_and_traits.json';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const router = useRouter();
 
-  const currentUser = useCurrentUser()
+  const currentUser = useCurrentUser();
 
-  const { localized } = useTranslations()
-  const { theme, appearance } = useTheme()
+  const {localized} = useTranslations();
+  const {theme, appearance} = useTheme();
   //const styles = dynamicStyles(theme, appearance)
-  const colorSet = theme.colors[appearance]
+  const colorSet = theme.colors[appearance];
 
   useLayoutEffect(() => {
-
     navigation.setOptions({
       headerTitle: localized('Home'),
       headerRight: () => (
-        <Button 
-          onPress={onLogout} 
-          chromeless 
-          icon={<LogOut size="$1"/>} 
-          color={colorSet.primaryForeground} size="$4"
+        <Button
+          onPress={onLogout}
+          chromeless
+          icon={<LogOut size='$1' />}
+          color={colorSet.primaryForeground}
+          size='$4'
         />
       ),
       headerStyle: {
@@ -38,112 +56,97 @@ export default function HomeScreen() {
         borderBottomColor: colorSet.hairline,
       },
       headerTintColor: colorSet.primaryText,
-    })
-  }, [])
+    });
+  }, []);
 
   useEffect(() => {
     if (!currentUser?.id) {
-      return
+      return;
     }
-  }, [currentUser?.id])
+    console.log(currentUser);
+  }, [currentUser?.id]);
 
   const onLogout = useCallback(() => {
-    logout()
-    router.push('/')
-  }, [])
+    logout();
+    router.push('/');
+  }, []);
+
+  const CardItem = ({breed}) => (
+    <Card bordered flex={1} margin={5}>
+      <Card.Header padded>
+        <Text
+          color={colorSet.primaryForeground}
+          fontSize={24}
+          fontWeight='bold'
+        >
+          {breed}
+        </Text>
+      </Card.Header>
+
+      <Card.Footer padded>
+        <XStack flex={1} />
+        <Button
+          borderRadius='$10'
+          icon={<ArrowRight size='$2' color={colorSet.primaryForeground} />}
+          chromeless
+        ></Button>
+      </Card.Footer>
+
+      <Card.Background
+        backgroundColor={colorSet.secondaryForeground}
+        borderRadius={16}
+      />
+    </Card>
+  );
 
   return (
     <View backgroundColor={colorSet.primaryBackground} flex={1}>
-      <YStack padding="$4" gap="$4">
-
-        <XStack gap="$2" >
-          <MapPin color={colorSet.primaryForeground}/>
-          <Text>{currentUser.location?.latitude}, {currentUser.location?.longitude}</Text>
+      <YStack padding='$4' gap='$4'>
+        <XStack gap='$2'>
+          <MapPin color={colorSet.primaryForeground} />
+          <Text>
+            {currentUser.location?.latitude}, {currentUser.location?.longitude}
+          </Text>
         </XStack>
 
-        <XStack gap="$2">
-          <Input 
-            flex={1}
-            color={colorSet.secondaryText}
-          >
+        <XStack gap='$2'>
+          <Input flex={1} color={colorSet.secondaryText}>
             {localized('Search by breed')}
           </Input>
 
-          <Button 
-            size="$4" 
-            theme="active" 
-            icon={ListFilter}
-          >
-            
-          </Button>
-        </XStack>
-
-
-        <XStack gap="$4">
-          <Card  bordered flex={1} >
-            <Card.Header padded>
-              <Text   
-                color={colorSet.primaryForeground}
-                fontSize={24}
-                fontWeight="bold"
-              >Discover your new pet</Text>
-            </Card.Header>
-
-            <Card.Footer padded>
-              <XStack flex={1} />
-              <Button 
-                borderRadius="$10" 
-                icon={
-                  <ArrowRight size="$2" color={colorSet.primaryForeground}/>
-                } 
-                chromeless
-              ></Button>
-            </Card.Footer>
-
-            <Card.Background backgroundColor={colorSet.secondaryForeground} borderRadius={16} />
-          </Card>
-
-          <Card  bordered flex={1}>
-            <Card.Header padded>
-              <Text 
-                color={colorSet.secondaryForeground} 
-                fontSize={24}
-                fontWeight="bold"
-              >List your pet for adoption</Text>
-            </Card.Header>
-
-            <Card.Footer padded>
-              <XStack flex={1} />
-              <Button 
-                borderRadius="$10" 
-                icon={
-                  <ArrowRight size="$2" color={colorSet.secondaryForeground}/>
-              } 
-                chromeless
-              ></Button>
-            </Card.Footer>
-
-            <Card.Background  backgroundColor={colorSet.primaryForeground} borderRadius={16}/>
-          </Card>
+          <Button size='$4' theme='active' icon={ListFilter}></Button>
         </XStack>
 
         <XStack>
-          <Text 
-            theme={colorSet.primaryText} 
-            fontSize={24}
-            fontWeight="bold"
-          >Breeders near you</Text>
+          <Text fontSize={24} fontWeight='bold'>
+            Your matched breeds
+          </Text>
         </XStack>
 
-        
+        <ScrollView>
+          <FlatList
+            data={currentUser?.preferredBreeds}
+            renderItem={({item, index}) => (
+              <XStack flex={1}>
+                <CardItem breed={item} />
+                {index % 2 === 0 &&
+                  index + 1 < currentUser?.preferredBreeds.length && (
+                    <CardItem breed={currentUser?.preferredBreeds[index + 1]} />
+                  )}
+              </XStack>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+            numColumns={1}
+            scrollEnabled={false}
+          />
+        </ScrollView>
       </YStack>
     </View>
-
-  )
+  );
 }
 
 const dynamicStyles = (theme, appearance) => {
-  const colorSet = theme.colors[appearance]
+  const colorSet = theme.colors[appearance];
 
   return StyleSheet.create({
     container: {
@@ -164,8 +167,8 @@ const dynamicStyles = (theme, appearance) => {
       borderRadius: 64,
       marginTop: -320,
     },
-  })
-}
+  });
+};
 
 const styles = StyleSheet.create({
   container: {

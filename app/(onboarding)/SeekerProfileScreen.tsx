@@ -1,10 +1,8 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {Alert, Keyboard, StyleSheet, TouchableOpacity} from 'react-native';
+import {Alert, StyleSheet} from 'react-native';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
-  Tabs,
   Text,
   View,
   YStack,
@@ -15,18 +13,12 @@ import {
   Button,
   debounce,
   Input,
-  Label,
   Sheet,
   ScrollView,
   ListItem,
   YGroup,
-  Paragraph,
   ToggleGroup,
-  Accordion,
-  Square,
   Switch,
-  Checkbox,
-  RadioGroup,
 } from 'tamagui';
 import {useRouter} from 'expo-router';
 import useCurrentUser from '../../hooks/useCurrentUser';
@@ -37,19 +29,7 @@ import {updateUser} from '../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/auth';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import {
-  X,
-  Plus,
-  ChevronDown,
-  ChevronRight,
-  Home,
-  Heart,
-  Smile,
-  Brain,
-  Ruler,
-  Dog,
-  Check,
-} from '@tamagui/lucide-icons';
+import {ChevronRight} from '@tamagui/lucide-icons';
 
 const SeekerProfileScreen = () => {
   const currentUser = useCurrentUser();

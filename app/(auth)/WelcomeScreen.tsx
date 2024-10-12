@@ -3,7 +3,6 @@ import {
   Image,
   Keyboard,
   Platform,
-  Text,
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
@@ -16,14 +15,9 @@ import {useAuth} from '../../hooks/useAuth';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import {useConfig} from '../../config';
 import {Link, useRouter} from 'expo-router';
-import {
-  View,
-  YStack,
-  Button as TamaguiButton,
-  Text as TamaguiText,
-  Spinner,
-} from 'tamagui';
+import {View, YStack, Button, Text, Spinner, Spacer} from 'tamagui';
 import {updateUser} from '../../api/firebase/users/userClient';
+import TermsOfUseView from '../../components/TermsOfUseView';
 
 const WelcomeScreen = (props) => {
   const currentUser = useCurrentUser();
@@ -128,7 +122,7 @@ const WelcomeScreen = (props) => {
         />
       </View>
 
-      <YStack padding='$8' space='$4' {...props}>
+      <YStack padding='$8' gap='$4' {...props} justifyContent='center'>
         <Text style={styles.title}>
           {title ? title : config.onboardingConfig.welcomeTitle}
         </Text>
@@ -136,22 +130,43 @@ const WelcomeScreen = (props) => {
           {caption ? caption : config.onboardingConfig.welcomeCaption}
         </Text>
 
+        <Spacer size='$8' />
+
         {!isLoading && (
-          <TamaguiButton
-            theme='active'
-            backgroundColor={colorSet.secondaryForeground}
-            color={colorSet.primaryForeground}
-            onPress={() =>
-              config.isSMSAuthEnabled
-                ? router.push({
-                    pathname: '/SmsAuthenticationScreen',
-                    params: {isSigningUp: 'true'},
-                  })
-                : router.push('/SignupScreen')
-            }
-          >
-            {localized('Get Started')}
-          </TamaguiButton>
+          <YStack gap='$4'>
+            <Button
+              theme='active'
+              backgroundColor={colorSet.secondaryForeground}
+              color={colorSet.primaryForeground}
+              onPress={() =>
+                config.isSMSAuthEnabled
+                  ? router.push({
+                      pathname: '/SmsAuthenticationScreen',
+                      params: {isSigningUp: 'true'},
+                    })
+                  : router.push('/SignupScreen')
+              }
+            >
+              {localized('Get Started')}
+            </Button>
+
+            <TouchableOpacity
+              style={styles.alreadyHaveAnAccountContainer}
+              onPress={() =>
+                config.isSMSAuthEnabled
+                  ? router.push({
+                      pathname: '/SmsAuthenticationScreen',
+                      params: {isSigningUp: 'false'},
+                    })
+                  : router.push('/LoginScreen')
+              }
+            >
+              <Text style={styles.alreadyHaveAnAccountText}>
+                {localized('Already have an account? ')}
+                <Text color={colorSet.primaryForeground}>Login</Text>
+              </Text>
+            </TouchableOpacity>
+          </YStack>
         )}
 
         {isLoading && (
@@ -198,7 +213,7 @@ const dynamicStyles = (theme, colorScheme) => {
       fontSize: 16,
       lineHeight: 24,
       paddingHorizontal: 16,
-      marginBottom: 60,
+
       textAlign: 'center',
       color: colorSet.primaryForeground,
     },
@@ -249,6 +264,10 @@ const dynamicStyles = (theme, colorScheme) => {
     },
     alreadyHaveAnAccountText: {
       color: colorSet.secondaryText,
+    },
+    tos: {
+      alignItems: 'center',
+      justifyContent: 'center',
     },
   });
 };

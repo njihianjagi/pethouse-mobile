@@ -146,11 +146,7 @@ const SmsAuthenticationScreen = () => {
         const user = response.user;
         dispatch(setUserData({user}));
         Keyboard.dismiss();
-        // navigation.reset({
-        //   index: 0,
-        //   routes: [{ name: 'MainStack', params: { user } }],
-        // })
-        router.replace('/(tabs)');
+        router.replace('(onboarding)');
       } else {
         setLoading(false);
         Alert.alert(
@@ -545,6 +541,12 @@ const SmsAuthenticationScreen = () => {
               Login with Facebook
             </Button>
           )}
+
+          <TermsOfUseView
+            tosLink={config.tosLink}
+            privacyPolicyLink={config.privacyPolicyLink}
+            style={styles.tos}
+          />
         </YStack>
       </YStack>
     );
@@ -682,14 +684,6 @@ const SmsAuthenticationScreen = () => {
         {isSigningUp === 'true' && renderAsSignUpState()}
 
         {isSigningUp === 'false' && renderAsLoginState()}
-
-        {isSigningUp === 'true' && (
-          <TermsOfUseView
-            tosLink={config.tosLink}
-            privacyPolicyLink={config.privacyPolicyLink}
-            style={styles.tos}
-          />
-        )}
       </YStack>
     </ScrollView>
   );
@@ -867,12 +861,6 @@ const dynamicStyles = (theme, colorScheme) => {
     signWithEmailText: {
       color: colorSet.primaryText,
     },
-    tos: {
-      marginTop: 40,
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: 30,
-    },
     backArrowStyle: {
       resizeMode: 'contain',
       tintColor: colorSet.primaryForeground,
@@ -900,6 +888,10 @@ const dynamicStyles = (theme, colorScheme) => {
     },
     alreadyHaveAnAccountText: {
       color: colorSet.secondaryText,
+    },
+    tos: {
+      alignItems: 'center',
+      justifyContent: 'center',
     },
   });
 };

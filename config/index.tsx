@@ -82,6 +82,7 @@ export const ConfigProvider = ({children}) => {
       ],
     },
     tosLink: 'https://www.doghouse.co.ke/terms-of-service/',
+    privacyPolicyLink: 'https://www.doghouse.co.ke/privacy-policy/',
     isUsernameFieldEnabled: true,
     smsSignupFields: [
       // {

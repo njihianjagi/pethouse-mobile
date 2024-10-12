@@ -11,9 +11,9 @@ const TermsOfUseView = (props) => {
   return (
     <View style={style}>
       <Text
-        style={{fontSize: 14, color: theme.colors[appearance].secondaryText}}
+        style={{fontSize: 12, color: theme.colors[appearance].secondaryText}}
       >
-        {localized('By creating an account you agree with our')}
+        {localized('By continuing you agree with our')}
       </Text>
       <Text>
         <Text
