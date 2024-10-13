@@ -125,7 +125,7 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
                 Filter Breeds
               </Text>
               {traitCategories.map((category) => (
-                <YGroup key={category.name}>
+                <YGroup key={category.name} bordered>
                   <YGroup.Item>
                     <ListItem
                       title={category.name}

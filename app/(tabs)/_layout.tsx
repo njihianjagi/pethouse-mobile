@@ -62,7 +62,7 @@ export default function TabLayout() {
             backgroundColor: colorSet.primaryBackground,
             borderBottomColor: colorSet.hairline,
           },
-          headerTintColor: colorSet.primaryText,
+          headerTintColor: colorSet.primaryForeground,
         }}
       />
 
@@ -87,7 +87,7 @@ export default function TabLayout() {
             backgroundColor: colorSet.primaryBackground,
             borderBottomColor: colorSet.hairline,
           },
-          headerTintColor: colorSet.primaryText,
+          headerTintColor: colorSet.primaryForeground,
         }}
       />
 
@@ -100,6 +100,21 @@ export default function TabLayout() {
               color={focused ? colorSet.primaryForeground : '$gray9'}
             />
           ),
+          headerRight: () => (
+            <Button
+              onPress={onLogout}
+              chromeless
+              icon={<LogOut size='$1' />}
+              color={colorSet.primaryForeground}
+              size='$4'
+            />
+          ),
+          headerTitle: localized('Inbox'),
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+            borderBottomColor: colorSet.hairline,
+          },
+          headerTintColor: colorSet.primaryForeground,
         }}
       />
 
@@ -110,6 +125,21 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <User2 color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
+          headerRight: () => (
+            <Button
+              onPress={onLogout}
+              chromeless
+              icon={<LogOut size='$1' />}
+              color={colorSet.primaryForeground}
+              size='$4'
+            />
+          ),
+          headerTitle: localized('Profile'),
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+            borderBottomColor: colorSet.hairline,
+          },
+          headerTintColor: colorSet.primaryForeground,
         }}
       />
     </Tabs>

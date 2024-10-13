@@ -45,18 +45,19 @@ const profile = () => {
 
   const authManager = useAuth();
 
-  // const [kennel, setKennel] = useState({} as any);
+  const [kennel, setKennel] = useState({} as any);
   // const [isUpdating, setIsUpdating] = useState(false);
 
-  // useEffect(() => {
-  //   if (currentUser?.role === 'breeder') {
-  //     getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
-  //       if (kennels) {
-  //         setKennel(kennel);
-  //       }
-  //     });
-  //   }
-  // }, [currentUser]);
+  useEffect(() => {
+    console.log('curr: ', currentUser);
+    if (currentUser?.role === 'breeder') {
+      getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
+        if (kennels) {
+          setKennel(kennel);
+        }
+      });
+    }
+  }, [currentUser]);
 
   // const handleUpdateProfile = async () => {
   //   setIsUpdating(true);
@@ -93,13 +94,11 @@ const profile = () => {
       ) : (
         <ScrollView
           contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
+            width: '100%',
             backgroundColor: colorSet.primaryBackground,
           }}
         >
-          <YStack p='$4' gap='$6'>
+          <YStack p='$4' gap='$6' width='100%'>
             <YStack alignItems='center' gap='$4'>
               <Avatar circular size='$12'>
                 <Avatar.Image
@@ -115,7 +114,9 @@ const profile = () => {
                   fontWeight='bold'
                   color={colorSet.primaryForeground}
                 >
-                  {currentUser.username || 'Username'}
+                  {currentUser.username ||
+                    currentUser.name ||
+                    currentUser.displayName}
                 </Text>
 
                 <Text>{currentUser.phoneNumber}</Text>
@@ -127,7 +128,7 @@ const profile = () => {
               </Text>
             </YStack>
 
-            <YGroup bordered>
+            <YGroup bordered width='100%'>
               <ListItem
                 title='Profile'
                 subTitle='View and edit your profile'

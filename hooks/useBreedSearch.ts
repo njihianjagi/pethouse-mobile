@@ -39,6 +39,70 @@ const traitMapping = {
 
 const traitCategories = [
   {
+    name: 'Physical Characteristics',
+    caption: "The dog's size and adaptability to different environments",
+    options: [
+      {
+        name: 'size',
+        type: 'toggle',
+        values: ['Small', 'Medium', 'Large'],
+        defaultValue: 1, // Medium
+      },
+      {
+        name: 'energy_level',
+        type: 'toggle',
+        values: ['Low', 'Moderate', 'High'],
+        defaultValue: 1, // Moderate
+      },
+    ],
+  },
+  {
+    name: 'Temperament',
+    caption: 'Choose your preferred temperament traits',
+    options: [
+      {
+        name: 'playfulness',
+        type: 'switch',
+        label: 'Playful',
+      },
+      {
+        name: 'kid_friendly',
+        type: 'switch',
+        label: 'Kid Friendly',
+        // defaultValue: true,
+      },
+      {
+        name: 'stranger_friendly',
+        type: 'switch',
+        label: 'Stranger Friendly',
+        // defaultValue: false,
+      },
+    ],
+  },
+
+  {
+    name: 'Training & Obedience',
+    caption: 'Pick your preferred learning style',
+    options: [
+      {
+        name: 'easy_to_train',
+        type: 'switch',
+        label: 'Easy to Train',
+      },
+      {
+        name: 'intelligent',
+        type: 'switch',
+        label: 'Highly Intelligent',
+      },
+      {
+        name: 'high_prey_drive',
+        type: 'switch',
+        label: 'High Prey Drive',
+        // defaultValue: false,
+      },
+    ],
+  },
+  {
     name: 'Lifestyle Fit',
     caption: 'Find a dog that suits your daily life',
     options: [
@@ -86,69 +150,6 @@ const traitCategories = [
       },
     ],
   },
-  {
-    name: 'Temperament',
-    caption: 'Choose your preferred temperament traits',
-    options: [
-      {
-        name: 'playfulness',
-        type: 'switch',
-        label: 'Playful',
-      },
-      {
-        name: 'kid_friendly',
-        type: 'switch',
-        label: 'Kid Friendly',
-        // defaultValue: true,
-      },
-      {
-        name: 'stranger_friendly',
-        type: 'switch',
-        label: 'Stranger Friendly',
-        // defaultValue: false,
-      },
-    ],
-  },
-  {
-    name: 'Training & Obedience',
-    caption: 'Pick your preferred learning style',
-    options: [
-      {
-        name: 'easy_to_train',
-        type: 'switch',
-        label: 'Easy to Train',
-      },
-      {
-        name: 'intelligent',
-        type: 'switch',
-        label: 'Highly Intelligent',
-      },
-      {
-        name: 'high_prey_drive',
-        type: 'switch',
-        label: 'High Prey Drive',
-        // defaultValue: false,
-      },
-    ],
-  },
-  {
-    name: 'Physical Characteristics',
-    caption: "The dog's size and adaptability to different environments",
-    options: [
-      {
-        name: 'size',
-        type: 'toggle',
-        values: ['Small', 'Medium', 'Large'],
-        defaultValue: 1, // Medium
-      },
-      {
-        name: 'energy_level',
-        type: 'toggle',
-        values: ['Low', 'Moderate', 'High'],
-        defaultValue: 1, // Moderate
-      },
-    ],
-  },
 ];
 
 export const useBreedSearch = () => {
@@ -158,7 +159,7 @@ export const useBreedSearch = () => {
     (state: any) => state.filter
   );
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [breeds, setBreeds] = useState(allBreeds as DogBreed[]);
   const [filteredBreeds, setFilteredBreeds] = useState<DogBreed[]>([]);
 
@@ -296,8 +297,10 @@ export const useBreedSearch = () => {
   );
 
   useEffect(() => {
+    setLoading(true);
     const sortedBreeds = sortBreeds(filteredBreeds);
     setFilteredBreeds(sortedBreeds);
+    setLoading(false);
   }, [sortOption, sortBreeds]);
 
   return {

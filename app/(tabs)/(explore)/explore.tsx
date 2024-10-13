@@ -19,6 +19,7 @@ import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {BreedFilterSheet} from './filter';
 import {useDispatch} from 'react-redux';
 import {updateFilter} from '../../../redux/reducers/filter';
+import {SortPopover} from './sort';
 
 export default function ExploreScreen() {
   const navigation = useNavigation();
@@ -97,44 +98,22 @@ export default function ExploreScreen() {
         </XStack>
 
         <XStack justifyContent='space-between' alignItems='center'>
-          <Popover placement='bottom' offset={10}>
-            <Popover.Trigger asChild>
-              <Button icon={ChevronDown} size='$3'>
-                {sortOption === 'nameAsc'
-                  ? 'Name (A-Z)'
-                  : sortOption === 'nameDesc'
-                  ? 'Name (Z-A)'
-                  : sortOption === 'popular'
-                  ? 'Popular'
-                  : sortOption === 'available'
-                  ? 'Available'
-                  : 'Sort'}
-              </Button>
-            </Popover.Trigger>
-            <Popover.Content>
-              <YStack padding='$2'>
-                <Button onPress={() => handleSortChange('nameAsc')} size='$3'>
-                  Sort by Name (A-Z)
-                </Button>
-                <Button onPress={() => handleSortChange('nameDesc')} size='$3'>
-                  Sort by Name (Z-A)
-                </Button>
-                <Button onPress={() => handleSortChange('popular')} size='$3'>
-                  Sort by Popularity
-                </Button>
-                <Button onPress={() => handleSortChange('available')} size='$3'>
-                  Sort by Availability
-                </Button>
-              </YStack>
-            </Popover.Content>
-          </Popover>
+          <SortPopover
+            sortOption={sortOption}
+            handleSortChange={handleSortChange}
+          />
+
           <Text fontSize='$4' fontWeight='bold'>
             {filteredBreeds.length} Breeds
           </Text>
         </XStack>
 
         {breedsLoading ? (
-          <Spinner size='large' color={colorSet.primaryForeground} />
+          <Spinner
+            size='large'
+            color={colorSet.primaryForeground}
+            margin='auto'
+          />
         ) : filteredBreeds.length === 0 ? (
           <Text>No breeds match your current filters.</Text>
         ) : (
