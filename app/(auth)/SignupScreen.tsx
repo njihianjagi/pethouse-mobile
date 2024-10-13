@@ -21,7 +21,7 @@ import {
   Alert,
   ProfilePictureSelector,
 } from '../../dopebase';
-import {setUserData} from '../../redux/auth';
+import {setUserData} from '../../redux/reducers/auth';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 import TermsOfUseView from '../../components/TermsOfUseView';
 import {useAuth} from '../../hooks/useAuth';

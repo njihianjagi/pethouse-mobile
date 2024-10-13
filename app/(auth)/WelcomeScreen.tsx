@@ -9,7 +9,7 @@ import {
 import {useDispatch} from 'react-redux';
 import messaging from '@react-native-firebase/messaging';
 import {useTheme, useTranslations, ActivityIndicator} from '../../dopebase';
-import {setUserData} from '../../redux/auth';
+import {setUserData} from '../../redux/reducers/auth';
 
 import {useAuth} from '../../hooks/useAuth';
 import useCurrentUser from '../../hooks/useCurrentUser';

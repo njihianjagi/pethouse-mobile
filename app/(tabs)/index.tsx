@@ -1,32 +1,10 @@
-import React, {memo, useEffect, useLayoutEffect, useCallback} from 'react';
-import {FlatList, ScrollView, TouchableOpacity} from 'react-native';
-import FastImage from 'react-native-fast-image';
-import {useTheme, useTranslations, TouchableIcon} from '../../dopebase';
+import React, {useEffect} from 'react';
+import {useTheme, useTranslations} from '../../dopebase';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import {useAuth} from '../../hooks/useAuth';
 import {StyleSheet} from 'react-native';
 import {useNavigation, useRouter} from 'expo-router';
-import {
-  Text,
-  View,
-  XStack,
-  Button,
-  YStack,
-  Input,
-  Card,
-  Paragraph,
-  Image,
-  H2,
-} from 'tamagui';
-import {
-  MapPin,
-  ListFilter,
-  ArrowRight,
-  Bell,
-  LogOut,
-} from '@tamagui/lucide-icons';
-import {logout} from '../../api/firebase/auth/authClient';
-import allBreeds from '../../assets/data/breeds_with_group_and_traits.json';
+import {Text, View, XStack, YStack} from 'tamagui';
+import {MapPin} from '@tamagui/lucide-icons';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -39,65 +17,11 @@ export default function HomeScreen() {
   //const styles = dynamicStyles(theme, appearance)
   const colorSet = theme.colors[appearance];
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitle: localized('Home'),
-      headerRight: () => (
-        <Button
-          onPress={onLogout}
-          chromeless
-          icon={<LogOut size='$1' />}
-          color={colorSet.primaryForeground}
-          size='$4'
-        />
-      ),
-      headerStyle: {
-        backgroundColor: colorSet.primaryBackground,
-        borderBottomColor: colorSet.hairline,
-      },
-      headerTintColor: colorSet.primaryText,
-    });
-  }, []);
-
   useEffect(() => {
     if (!currentUser?.id) {
       return;
     }
-    console.log(currentUser);
   }, [currentUser?.id]);
-
-  const onLogout = useCallback(() => {
-    logout();
-    router.push('/');
-  }, []);
-
-  const CardItem = ({breed}) => (
-    <Card bordered flex={1} margin={5}>
-      <Card.Header padded>
-        <Text
-          color={colorSet.primaryForeground}
-          fontSize={24}
-          fontWeight='bold'
-        >
-          {breed}
-        </Text>
-      </Card.Header>
-
-      <Card.Footer padded>
-        <XStack flex={1} />
-        <Button
-          borderRadius='$10'
-          icon={<ArrowRight size='$2' color={colorSet.primaryForeground} />}
-          chromeless
-        ></Button>
-      </Card.Footer>
-
-      <Card.Background
-        backgroundColor={colorSet.secondaryForeground}
-        borderRadius={16}
-      />
-    </Card>
-  );
 
   return (
     <View backgroundColor={colorSet.primaryBackground} flex={1}>
@@ -110,24 +34,6 @@ export default function HomeScreen() {
         </XStack>
 
         <XStack></XStack>
-
-        <ScrollView>
-          <FlatList
-            data={currentUser?.preferredBreeds}
-            renderItem={({item, index}) => (
-              <XStack flex={1}>
-                <CardItem breed={item} />
-                {index % 2 === 0 &&
-                  index + 1 < currentUser?.preferredBreeds.length && (
-                    <CardItem breed={currentUser?.preferredBreeds[index + 1]} />
-                  )}
-              </XStack>
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            numColumns={1}
-            scrollEnabled={false}
-          />
-        </ScrollView>
       </YStack>
     </View>
   );

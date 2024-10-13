@@ -3,7 +3,7 @@ import {Keyboard} from 'react-native';
 import {useFocusEffect, useNavigation, useRouter} from 'expo-router';
 import deviceStorage from '../../utils/AuthDeviceStorage';
 import {useDispatch} from 'react-redux';
-import {setUserData} from '../../redux/auth';
+import {setUserData} from '../../redux/reducers/auth';
 import {useAuth} from '../../hooks/useAuth';
 import {ThemedView} from '../../components/ThemedView';
 import {useConfig} from '../../config';

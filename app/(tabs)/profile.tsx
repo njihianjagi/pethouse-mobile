@@ -13,6 +13,7 @@ import {
   ListItemTitle,
   ListItemSubtitle,
   Spacer,
+  ScrollView,
 } from 'tamagui';
 import useKennelData from '../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../hooks/useCurrentUser';
@@ -30,10 +31,9 @@ import {
   Settings,
   User,
 } from '@tamagui/lucide-icons';
-import {logout} from '../../redux/auth';
+import {logout} from '../../redux/reducers/auth';
 import {useRouter} from 'expo-router';
 import {useAuth} from '../../hooks/useAuth';
-import {ScrollView} from 'react-native-gesture-handler';
 
 const profile = () => {
   const currentUser = useCurrentUser();
@@ -43,34 +43,34 @@ const profile = () => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const [kennel, setKennel] = useState({} as any);
-  const [isUpdating, setIsUpdating] = useState(false);
-
   const authManager = useAuth();
 
-  useEffect(() => {
-    if (currentUser?.role === 'breeder') {
-      getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
-        if (kennels) {
-          setKennel(kennel);
-        }
-      });
-    }
-  }, [currentUser]);
+  // const [kennel, setKennel] = useState({} as any);
+  // const [isUpdating, setIsUpdating] = useState(false);
 
-  const handleUpdateProfile = async () => {
-    setIsUpdating(true);
-    try {
-      await updateUser(currentUser.id, {
-        /* updated user data */
-      });
-      // Optionally, update local state or show a success message
-    } catch (error) {
-      console.error('Error updating user details:', error);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  // useEffect(() => {
+  //   if (currentUser?.role === 'breeder') {
+  //     getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
+  //       if (kennels) {
+  //         setKennel(kennel);
+  //       }
+  //     });
+  //   }
+  // }, [currentUser]);
+
+  // const handleUpdateProfile = async () => {
+  //   setIsUpdating(true);
+  //   try {
+  //     await updateUser(currentUser.id, {
+  //       /* updated user data */
+  //     });
+  //     // Optionally, update local state or show a success message
+  //   } catch (error) {
+  //     console.error('Error updating user details:', error);
+  //   } finally {
+  //     setIsUpdating(false);
+  //   }
+  // };
 
   const onLogout = useCallback(() => {
     logout();

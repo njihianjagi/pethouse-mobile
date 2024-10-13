@@ -23,7 +23,7 @@ import {
   Alert,
 } from '../../dopebase';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {setUserData} from '../../redux/auth';
+import {setUserData} from '../../redux/reducers/auth';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 import {useAuth} from '../../hooks/useAuth';
 import {useConfig} from '../../config';

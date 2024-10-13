@@ -40,7 +40,7 @@ import debounce from 'lodash/debounce';
 import * as ImagePicker from 'expo-image-picker';
 import {storageAPI} from '../../api/firebase/media';
 import {useRouter} from 'expo-router';
-import {setUserData} from '../../redux/auth';
+import {setUserData} from '../../redux/reducers/auth';
 import {useDispatch} from 'react-redux';
 
 // @ts-ignore

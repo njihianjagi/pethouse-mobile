@@ -15,7 +15,7 @@ import {
   useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
 import {useTheme, useTranslations, Alert} from '../../dopebase';
-import {setUserData} from '../../redux/auth';
+import {setUserData} from '../../redux/reducers/auth';
 import {useDispatch} from 'react-redux';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 import TermsOfUseView from '../../components/TermsOfUseView';

@@ -16,6 +16,8 @@ export interface DogBreed {
       score: number;
     };
   };
+  popularity: number;
+  available: boolean;
 }
 
 export const useBreedData = () => {

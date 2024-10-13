@@ -5,7 +5,14 @@ import {useColorScheme} from '@/hooks/useColorScheme';
 import {useTheme, useTranslations} from '../../dopebase';
 import {useAuth} from '../../hooks/useAuth';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import {Home, Search, MessageSquare, User2} from '@tamagui/lucide-icons';
+import {
+  Home,
+  Search,
+  MessageSquare,
+  User2,
+  LogOut,
+} from '@tamagui/lucide-icons';
+import {Button} from 'tamagui';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
@@ -20,14 +27,6 @@ export default function TabLayout() {
 
   const onLogout = useCallback(() => {
     authManager?.logout(currentUser);
-    // navigation.reset({
-    //   index: 0,
-    //   routes: [
-    //     {
-    //       name: 'LoadScreen',
-    //     },
-    //   ],
-    // })
     router.push('/');
   }, [currentUser]);
 
@@ -49,6 +48,21 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <Home color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
+          headerTitle: localized('Home'),
+          headerRight: () => (
+            <Button
+              onPress={onLogout}
+              chromeless
+              icon={<LogOut size='$1' />}
+              color={colorSet.primaryForeground}
+              size='$4'
+            />
+          ),
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+            borderBottomColor: colorSet.hairline,
+          },
+          headerTintColor: colorSet.primaryText,
         }}
       />
 
@@ -59,6 +73,21 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <Search color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
+          headerRight: () => (
+            <Button
+              onPress={onLogout}
+              chromeless
+              icon={<LogOut size='$1' />}
+              color={colorSet.primaryForeground}
+              size='$4'
+            />
+          ),
+          headerTitle: localized('Explore Breeds'),
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+            borderBottomColor: colorSet.hairline,
+          },
+          headerTintColor: colorSet.primaryText,
         }}
       />
 

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {Alert, StyleSheet} from 'react-native';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 
@@ -23,7 +23,7 @@ import {useConfig} from '../../config';
 import {useTheme, useTranslations} from '../../dopebase';
 import {updateUser} from '../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
-import {setUserData} from '../../redux/auth';
+import {setUserData} from '../../redux/reducers/auth';
 import {ChevronRight} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../hooks/useBreedSearch';
 
@@ -43,126 +43,8 @@ const SeekerProfileScreen = () => {
   // @ts-ignore
   navigator.geolocation = require('@react-native-community/geolocation');
 
-  const traitCategories = [
-    {
-      name: 'Lifestyle Fit',
-      caption: 'Find a dog that suits your daily life',
-      options: [
-        {
-          name: 'apartment_friendly',
-          type: 'switch',
-          label: 'Apartment Friendly',
-          defaultValue: true,
-        },
-        {
-          name: 'novice_friendly',
-          type: 'switch',
-          label: 'Good for Novice Owners',
-          defaultValue: true,
-        },
-        {
-          name: 'independent',
-          type: 'switch',
-          label: 'Can Be Left Alone',
-          // defaultValue: false,
-        },
-      ],
-    },
-    {
-      name: 'Care Requirements',
-      caption: 'Consider the grooming and health needs',
-      options: [
-        {
-          name: 'low_shedding',
-          type: 'switch',
-          label: 'Low Shedding',
-          defaultValue: true,
-        },
-        {
-          name: 'low_drooling',
-          type: 'switch',
-          label: 'Low Drooling',
-          defaultValue: true,
-        },
-        {
-          name: 'easy_grooming',
-          type: 'switch',
-          label: 'Easy to Groom',
-          defaultValue: true,
-        },
-      ],
-    },
-    {
-      name: 'Temperament',
-      caption: 'Choose your preferred temperament traits',
-      options: [
-        {
-          name: 'playfulness',
-          type: 'switch',
-          label: 'Playful',
-        },
-        {
-          name: 'kid_friendly',
-          type: 'switch',
-          label: 'Kid Friendly',
-          // defaultValue: true,
-        },
-        {
-          name: 'stranger_friendly',
-          type: 'switch',
-          label: 'Stranger Friendly',
-          // defaultValue: false,
-        },
-      ],
-    },
-    {
-      name: 'Training & Obedience',
-      caption: 'Pick your preferred learning style',
-      options: [
-        {
-          name: 'easy_to_train',
-          type: 'switch',
-          label: 'Easy to Train',
-        },
-        {
-          name: 'intelligent',
-          type: 'switch',
-          label: 'Highly Intelligent',
-        },
-        {
-          name: 'high_prey_drive',
-          type: 'switch',
-          label: 'High Prey Drive',
-          // defaultValue: false,
-        },
-      ],
-    },
-    {
-      name: 'Physical Characteristics',
-      caption: "The dog's size and adaptability to different environments",
-      options: [
-        {
-          name: 'size',
-          type: 'toggle',
-          values: ['Small', 'Medium', 'Large'],
-          defaultValue: 1, // Medium
-        },
-        {
-          name: 'energy_level',
-          type: 'toggle',
-          values: ['Low', 'Moderate', 'High'],
-          defaultValue: 1, // Moderate
-        },
-      ],
-    },
-  ];
-
-  const {
-    traitPreferences,
-    handleTraitToggle,
-    filteredBreeds,
-    loading: breedsLoading,
-  } = useBreedSearch();
+  const {traitCategories, traitPreferences, filteredBreeds, handleTraitToggle} =
+    useBreedSearch();
 
   const renderTraitOption = (option) => {
     if (option.type === 'switch') {

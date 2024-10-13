@@ -1,55 +1,52 @@
-import React, {useLayoutEffect, useCallback, useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {FlatList, ScrollView} from 'react-native';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {useNavigation, useRouter} from 'expo-router';
-import {Text, View, XStack, Button, YStack, Input, Card} from 'tamagui';
-import {MapPin, ListFilter, ArrowRight, LogOut} from '@tamagui/lucide-icons';
-import {logout} from '../../../api/firebase/auth/authClient';
+import {
+  Text,
+  View,
+  XStack,
+  Button,
+  YStack,
+  Input,
+  Card,
+  Spinner,
+  Popover,
+} from 'tamagui';
+import {ListFilter, ArrowRight, ChevronDown} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {BreedFilterSheet} from './filter';
+import {useDispatch} from 'react-redux';
+import {updateFilter} from '../../../redux/reducers/filter';
 
 export default function ExploreScreen() {
   const navigation = useNavigation();
   const router = useRouter();
+  const dispatch = useDispatch();
+
   const currentUser = useCurrentUser();
   const {localized} = useTranslations();
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const {
-    searchText,
-    handleSearchChange,
-    filteredBreeds,
-    loading: breedsLoading,
-  } = useBreedSearch();
-
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerTitle: localized('Explore Breeds'),
-      headerRight: () => (
-        <Button
-          onPress={onLogout}
-          chromeless
-          icon={<LogOut size='$1' />}
-          color={colorSet.primaryForeground}
-          size='$4'
-        />
-      ),
-      headerStyle: {
-        backgroundColor: colorSet.primaryBackground,
-        borderBottomColor: colorSet.hairline,
-      },
-      headerTintColor: colorSet.primaryText,
-    });
-  }, []);
+  const {
+    searchText,
+    filteredBreeds,
+    traitPreferences,
+    handleSearchChange,
+    loading: breedsLoading,
+    sortOption,
+    handleSortChange,
+  } = useBreedSearch();
 
-  const onLogout = useCallback(() => {
-    logout();
-    router.push('/');
-  }, []);
+  useEffect(() => {
+    if (currentUser?.traitPreferences) {
+      dispatch(updateFilter({traitPreferences: currentUser.traitPreferences}));
+    }
+  }, [currentUser, dispatch]);
 
   const CardItem = ({breed}) => (
     <Card bordered flex={1} margin={5}>
@@ -87,7 +84,7 @@ export default function ExploreScreen() {
             flex={1}
             color={colorSet.secondaryText}
             value={searchText}
-            onChangeText={handleSearchChange}
+            onChangeText={(text) => handleSearchChange(text)}
             placeholder={localized('Search by breed')}
           />
 
@@ -98,29 +95,59 @@ export default function ExploreScreen() {
             onPress={() => setFilterSheetOpen(true)}
           />
         </XStack>
-        {/* 
-        <XStack>
-          <Text fontSize={24} fontWeight='bold'>
-            Explore Breeds
+
+        <XStack justifyContent='space-between' alignItems='center'>
+          <Popover placement='bottom' offset={10}>
+            <Popover.Trigger asChild>
+              <Button icon={ChevronDown} size='$3'>
+                {sortOption === 'nameAsc'
+                  ? 'Name (A-Z)'
+                  : sortOption === 'nameDesc'
+                  ? 'Name (Z-A)'
+                  : sortOption === 'popular'
+                  ? 'Popular'
+                  : sortOption === 'available'
+                  ? 'Available'
+                  : 'Sort'}
+              </Button>
+            </Popover.Trigger>
+            <Popover.Content>
+              <YStack padding='$2'>
+                <Button onPress={() => handleSortChange('nameAsc')} size='$3'>
+                  Sort by Name (A-Z)
+                </Button>
+                <Button onPress={() => handleSortChange('nameDesc')} size='$3'>
+                  Sort by Name (Z-A)
+                </Button>
+                <Button onPress={() => handleSortChange('popular')} size='$3'>
+                  Sort by Popularity
+                </Button>
+                <Button onPress={() => handleSortChange('available')} size='$3'>
+                  Sort by Availability
+                </Button>
+              </YStack>
+            </Popover.Content>
+          </Popover>
+          <Text fontSize='$4' fontWeight='bold'>
+            {filteredBreeds.length} Breeds
           </Text>
-        </XStack> */}
+        </XStack>
 
         {breedsLoading ? (
-          <Text>Loading breeds...</Text>
+          <Spinner size='large' color={colorSet.primaryForeground} />
+        ) : filteredBreeds.length === 0 ? (
+          <Text>No breeds match your current filters.</Text>
         ) : (
           <ScrollView>
             <FlatList
               data={filteredBreeds}
               renderItem={({item, index}) => (
-                <XStack flex={1}>
+                <XStack flex={1} key={index}>
                   <CardItem breed={item} />
-                  {index % 2 === 0 && index + 1 < filteredBreeds.length && (
-                    <CardItem breed={filteredBreeds[index + 1]} />
-                  )}
                 </XStack>
               )}
               keyExtractor={(item) => item.name}
-              numColumns={1}
+              numColumns={2}
               scrollEnabled={false}
             />
           </ScrollView>
