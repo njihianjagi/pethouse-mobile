@@ -109,19 +109,7 @@ export default function HomeScreen() {
           </Text>
         </XStack>
 
-        <XStack gap='$2'>
-          <Input flex={1} color={colorSet.secondaryText}>
-            {localized('Search by breed')}
-          </Input>
-
-          <Button size='$4' theme='active' icon={ListFilter}></Button>
-        </XStack>
-
-        <XStack>
-          <Text fontSize={24} fontWeight='bold'>
-            Your matched breeds
-          </Text>
-        </XStack>
+        <XStack></XStack>
 
         <ScrollView>
           <FlatList

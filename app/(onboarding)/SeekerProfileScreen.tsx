@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Alert, StyleSheet} from 'react-native';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 
@@ -11,9 +11,6 @@ import {
   Separator,
   XStack,
   Button,
-  debounce,
-  Input,
-  Sheet,
   ScrollView,
   ListItem,
   YGroup,
@@ -24,39 +21,27 @@ import {useRouter} from 'expo-router';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import {useConfig} from '../../config';
 import {useTheme, useTranslations} from '../../dopebase';
-import allBreeds from '../../assets/data/breeds_with_group_and_traits.json';
 import {updateUser} from '../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/auth';
-import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import {ChevronRight} from '@tamagui/lucide-icons';
+import {useBreedSearch} from '../../hooks/useBreedSearch';
 
 const SeekerProfileScreen = () => {
   const currentUser = useCurrentUser();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
 
-  const [userName, setUserName] = useState('');
-  const [location, setLocation] = useState('');
-  const [gender, setGender] = useState<string | undefined>();
-  const [age, setAge] = useState<string | undefined>();
+  const dispatch = useDispatch();
+  const {localized} = useTranslations();
 
   const {theme, appearance} = useTheme();
   const styles = dynamicStyles(theme, appearance);
   const colorSet = theme?.colors[appearance];
 
+  const [loading, setLoading] = useState(false);
+
   // @ts-ignore
   navigator.geolocation = require('@react-native-community/geolocation');
-
-  const config = useConfig();
-
-  const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
-
-  const dispatch = useDispatch();
-
-  const [breeds, setBreeds] = useState<DogBreed[]>(allBreeds as DogBreed[]);
-
-  const {localized} = useTranslations();
 
   const traitCategories = [
     {
@@ -172,118 +157,12 @@ const SeekerProfileScreen = () => {
     },
   ];
 
-  const traitMapping = {
-    apartment_friendly: 'adapts_well_to_apartment_living',
-    novice_friendly: 'good_for_novice_dog_owners',
-    independent: 'tolerates_being_alone',
-    sensitivity_level: 'sensitivity_level',
-    low_shedding: 'shedding',
-    low_drooling: 'drooling_potential',
-    easy_grooming: 'easy_to_groom',
-    general_health: 'general_health',
-    weight_gain_prone: 'potential_for_weight_gain',
-    affectionate: 'best_family_dogs',
-    kid_friendly: 'kid-friendly',
-    dog_friendly: 'dog_friendly',
-    stranger_friendly: 'friendly_toward_strangers',
-    energy_level: 'high_energy_level',
-    intensity: 'intensity',
-    playfulness: 'potential_for_playfulness',
-    easy_to_train: 'easy_to_train',
-    intelligence: 'intelligence',
-    mouthiness: 'potential_for_mouthiness',
-    size: 'size',
-    adaptable_to_weather: ['tolerates_cold_weather', 'tolerates_hot_weather'],
-    high_prey_drive: 'prey_drive',
-    barks_a_lot: 'tendency_to_bark_or_howl',
-    wanderlust: 'wanderlust_potential',
-  };
-
-  interface TraitPreferences {
-    [key: string]: number | boolean;
-  }
-
-  const [traitPreferences, setTraitPreferences] = useState<TraitPreferences>(
-    {} as TraitPreferences
-  );
-
-  const handleTraitChange = (trait, value) => {
-    setTraitPreferences((prev) => ({
-      ...prev,
-      [trait]: value,
-    }));
-  };
-
-  interface DogBreed {
-    name: string;
-    description: string;
-    height: string;
-    lifeSpan: string;
-    weight: string;
-    image: string;
-    traits: {
-      [key: string]: {
-        name: string;
-        score: number;
-      };
-    };
-  }
-
-  const [filteredBreeds, setFilteredBreeds] = useState({} as any);
-
-  const filterBreeds = useCallback(
-    debounce((preferences) => {
-      const filtered = breeds.filter((breed) => {
-        return Object.entries(preferences).every(([trait, preference]) => {
-          const mappedTrait = traitMapping[trait] || trait;
-
-          if (Array.isArray(mappedTrait)) {
-            // Handle multiple mapped traits
-            return mappedTrait.every((subTrait) => {
-              const breedTrait =
-                breed && breed.traits && breed.traits[subTrait];
-              if (!breedTrait) return true;
-              return evaluateTrait(breedTrait, preference, subTrait);
-            });
-          } else {
-            const breedTrait =
-              breed && breed.traits && breed.traits[mappedTrait];
-            if (!breedTrait) return true;
-            return evaluateTrait(breedTrait, preference, mappedTrait);
-          }
-        });
-      });
-      console.log('Matched breeds: ', filtered.length);
-      setFilteredBreeds(filtered);
-    }, 300),
-    [breeds]
-  );
-
-  const evaluateTrait = (breedTrait, preference, traitName) => {
-    if (typeof preference === 'boolean') {
-      const reverseLogic = [
-        'shedding',
-        'drooling_potential',
-        'potential_for_weight_gain',
-        'potential_for_mouthiness',
-      ];
-      const desiredValue = reverseLogic.includes(traitName)
-        ? breedTrait.score <= 3
-        : breedTrait.score > 3;
-      return preference === desiredValue;
-    } else {
-      switch (preference) {
-        case 0:
-          return breedTrait.score <= 2;
-        case 1:
-          return breedTrait.score === 3;
-        case 2:
-          return breedTrait.score >= 4;
-        default:
-          return true;
-      }
-    }
-  };
+  const {
+    traitPreferences,
+    handleTraitToggle,
+    filteredBreeds,
+    loading: breedsLoading,
+  } = useBreedSearch();
 
   const renderTraitOption = (option) => {
     if (option.type === 'switch') {
@@ -303,7 +182,7 @@ const SeekerProfileScreen = () => {
               !!traitPreferences[option.name] ? colorSet.grey3 : colorSet.grey0
             }
             checked={!!traitPreferences[option.name]}
-            onCheckedChange={(value) => handleTraitChange(option.name, value)}
+            onCheckedChange={(value) => handleTraitToggle(option.name, value)}
           >
             <Switch.Thumb
               animation='quicker'
@@ -325,7 +204,7 @@ const SeekerProfileScreen = () => {
               type='single'
               value={traitPreferences[option.name]?.toString()}
               onValueChange={(value) =>
-                handleTraitChange(option.name, parseInt(value))
+                handleTraitToggle(option.name, parseInt(value))
               }
               flex={1}
             >
@@ -344,13 +223,6 @@ const SeekerProfileScreen = () => {
       );
     }
   };
-
-  useEffect(() => {
-    filterBreeds(traitPreferences);
-    return () => {
-      filterBreeds.cancel();
-    };
-  }, [traitPreferences, filterBreeds]);
 
   const handleSave = async () => {
     try {
@@ -432,39 +304,6 @@ const SeekerProfileScreen = () => {
               </Text>
             </YStack>
 
-            {/* <YStack gap='$4'>
-              <Accordion type='multiple'>
-                {traitCategories.map((category) => (
-                  <Accordion.Item key={category.name} value={category.name}>
-                    <Accordion.Trigger
-                      flexDirection='row'
-                      justifyContent='space-between'
-                    >
-                      {({open}: {open: boolean}) => (
-                        <>
-                          <Paragraph>{category.name}</Paragraph>
-                          <Square
-                            animation='quick'
-                            rotate={open ? '180deg' : '0deg'}
-                          >
-                            <ChevronDown size='$1' />
-                          </Square>
-                        </>
-                      )}
-                    </Accordion.Trigger>
-                    <Accordion.Content
-                      backgroundColor='$gray1'
-                      borderColor='$gray9'
-                    >
-                      <YGroup gap='$4'>
-                        {category.options.map(renderTraitOption)}
-                      </YGroup>
-                    </Accordion.Content>
-                  </Accordion.Item>
-                ))}
-              </Accordion>
-            </YStack> */}
-
             <YStack gap='$4'>
               <YGroup separator={<Separator />} gap='$2'>
                 <YGroup.Item>
@@ -499,41 +338,6 @@ const SeekerProfileScreen = () => {
               </Button>
             </XStack>
           </YStack>
-
-          <Sheet
-            open={isLocationSheetOpen}
-            onOpenChange={setIsLocationSheetOpen}
-            snapPointsMode='percent'
-            snapPoints={[50]}
-          >
-            <Sheet.Overlay />
-            <Sheet.Frame padding='$4' backgroundColor='$background'>
-              <ScrollView
-                flex={1}
-                contentContainerStyle={{flex: 1}}
-                keyboardShouldPersistTaps='handled'
-                horizontal={true}
-              >
-                <GooglePlacesAutocomplete
-                  placeholder='Search for a location'
-                  onPress={(data, details = null) => {
-                    setLocation(data.description);
-                    setIsLocationSheetOpen(false);
-                  }}
-                  onFail={(error) => console.error(error)}
-                  query={{
-                    key: config.googleMapsApiKey,
-                    language: 'en',
-                    components: 'country:ke',
-                  }}
-                  textInputProps={{
-                    InputComp: Input,
-                  }}
-                  isRowScrollable={false}
-                />
-              </ScrollView>
-            </Sheet.Frame>
-          </Sheet>
         </ScrollView>
       )}
     </View>

@@ -33,10 +33,13 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      initialRouteName='profile' // Set the default tab to 'profile'
+      initialRouteName='home' // Set the default tab to 'profile'
       screenOptions={{
         tabBarActiveTintColor: colorSet.primaryForeground,
-        headerShown: true,
+        tabBarInactiveTintColor: colorSet.grey3,
+        tabBarStyle: {
+          backgroundColor: colorSet.primaryBackground,
+        },
       }}
     >
       <Tabs.Screen
@@ -50,7 +53,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name='explore'
+        name='(explore)/explore'
         options={{
           title: 'Explore',
           tabBarIcon: ({color, focused}) => (
