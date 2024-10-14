@@ -21,16 +21,6 @@ export default function TabLayout() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const currentUser = useCurrentUser();
-  const authManager = useAuth();
-
-  const router = useRouter();
-
-  const onLogout = useCallback(() => {
-    authManager?.logout(currentUser);
-    router.push('/');
-  }, [currentUser]);
-
   return (
     <Tabs
       screenOptions={{
@@ -48,16 +38,8 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <Home color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
-          headerRight: () => (
-            <Button
-              onPress={onLogout}
-              chromeless
-              icon={<Bell size='$1' />}
-              color={colorSet.primaryForeground}
-              size='$4'
-            />
-          ),
-          headerShown: true,
+
+          headerShown: false,
         }}
       />
 
@@ -68,16 +50,8 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <Search color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
-          headerRight: () => (
-            <Button
-              onPress={() => {}}
-              chromeless
-              icon={<Bell size='$1' />}
-              color={colorSet.primaryForeground}
-              size='$4'
-            />
-          ),
-          headerShown: true,
+
+          headerShown: false,
         }}
       />
 
@@ -90,16 +64,8 @@ export default function TabLayout() {
               color={focused ? colorSet.primaryForeground : '$gray9'}
             />
           ),
-          headerRight: () => (
-            <Button
-              onPress={onLogout}
-              chromeless
-              icon={<Bell size='$1' />}
-              color={colorSet.primaryForeground}
-              size='$4'
-            />
-          ),
-          headerShown: true,
+
+          headerShown: false,
         }}
       />
 
@@ -110,16 +76,8 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <User2 color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
-          headerRight: () => (
-            <Button
-              onPress={onLogout}
-              chromeless
-              icon={<LogOut size='$1' />}
-              color={colorSet.primaryForeground}
-              size='$4'
-            />
-          ),
-          headerShown: true,
+
+          headerShown: false,
         }}
       />
     </Tabs>

@@ -140,7 +140,7 @@ export default function BreedDetailScreen() {
             </YGroup>
           </Card>
 
-          <Card bordered>
+          {/* <Card bordered>
             <YGroup gap='$4' padding='$4'>
               <YGroup.Item>
                 <Text fontSize='$6' fontWeight='bold'>
@@ -170,7 +170,7 @@ export default function BreedDetailScreen() {
                   </YGroup.Item>
                 ))}
             </YGroup>
-          </Card>
+          </Card> */}
 
           <Card bordered>
             <YGroup gap='$4' padding='$4'>
