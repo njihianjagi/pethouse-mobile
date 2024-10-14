@@ -26,10 +26,13 @@ import useCurrentUser from '../../../hooks/useCurrentUser';
 import {
   CheckCircle2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Heart,
   Home,
   Plus,
   Scissors,
+  Trash,
   Upload,
   X,
 } from '@tamagui/lucide-icons';
@@ -37,7 +40,6 @@ import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete'
 import {useTheme, useTranslations} from '../../../dopebase';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useConfig} from '../../../config';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import allBreeds from '../../../assets/data/breeds_with_group.json';
 import debounce from 'lodash/debounce';
 import * as ImagePicker from 'expo-image-picker';
@@ -101,7 +103,6 @@ const ManageKennelScreen = () => {
     if (currentUser) {
       getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
         if (kennel) {
-          console.log(kennel);
           setExistingKennel(kennel);
           setKennelName(kennel.name);
           setLocation(kennel.location);
@@ -190,8 +191,6 @@ const ManageKennelScreen = () => {
     );
   };
 
-  const [breedImages, setBreedImages] = useState([] as any);
-
   const handleSelectImage = useCallback(async (breedName) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -205,11 +204,30 @@ const ManageKennelScreen = () => {
       setSelectedBreeds((prev) =>
         prev.map((breed) =>
           breed.name === breedName
-            ? {...breed, images: [...breed.images, imageUri]}
+            ? {
+                ...breed,
+                images: [
+                  ...breed.images,
+                  {downloadURL: imageUri, thumbnailURL: imageUri},
+                ],
+              }
             : breed
         )
       );
     }
+  }, []);
+
+  const handleRemoveImage = useCallback((breedName, imageIndex) => {
+    setSelectedBreeds((prev) =>
+      prev.map((breed) =>
+        breed.name === breedName
+          ? {
+              ...breed,
+              images: breed.images.filter((_, index) => index !== imageIndex),
+            }
+          : breed
+      )
+    );
   }, []);
 
   const handleSave = async () => {
@@ -217,10 +235,21 @@ const ManageKennelScreen = () => {
     try {
       const uploadedBreeds = await Promise.all(
         selectedBreeds.map(async (breed) => {
-          const uploadedImageUrls = await Promise.all(
-            breed.images.map(async (uri) => storageAPI.uploadMedia({uri}))
+          const uploadedImages = await Promise.all(
+            breed.images.map(async (image) => {
+              if (image.downloadURL.startsWith('file://')) {
+                const uploadedImageUrl = await storageAPI.uploadMedia({
+                  uri: image.downloadURL,
+                });
+                return {
+                  downloadURL: uploadedImageUrl,
+                  thumbnailURL: uploadedImageUrl,
+                };
+              }
+              return image;
+            })
           );
-          return {name: breed.name, images: uploadedImageUrls};
+          return {...breed, images: uploadedImages};
         })
       );
 
@@ -232,22 +261,10 @@ const ManageKennelScreen = () => {
         userId: currentUser.id || currentUser.uid,
       };
 
-      if (existingKennel) {
-        await updateKennel(existingKennel.id, {
-          ...existingKennel,
-          ...kennelData,
-        });
-      } else {
-        const newKennel: any = await addKennel(kennelData);
-        const response: any = await updateUser(currentUser.id, {
-          kennelId: newKennel.id,
-        });
-        await dispatch(
-          setUserData({
-            user: response.user,
-          })
-        );
-      }
+      await updateKennel(existingKennel.id, {
+        ...existingKennel,
+        ...kennelData,
+      });
 
       router.replace('(tabs)');
     } catch (error) {
@@ -269,36 +286,54 @@ const ManageKennelScreen = () => {
           color={theme.colors[appearance].primaryForeground}
         />
       ) : (
-        <KeyboardAwareScrollView
-          style={{width: '100%', height: '100%'}}
-          keyboardShouldPersistTaps='always'
-        >
-          <YStack p='$8' gap='$6'>
-            <YStack gap='$2'>
-              <YStack gap='$0'>
-                <Label htmlFor='name'>Kennel Name</Label>
-                <Input
-                  placeholder='Kennel Name'
-                  value={kennelName}
-                  onChangeText={setKennelName}
-                />
-              </YStack>
+        <View>
+          <ScrollView keyboardShouldPersistTaps='always'>
+            <YStack p='$4' gap='$4' paddingBottom='$12'>
+              <YGroup>
+                <YGroup.Item>
+                  <ListItem
+                    title='Details'
+                    subTitle='Basic information about your kennel'
+                  />
+                </YGroup.Item>
+                <Separator />
+                <YGroup.Item>
+                  <ListItem>
+                    <YStack>
+                      <YStack gap='$0'>
+                        <Label htmlFor='name'>Kennel Name</Label>
+                        <Input
+                          placeholder='Kennel Name'
+                          value={kennelName}
+                          onChangeText={setKennelName}
+                          flex={1}
+                          width='100%'
+                        />
+                      </YStack>
 
-              <YStack gap='$0' paddingBottom='$2'>
-                <Label htmlFor='location'>Kennel Location</Label>
-                <Input
-                  placeholder='Kennel Location'
-                  value={location}
-                  onFocus={() => setIsLocationSheetOpen(true)}
-                  onChangeText={setLocation}
-                  onPress={Keyboard.dismiss}
-                  flex={1}
-                />
-              </YStack>
-            </YStack>
+                      <YStack gap='$0'>
+                        <Label htmlFor='location'>Kennel Location</Label>
+                        <Input
+                          placeholder='Kennel Location'
+                          value={location}
+                          onFocus={() => setIsLocationSheetOpen(true)}
+                          onChangeText={setLocation}
+                          onPress={Keyboard.dismiss}
+                          flex={1}
+                        />
+                      </YStack>
+                    </YStack>
+                  </ListItem>
+                </YGroup.Item>
+              </YGroup>
 
-            <YStack>
-              <YGroup bordered separator={<Separator />}>
+              {/* <YGroup bordered separator={<Separator />}>
+                <YGroup.Item>
+                  <ListItem
+                    title='Services'
+                    subTitle='What services do you offer?'
+                  />
+                </YGroup.Item>
                 {services.map((service) => (
                   <YGroup.Item key={service.name}>
                     <ListItem
@@ -325,78 +360,102 @@ const ManageKennelScreen = () => {
                     ></ListItem>
                   </YGroup.Item>
                 ))}
+              </YGroup> */}
+
+              <YGroup width='100%'>
+                <YGroup.Item>
+                  <ListItem
+                    title='Breeds'
+                    subTitle='What breeds do you specialize in?'
+                    onPress={() => setIsBreedsSheetOpen(true)}
+                    iconAfter={<Plus size='$1' />}
+                  />
+                </YGroup.Item>
+                <Separator />
+
+                <YGroup.Item>
+                  <YGroup separator={<Separator />}>
+                    {selectedBreeds.map((breed, index) => (
+                      <YGroup.Item key={index}>
+                        <ListItem
+                          title={breed.name}
+                          subTitle={breed.breedGroup}
+                          iconAfter={
+                            <Trash
+                              onPress={() => handleRemoveBreed(breed.name)}
+                            />
+                          }
+                        ></ListItem>
+
+                        <ListItem>
+                          <XStack>
+                            <ScrollView
+                              horizontal
+                              showsHorizontalScrollIndicator={false}
+                            >
+                              <XStack gap='$2' p='$2'>
+                                {breed.images.map((image, imgIndex) => (
+                                  <XStack key={imgIndex}>
+                                    <Image
+                                      source={{uri: image.downloadURL}}
+                                      width={100}
+                                      height={100}
+                                      borderRadius='$2'
+                                    />
+                                    <Button
+                                      onPress={() =>
+                                        handleRemoveImage(breed.name, imgIndex)
+                                      }
+                                      icon={<Trash size='$1' />}
+                                      size='$2'
+                                      circular
+                                      position='absolute'
+                                      top={0}
+                                      right={0}
+                                    />
+                                  </XStack>
+                                ))}
+                                <Button
+                                  onPress={() => handleSelectImage(breed.name)}
+                                  icon={<Upload size='$1' />}
+                                  width={100}
+                                  height={100}
+                                  borderRadius='$2'
+                                  backgroundColor='$gray5'
+                                ></Button>
+                              </XStack>
+                            </ScrollView>
+                          </XStack>
+                        </ListItem>
+                      </YGroup.Item>
+                    ))}
+                  </YGroup>
+                </YGroup.Item>
               </YGroup>
             </YStack>
+          </ScrollView>
 
-            <YStack gap='$2' width='100%'>
-              <Accordion type='multiple' width='100%'>
-                {selectedBreeds.map((breed, index) => (
-                  <Accordion.Item value={breed.name} key={index}>
-                    <Accordion.Trigger
-                      flexDirection='row'
-                      justifyContent='space-between'
-                    >
-                      {({open}) => (
-                        <>
-                          <Paragraph>{breed.name}</Paragraph>
-                          <Square
-                            animation='quick'
-                            rotate={open ? '180deg' : '0deg'}
-                          >
-                            <ChevronDown size='$1' />
-                          </Square>
-                        </>
-                      )}
-                    </Accordion.Trigger>
-                    <Accordion.Content>
-                      <XStack flexWrap='wrap' gap='$2' padding='$2'>
-                        {/* {breed.images.map((uri, imgIndex) => (
-                          <Image
-                            key={imgIndex}
-                            source={{uri}}
-                            width={100}
-                            height={100}
-                            borderRadius='$2'
-                          />
-                        ))} */}
-                        <Button
-                          onPress={() => handleSelectImage(breed.name)}
-                          icon={<Upload size='$1' />}
-                          width={100}
-                          height={100}
-                          borderRadius='$2'
-                          backgroundColor='$gray5'
-                        >
-                          Upload
-                        </Button>
-                      </XStack>
-                      <Button onPress={() => handleRemoveBreed(breed.name)}>
-                        Remove Breed
-                      </Button>
-                    </Accordion.Content>
-                  </Accordion.Item>
-                ))}
-              </Accordion>
-              <Button
-                onPress={() => setIsBreedsSheetOpen(true)}
-                iconAfter={<Plus size='$1' />}
-                width='100%'
-              >
-                Add breed
-              </Button>
-            </YStack>
-
-            <XStack justifyContent='space-between' padding='$2'>
-              <Button
-                onPress={handleSave}
-                disabled={loading}
-                iconAfter={loading ? <Spinner /> : null}
-              >
-                {loading ? '' : 'Save'}
-              </Button>
-            </XStack>
+          <YStack
+            position='absolute'
+            bottom={0}
+            left={0}
+            right={0}
+            padding='$4'
+            backgroundColor={colorSet.primaryBackground}
+            borderBottomWidth={1}
+            borderBottomColor={colorSet.secondaryBackground}
+          >
+            <Button
+              onPress={handleSave}
+              backgroundColor={colorSet.primaryForeground}
+              color={colorSet.primaryBackground}
+              size='$4'
+              disabled={loading}
+              iconAfter={loading ? <Spinner /> : null}
+            >
+              {loading ? '' : 'Save'}
+            </Button>
           </YStack>
-
           <Sheet
             open={isLocationSheetOpen}
             onOpenChange={setIsLocationSheetOpen}
@@ -464,7 +523,7 @@ const ManageKennelScreen = () => {
             </Sheet.Frame>
             <Sheet.Overlay />
           </Sheet>
-        </KeyboardAwareScrollView>
+        </View>
       )}
     </View>
   );
