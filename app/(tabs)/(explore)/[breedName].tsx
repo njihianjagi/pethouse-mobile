@@ -33,7 +33,8 @@ export default function BreedDetailScreen() {
     return sluggedName
       .split('-')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+      .join(' ')
+      .toLowerCase();
   };
   const unslugifiedBreedName = unslugifyBreedName(breedName as string);
 
@@ -64,7 +65,7 @@ export default function BreedDetailScreen() {
 
   useEffect(() => {
     if (unslugifiedBreedName) {
-      const foundBreed = findBreedByName(breedName as string);
+      const foundBreed = findBreedByName(unslugifiedBreedName as string);
       setBreed(foundBreed as DogBreed);
       if (foundBreed) {
         fetchKennelsByBreed(foundBreed.name);

@@ -23,7 +23,6 @@ import {BreedFilterSheet} from './filter';
 export default function ExploreScreen() {
   const navigation = useNavigation();
   const router = useRouter();
-  const dispatch = useDispatch();
 
   const currentUser = useCurrentUser();
   const {localized} = useTranslations();
@@ -41,11 +40,11 @@ export default function ExploreScreen() {
     sortOption,
   } = useBreedSearch();
 
-  useEffect(() => {
-    if (currentUser?.traitPreferences) {
-      dispatch(updateFilter('traitPreferences', currentUser.traitPreferences));
-    }
-  }, [currentUser, dispatch]);
+  // useEffect(() => {
+  //   if (currentUser?.traitPreferences) {
+  //     updateFilter('traitPreferences', currentUser.traitPreferences);
+  //   }
+  // }, [currentUser]);
 
   const CardItem = ({breed}) => (
     <Card
@@ -123,12 +122,7 @@ export default function ExploreScreen() {
           <SortPopover sortOption={sortOption} />
 
           <Text fontSize='$4' color={colorSet.primaryForeground}>
-            {
-              Object.keys(traitPreferences).filter(
-                (key) => traitPreferences[key] !== null
-              ).length
-            }{' '}
-            Traits Filtered
+            {filteredBreeds.length} Breeds
           </Text>
         </XStack>
 

@@ -164,15 +164,10 @@ export const useBreedSearch = () => {
 
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [breeds, setBreeds] = useState(allBreeds as DogBreed[]);
+  const [breeds, setBreeds] = useState(
+    allBreeds.filter((breed) => breed.breedGroup !== 'hybrid') as DogBreed[]
+  );
   const [filteredBreeds, setFilteredBreeds] = useState<DogBreed[]>([]);
-
-  useEffect(() => {
-    if (currentUser?.traitPreferences) {
-      setTraitPreferences(currentUser.traitPreferences);
-    }
-    setLoading(false);
-  }, [currentUser]);
 
   const findBreedByName = useCallback(
     (breedName: string): DogBreed | undefined => {
@@ -209,38 +204,46 @@ export const useBreedSearch = () => {
     }
   }, []);
 
-  const filterBreeds = useCallback(
-    debounce((preferences: TraitPreferences) => {
-      const filtered = breeds.filter((breed) => {
-        return Object.entries(preferences).every(([trait, preference]) => {
-          const mappedTrait = traitMapping[trait] || trait;
-
-          if (Array.isArray(mappedTrait)) {
-            // Handle multiple mapped traits
-            return mappedTrait.every((subTrait) => {
-              const breedTrait = breed.traits && breed.traits[subTrait];
-              if (!breedTrait) return true;
-              return evaluateTrait(breedTrait, preference, subTrait);
-            });
-          } else {
-            const breedTrait = breed.traits && breed.traits[mappedTrait];
-            if (!breedTrait) return true;
-            return evaluateTrait(breedTrait, preference, mappedTrait);
+  const filterBreeds = useMemo(
+    () =>
+      debounce((preferences: typeof traitPreferences, searchQuery: string) => {
+        setLoading(true);
+        const filtered = breeds.filter((breed) => {
+          if (
+            searchQuery &&
+            !breed.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ) {
+            return false;
           }
+
+          return Object.entries(preferences).every(([trait, preference]) => {
+            const mappedTrait = traitMapping[trait] || trait;
+            if (Array.isArray(mappedTrait)) {
+              return mappedTrait.every((subTrait) => {
+                const breedTrait = breed.traits && breed.traits[subTrait];
+                if (!breedTrait) return true;
+                return evaluateTrait(breedTrait, preference, subTrait);
+              });
+            } else {
+              const breedTrait = breed.traits && breed.traits[mappedTrait];
+              if (!breedTrait) return true;
+              return evaluateTrait(breedTrait, preference, mappedTrait);
+            }
+          });
         });
-      });
-      console.log('Matched breeds: ', filtered.length);
-      setFilteredBreeds(filtered);
-    }, 300),
+        console.log('Matched breeds: ', filtered.length);
+        setFilteredBreeds(filtered);
+        setLoading(false);
+      }, 300), // 300ms debounce time, adjust as needed
     [breeds, evaluateTrait]
   );
 
   useEffect(() => {
-    filterBreeds(traitPreferences);
+    filterBreeds(traitPreferences, searchText);
     return () => {
-      filterBreeds.cancel();
+      filterBreeds.cancel(); // Cancel any pending debounced calls on cleanup
     };
-  }, [traitPreferences, filterBreeds]);
+  }, [traitPreferences, searchText, filterBreeds]);
 
   const updateFilter = useCallback((type, value) => {
     switch (type) {
