@@ -234,7 +234,7 @@ export const useBreedSearch = () => {
         console.log('Matched breeds: ', filtered.length);
         setFilteredBreeds(filtered);
         setLoading(false);
-      }, 300), // 300ms debounce time, adjust as needed
+      }, 600), // 300ms debounce time, adjust as needed
     [breeds, evaluateTrait]
   );
 

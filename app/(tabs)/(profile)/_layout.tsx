@@ -9,6 +9,8 @@ export default function ExploreLayout() {
   return (
     <Stack>
       <Stack.Screen name='index' options={{headerShown: false}} />
+      <Stack.Screen name='kennel' options={{headerShown: false}} />
+      <Stack.Screen name='preferences' options={{headerShown: false}} />
     </Stack>
   );
 }

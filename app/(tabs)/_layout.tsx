@@ -11,6 +11,7 @@ import {
   MessageSquare,
   User2,
   LogOut,
+  Bell,
 } from '@tamagui/lucide-icons';
 import {Button} from 'tamagui';
 export default function TabLayout() {
@@ -34,7 +35,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colorSet.primaryForeground,
-        tabBarInactiveTintColor: colorSet.grey3,
+        tabBarInactiveTintColor: colorSet.secondaryText,
         tabBarStyle: {
           backgroundColor: colorSet.primaryBackground,
         },
@@ -47,7 +48,16 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <Home color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
-          headerShown: false,
+          headerRight: () => (
+            <Button
+              onPress={onLogout}
+              chromeless
+              icon={<Bell size='$1' />}
+              color={colorSet.primaryForeground}
+              size='$4'
+            />
+          ),
+          headerShown: true,
         }}
       />
 
@@ -60,14 +70,14 @@ export default function TabLayout() {
           ),
           headerRight: () => (
             <Button
-              onPress={onLogout}
+              onPress={() => {}}
               chromeless
-              icon={<LogOut size='$1' />}
+              icon={<Bell size='$1' />}
               color={colorSet.primaryForeground}
               size='$4'
             />
           ),
-          headerShown: false,
+          headerShown: true,
         }}
       />
 
@@ -84,12 +94,12 @@ export default function TabLayout() {
             <Button
               onPress={onLogout}
               chromeless
-              icon={<LogOut size='$1' />}
+              icon={<Bell size='$1' />}
               color={colorSet.primaryForeground}
               size='$4'
             />
           ),
-          headerShown: false,
+          headerShown: true,
         }}
       />
 
@@ -109,7 +119,7 @@ export default function TabLayout() {
               size='$4'
             />
           ),
-          headerShown: false,
+          headerShown: true,
         }}
       />
     </Tabs>

@@ -38,15 +38,15 @@ const ProfileScreen = () => {
   const [kennel, setKennel] = useState({} as any);
   // const [isUpdating, setIsUpdating] = useState(false);
 
-  // useEffect(() => {
-  //   if (currentUser?.role === 'breeder') {
-  //     getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
-  //       if (kennels) {
-  //         setKennel(kennel);
-  //       }
-  //     });
-  //   }
-  // }, [currentUser]);
+  useEffect(() => {
+    if (currentUser?.role === 'breeder') {
+      getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
+        if (kennels) {
+          setKennel(kennel);
+        }
+      });
+    }
+  }, [currentUser]);
 
   // const handleUpdateProfile = async () => {
   //   setIsUpdating(true);
@@ -97,24 +97,23 @@ const ProfileScreen = () => {
                 <Avatar.Fallback backgroundColor='$blue10' />
               </Avatar>
 
-              <YStack justifyContent='center'>
+              <YStack gap='$2' alignItems='center'>
                 <Text
-                  fontSize='$6'
+                  fontSize='$8'
                   fontWeight='bold'
                   color={colorSet.primaryForeground}
                 >
                   {currentUser.username ||
-                    currentUser.name ||
+                    `${currentUser.firstName} ${currentUser.lastName}` ||
                     currentUser.displayName}
                 </Text>
 
-                <Text>{currentUser.phoneNumber}</Text>
-              </YStack>
+                <Text>{currentUser.phoneNumber || currentUser.email}</Text>
 
-              <Separator />
-              <Text>
-                Joined {new Date(currentUser.createdAt).toLocaleDateString()}
-              </Text>
+                <Text>
+                  Joined {new Date(currentUser.createdAt).toLocaleDateString()}
+                </Text>
+              </YStack>
             </YStack>
 
             <YGroup bordered width='100%'>
@@ -124,7 +123,6 @@ const ProfileScreen = () => {
                 icon={User}
                 iconAfter={ChevronRight}
                 pressTheme
-                onPress={() => router.push('(profile)/preferences')}
               />
               <Separator />
               {currentUser.role === 'breeder' ? (
@@ -134,6 +132,7 @@ const ProfileScreen = () => {
                   subTitle='Manage your breeds and services'
                   iconAfter={ChevronRight}
                   pressTheme
+                  onPress={() => router.push('(profile)/kennel')}
                 />
               ) : (
                 <ListItem
@@ -142,6 +141,7 @@ const ProfileScreen = () => {
                   subTitle='Manage your preferred breeds'
                   iconAfter={ChevronRight}
                   pressTheme
+                  onPress={() => router.push('(profile)/preferences')}
                 />
               )}
               <Separator />

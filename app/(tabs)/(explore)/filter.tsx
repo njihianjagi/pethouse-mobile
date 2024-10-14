@@ -1,25 +1,7 @@
 import React from 'react';
-import {
-  Sheet,
-  YStack,
-  XStack,
-  Button,
-  Text,
-  Switch,
-  ToggleGroup,
-  ScrollView,
-  ListItem,
-  YGroup,
-  Separator,
-} from 'tamagui';
-import {useBreedSearch} from '../../../hooks/useBreedSearch';
+import {Sheet, YStack, XStack, Button, Text, ScrollView} from 'tamagui';
 import {useTheme} from '../../../dopebase';
 import {X} from '@tamagui/lucide-icons';
-import {useDispatch, useSelector} from 'react-redux';
-import {
-  toggleUsePreferences,
-  updateFilter,
-} from '../../../redux/reducers/filter';
 
 interface BreedFilterSheetProps {
   open: boolean;
@@ -87,6 +69,7 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
               </Switch> */}
             </YStack>
           </ScrollView>
+
           <YStack
             position='absolute'
             bottom={0}

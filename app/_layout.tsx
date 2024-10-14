@@ -73,7 +73,7 @@ export default function RootLayout() {
                       defaultTheme={colorScheme as string | undefined}
                     >
                       <SafeAreaProvider>
-                        <SafeAreaView style={{flex: 1, paddingTop: insets.top}}>
+                        <SafeAreaView style={{flex: 1, paddingTop: 0}}>
                           <Stack>
                             <Stack.Screen
                               name='(auth)'

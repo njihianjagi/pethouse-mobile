@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   Sheet,
   YStack,
@@ -16,13 +16,20 @@ import {
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {useTheme} from '../../../dopebase';
 import {X} from '@tamagui/lucide-icons';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 
 export default function BreedPreferences() {
-  const {traitCategories, traitPreferences, handleTraitToggle} =
-    useBreedSearch();
+  const {traitCategories, traitPreferences, updateFilter} = useBreedSearch();
 
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
+  const currentUser = useCurrentUser();
+
+  useEffect(() => {
+    if (currentUser?.traitPreferences) {
+      updateFilter('traitPreferences', currentUser.traitPreferences);
+    }
+  }, [currentUser]);
 
   const renderTraitOption = (option) => {
     if (option.type === 'switch') {
@@ -34,7 +41,9 @@ export default function BreedPreferences() {
               !!traitPreferences[option.name] ? colorSet.grey3 : colorSet.grey0
             }
             checked={!!traitPreferences[option.name]}
-            onCheckedChange={(value) => handleTraitToggle(option.name, value)}
+            onCheckedChange={(value) =>
+              updateFilter('traitPreferences', {[option.name]: value})
+            }
           >
             <Switch.Thumb
               animation='quicker'
@@ -56,7 +65,9 @@ export default function BreedPreferences() {
               type='single'
               value={traitPreferences[option.name]?.toString()}
               onValueChange={(value) =>
-                handleTraitToggle(option.name, parseInt(value))
+                updateFilter('traitPreferences', {
+                  [option.name]: parseInt(value),
+                })
               }
               flex={1}
             >
