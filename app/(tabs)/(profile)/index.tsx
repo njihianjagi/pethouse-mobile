@@ -7,33 +7,23 @@ import {
   ListItem,
   Separator,
   YGroup,
-  Image,
-  Button,
   Avatar,
-  ListItemTitle,
-  ListItemSubtitle,
-  Spacer,
   ScrollView,
 } from 'tamagui';
-import useKennelData from '../../api/firebase/kennels/useKennelData';
-import useCurrentUser from '../../hooks/useCurrentUser';
-import {useTheme} from '../../dopebase';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {updateUser} from '../../api/firebase/users/userClient';
+import useKennelData from '../../../api/firebase/kennels/useKennelData';
+import useCurrentUser from '../../../hooks/useCurrentUser';
+import {useTheme} from '../../../dopebase';
 import {
-  Badge,
   ChevronRight,
   Dog,
   HelpCircle,
-  Home,
   LogOut,
-  Pencil,
   Settings,
   User,
 } from '@tamagui/lucide-icons';
-import {logout} from '../../redux/reducers/auth';
+import {logout} from '../../../redux/reducers/auth';
 import {useRouter} from 'expo-router';
-import {useAuth} from '../../hooks/useAuth';
+import {useAuth} from '../../../hooks/useAuth';
 
 const profile = () => {
   const currentUser = useCurrentUser();
@@ -48,16 +38,15 @@ const profile = () => {
   const [kennel, setKennel] = useState({} as any);
   // const [isUpdating, setIsUpdating] = useState(false);
 
-  useEffect(() => {
-    console.log('curr: ', currentUser);
-    if (currentUser?.role === 'breeder') {
-      getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
-        if (kennels) {
-          setKennel(kennel);
-        }
-      });
-    }
-  }, [currentUser]);
+  // useEffect(() => {
+  //   if (currentUser?.role === 'breeder') {
+  //     getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
+  //       if (kennels) {
+  //         setKennel(kennel);
+  //       }
+  //     });
+  //   }
+  // }, [currentUser]);
 
   // const handleUpdateProfile = async () => {
   //   setIsUpdating(true);
@@ -86,7 +75,7 @@ const profile = () => {
       justifyContent='center'
       backgroundColor={colorSet.primaryBackground}
     >
-      {loading ? (
+      {currentUser?.role === 'breeder' && loading ? (
         <Spinner
           size='large'
           color={theme.colors[appearance].primaryForeground}
@@ -134,6 +123,8 @@ const profile = () => {
                 subTitle='View and edit your profile'
                 icon={User}
                 iconAfter={ChevronRight}
+                pressTheme
+                onPress={() => router.push('(profile)/preferences')}
               />
               <Separator />
               {currentUser.role === 'breeder' ? (
@@ -142,6 +133,8 @@ const profile = () => {
                   title='Kennel'
                   subTitle='Manage your breeds and services'
                   iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('(profile)/preferences')}
                 />
               ) : (
                 <ListItem
@@ -149,6 +142,8 @@ const profile = () => {
                   title='Breed preferences'
                   subTitle='Manage your preferred breeds'
                   iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('(profile)/preferences')}
                 />
               )}
               <Separator />

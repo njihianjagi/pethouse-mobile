@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {db} from '../../../firebase/config'; // Adjust the path as necessary
-import breedsData from '../../../assets/data/breeds_with_group.json';
+import breedsData from '../../../assets/data/breeds_with_group_and_traits.json';
 
 export interface DogBreed {
   name: string;
@@ -32,7 +32,7 @@ export const useBreedData = () => {
     try {
       // const response = await db.collection('breeds').get();
       // const breedsData: any = response.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAllBreeds(breedsData);
+      setAllBreeds(breedsData as DogBreed[]);
       setError(null);
     } catch (err: any) {
       setError(err.message);

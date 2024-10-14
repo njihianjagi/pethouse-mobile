@@ -48,26 +48,12 @@ export default function TabLayout() {
           tabBarIcon: ({color, focused}) => (
             <Home color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
-          headerTitle: localized('Home'),
-          headerRight: () => (
-            <Button
-              onPress={onLogout}
-              chromeless
-              icon={<LogOut size='$1' />}
-              color={colorSet.primaryForeground}
-              size='$4'
-            />
-          ),
-          headerStyle: {
-            backgroundColor: colorSet.primaryBackground,
-            borderBottomColor: colorSet.hairline,
-          },
-          headerTintColor: colorSet.primaryForeground,
+          headerShown: false,
         }}
       />
 
       <Tabs.Screen
-        name='(explore)/explore'
+        name='(explore)'
         options={{
           title: 'Explore',
           tabBarIcon: ({color, focused}) => (
@@ -82,12 +68,7 @@ export default function TabLayout() {
               size='$4'
             />
           ),
-          headerTitle: localized('Explore Breeds'),
-          headerStyle: {
-            backgroundColor: colorSet.primaryBackground,
-            borderBottomColor: colorSet.hairline,
-          },
-          headerTintColor: colorSet.primaryForeground,
+          headerShown: false,
         }}
       />
 
@@ -109,17 +90,12 @@ export default function TabLayout() {
               size='$4'
             />
           ),
-          headerTitle: localized('Inbox'),
-          headerStyle: {
-            backgroundColor: colorSet.primaryBackground,
-            borderBottomColor: colorSet.hairline,
-          },
-          headerTintColor: colorSet.primaryForeground,
+          headerShown: false,
         }}
       />
 
       <Tabs.Screen
-        name='profile'
+        name='(profile)'
         options={{
           title: 'Profile',
           tabBarIcon: ({color, focused}) => (
@@ -134,12 +110,7 @@ export default function TabLayout() {
               size='$4'
             />
           ),
-          headerTitle: localized('Profile'),
-          headerStyle: {
-            backgroundColor: colorSet.primaryBackground,
-            borderBottomColor: colorSet.hairline,
-          },
-          headerTintColor: colorSet.primaryForeground,
+          headerShown: false,
         }}
       />
     </Tabs>

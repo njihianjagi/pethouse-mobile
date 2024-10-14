@@ -16,10 +16,10 @@ import {
 } from 'tamagui';
 import {ListFilter, ArrowRight, ChevronDown} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
-import {BreedFilterSheet} from './filter';
 import {useDispatch} from 'react-redux';
 import {updateFilter} from '../../../redux/reducers/filter';
 import {SortPopover} from './sort';
+import {BreedFilterSheet} from './filter';
 
 export default function ExploreScreen() {
   const navigation = useNavigation();
@@ -50,7 +50,17 @@ export default function ExploreScreen() {
   }, [currentUser, dispatch]);
 
   const CardItem = ({breed}) => (
-    <Card bordered flex={1} margin={5}>
+    <Card
+      bordered
+      flex={1}
+      margin={5}
+      onPress={() =>
+        router.push(
+          `(explore)/${breed.name.toLowerCase().replace(/\s+/g, '-')}`
+        )
+      }
+      pressTheme
+    >
       <Card.Header padded>
         <Text
           color={colorSet.primaryForeground}
@@ -91,10 +101,24 @@ export default function ExploreScreen() {
 
           <Button
             size='$4'
-            theme='active'
-            icon={ListFilter}
+            icon={<ListFilter size='$1' />}
             onPress={() => setFilterSheetOpen(true)}
-          />
+          ></Button>
+          {Object.keys(traitPreferences).some(
+            (key) => traitPreferences[key] !== null
+          ) && (
+            <View
+              position='absolute'
+              margin={0}
+              padding={0}
+              top={0}
+              right={0}
+              width={8}
+              height={8}
+              borderRadius={4}
+              backgroundColor={colorSet.secondaryForeground}
+            />
+          )}
         </XStack>
 
         <XStack justifyContent='space-between' alignItems='center'>
@@ -103,8 +127,13 @@ export default function ExploreScreen() {
             handleSortChange={handleSortChange}
           />
 
-          <Text fontSize='$4' fontWeight='bold'>
-            {filteredBreeds.length} Breeds
+          <Text fontSize='$4' color={colorSet.primaryForeground}>
+            {
+              Object.keys(traitPreferences).filter(
+                (key) => traitPreferences[key] !== null
+              ).length
+            }{' '}
+            Traits Filtered
           </Text>
         </XStack>
 

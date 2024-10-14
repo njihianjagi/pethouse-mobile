@@ -10,7 +10,7 @@ interface TraitPreferences {
   [key: string]: boolean | number;
 }
 
-const traitMapping = {
+export const traitMapping = {
   apartment_friendly: 'adapts_well_to_apartment_living',
   novice_friendly: 'good_for_novice_dog_owners',
   independent: 'tolerates_being_alone',
@@ -40,7 +40,7 @@ const traitMapping = {
 const traitCategories = [
   {
     name: 'Physical Characteristics',
-    caption: "The dog's size and adaptability to different environments",
+    caption: 'Select your preferred dog size and adaptability to environments',
     options: [
       {
         name: 'size',
@@ -155,9 +155,15 @@ const traitCategories = [
 export const useBreedSearch = () => {
   const dispatch = useDispatch();
 
-  const {searchText, traitPreferences, selectedGroups} = useSelector(
-    (state: any) => state.filter
-  );
+  const {
+    searchText,
+    traitPreferences,
+    usePreferences,
+    breedGroup,
+    lifeSpan,
+    weight,
+    sortOption,
+  } = useSelector((state: any) => state.filter);
 
   const [loading, setLoading] = useState(true);
   const [breeds, setBreeds] = useState(allBreeds as DogBreed[]);
@@ -165,28 +171,21 @@ export const useBreedSearch = () => {
 
   const evaluateTrait = useCallback((breedTrait, preference, traitName) => {
     if (typeof preference === 'boolean') {
-      if (!preference) {
-        // If the toggle is off, include breeds without this trait or with any score
-        return true;
-      }
+      if (!preference) return true;
       const reverseLogic = [
         'shedding',
         'drooling_potential',
         'potential_for_weight_gain',
         'potential_for_mouthiness',
       ];
-      const desiredValue = reverseLogic.includes(traitName)
+      return reverseLogic.includes(traitName)
         ? breedTrait?.score <= 3
         : breedTrait?.score > 3;
-      return desiredValue;
     } else {
-      // If the breed doesn't have this trait, include it when preference is 0 (Any)
-      if (!breedTrait && preference === 0) {
-        return true;
-      }
+      if (!breedTrait && preference === 0) return true;
       switch (preference) {
         case 0:
-          return true; // Include all breeds when set to "Any"
+          return true;
         case 1:
           return breedTrait?.score <= 2;
         case 2:
@@ -201,44 +200,83 @@ export const useBreedSearch = () => {
 
   const filterBreeds = useMemo(
     () =>
-      debounce((preferences: typeof traitPreferences, searchQuery: string) => {
+      debounce(() => {
         setLoading(true);
         const filtered = breeds.filter((breed) => {
+          // Search text filter
           if (
-            searchQuery &&
-            !breed.name.toLowerCase().includes(searchQuery.toLowerCase())
+            searchText &&
+            !breed.name.toLowerCase().includes(searchText.toLowerCase())
           ) {
             return false;
           }
 
-          return Object.entries(preferences).every(([trait, preference]) => {
-            const mappedTrait = traitMapping[trait] || trait;
-            if (Array.isArray(mappedTrait)) {
-              return mappedTrait.every((subTrait) => {
-                const breedTrait = breed.traits && breed.traits[subTrait];
-                if (!breedTrait) return true;
-                return evaluateTrait(breedTrait, preference, subTrait);
-              });
-            } else {
-              const breedTrait = breed.traits && breed.traits[mappedTrait];
-              if (!breedTrait) return true;
-              return evaluateTrait(breedTrait, preference, mappedTrait);
+          // Breed group filter
+          if (breedGroup && breed.breedGroup !== breedGroup) {
+            return false;
+          }
+
+          // Life span filter
+          if (lifeSpan[0] > 0 || lifeSpan[1] < 20) {
+            const [min, max] = breed.lifeSpan.split(' - ').map(Number);
+            if (min < lifeSpan[0] || max > lifeSpan[1]) {
+              return false;
             }
-          });
+          }
+
+          // Weight filter
+          // if (weight[0] > 0 || weight[1] < 100) {
+          //   const [min, max] = breed.weight.metric.split(' - ').map(Number);
+          //   if (min < weight[0] || max > weight[1]) {
+          //     return false;
+          //   }
+          // }
+
+          // Trait preferences filter
+          if (usePreferences) {
+            return Object.entries(traitPreferences).every(
+              ([trait, preference]) => {
+                const mappedTrait = traitMapping[trait] || trait;
+                if (Array.isArray(mappedTrait)) {
+                  return mappedTrait.every((subTrait) => {
+                    const breedTrait = breed.traits && breed.traits[subTrait];
+                    if (!breedTrait) return true;
+                    return evaluateTrait(breedTrait, preference, subTrait);
+                  });
+                } else {
+                  const breedTrait = breed.traits && breed.traits[mappedTrait];
+                  if (!breedTrait) return true;
+                  return evaluateTrait(breedTrait, preference, mappedTrait);
+                }
+              }
+            );
+          }
+
+          return true;
         });
-        console.log('Matched breeds: ', filtered.length);
+
+        console.log('filtered: ', filtered);
         setFilteredBreeds(filtered);
         setLoading(false);
-      }, 300), // 300ms debounce time, adjust as needed
-    [breeds, evaluateTrait]
+      }, 300),
+    [
+      breeds,
+      searchText,
+      breedGroup,
+      lifeSpan,
+      weight,
+      usePreferences,
+      traitPreferences,
+      evaluateTrait,
+    ]
   );
 
   useEffect(() => {
-    filterBreeds(traitPreferences, searchText);
+    filterBreeds();
     return () => {
-      filterBreeds.cancel(); // Cancel any pending debounced calls on cleanup
+      filterBreeds.cancel();
     };
-  }, [traitPreferences, searchText, filterBreeds]);
+  }, [filterBreeds]);
 
   const handleSearchChange = useCallback(
     (text: string) => {
@@ -256,21 +294,8 @@ export const useBreedSearch = () => {
     [dispatch, traitPreferences]
   );
 
-  const handleGroupToggle = useCallback(
-    (group: string) => {
-      const newSelectedGroups = selectedGroups.includes(group)
-        ? selectedGroups.filter((g) => g !== group)
-        : [...selectedGroups, group];
-      dispatch(updateFilter({selectedGroups: newSelectedGroups}));
-    },
-    [dispatch, selectedGroups]
-  );
-
-  const [sortOption, setSortOption] = useState('name');
-
   const handleSortChange = useCallback(
     (option: string) => {
-      setSortOption(option);
       dispatch(updateFilter({sortOption: option}));
     },
     [dispatch]
@@ -297,23 +322,24 @@ export const useBreedSearch = () => {
   );
 
   useEffect(() => {
-    setLoading(true);
     const sortedBreeds = sortBreeds(filteredBreeds);
     setFilteredBreeds(sortedBreeds);
-    setLoading(false);
-  }, [sortOption, sortBreeds]);
+  }, [sortOption, sortBreeds, filteredBreeds]);
 
   return {
     searchText,
     handleSearchChange,
     traitPreferences,
-    handleTraitToggle,
-    selectedGroups,
-    handleGroupToggle,
-    filteredBreeds,
     traitCategories,
+    handleTraitToggle,
+    filteredBreeds,
     loading,
     sortOption,
     handleSortChange,
+    allBreeds,
+    usePreferences,
+    breedGroup,
+    lifeSpan,
+    weight,
   };
 };

@@ -15,6 +15,11 @@ import {
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {useTheme} from '../../../dopebase';
 import {X} from '@tamagui/lucide-icons';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  toggleUsePreferences,
+  updateFilter,
+} from '../../../redux/reducers/filter';
 
 interface BreedFilterSheetProps {
   open: boolean;
@@ -25,60 +30,29 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
   open,
   onOpenChange,
 }) => {
-  const {traitCategories, traitPreferences, handleTraitToggle} =
-    useBreedSearch();
-
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const renderTraitOption = (option) => {
-    if (option.type === 'switch') {
-      return (
-        <ListItem key={option.name}>
-          <ListItem.Text>{option.label}</ListItem.Text>
-          <Switch
-            backgroundColor={
-              !!traitPreferences[option.name] ? colorSet.grey3 : colorSet.grey0
-            }
-            checked={!!traitPreferences[option.name]}
-            onCheckedChange={(value) => handleTraitToggle(option.name, value)}
-          >
-            <Switch.Thumb
-              animation='quicker'
-              backgroundColor={colorSet.primaryForeground}
-            />
-          </Switch>
-        </ListItem>
-      );
-    } else if (option.type === 'toggle') {
-      return (
-        <ListItem key={option.name} width='100%'>
-          <YStack flex={1} gap='$4'>
-            <ListItem.Text>
-              {option.name
-                .replace(/_/g, ' ')
-                .replace(/\b\w/g, (l) => l.toUpperCase())}
-            </ListItem.Text>
-            <ToggleGroup
-              type='single'
-              value={traitPreferences[option.name]?.toString()}
-              onValueChange={(value) =>
-                handleTraitToggle(option.name, parseInt(value))
-              }
-              flex={1}
-            >
-              {option.values.map((value, index) => (
-                <ToggleGroup.Item key={value} value={index.toString()} flex={1}>
-                  <Text color={colorSet.primaryText}>{value}</Text>
-                </ToggleGroup.Item>
-              ))}
-            </ToggleGroup>
-          </YStack>
-        </ListItem>
-      );
-    }
+  const dispatch = useDispatch();
+  const {usePreferences, breedGroup, lifeSpan, weight} = useSelector(
+    (state: any) => state.filter
+  );
+
+  const handleUsePreferencesToggle = (value: boolean) => {
+    dispatch(toggleUsePreferences(value));
   };
 
+  const handleBreedGroupChange = (group: string) => {
+    dispatch(updateFilter({breedGroup: group}));
+  };
+
+  const handleLifeSpanChange = (value: [number, number]) => {
+    dispatch(updateFilter({lifeSpan: value}));
+  };
+
+  const handleWeightChange = (value: [number, number]) => {
+    dispatch(updateFilter({weight: value}));
+  };
   return (
     <Sheet open={open} onOpenChange={onOpenChange} snapPoints={[90]}>
       <Sheet.Overlay />
@@ -124,19 +98,13 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
               >
                 Filter Breeds
               </Text>
-              {traitCategories.map((category) => (
-                <YGroup key={category.name} bordered>
-                  <YGroup.Item>
-                    <ListItem
-                      title={category.name}
-                      subTitle={category.caption}
-                    />
-                  </YGroup.Item>
-                  {category.options.map(renderTraitOption)}
 
-                  <Separator />
-                </YGroup>
-              ))}
+              <Switch
+                checked={usePreferences}
+                onCheckedChange={handleUsePreferencesToggle}
+              >
+                <Text>Use Profile Preferences</Text>
+              </Switch>
             </YStack>
           </ScrollView>
           <YStack
