@@ -27,7 +27,7 @@ import {setUserData} from '../../redux/reducers/auth';
 import {ChevronRight} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../hooks/useBreedSearch';
 
-const SeekerProfileScreen = () => {
+const SeekerOnboardingScreen = () => {
   const currentUser = useCurrentUser();
   const router = useRouter();
 
@@ -43,7 +43,7 @@ const SeekerProfileScreen = () => {
   // @ts-ignore
   navigator.geolocation = require('@react-native-community/geolocation');
 
-  const {traitCategories, traitPreferences, filteredBreeds, handleTraitToggle} =
+  const {traitCategories, traitPreferences, filteredBreeds, updateFilter} =
     useBreedSearch();
 
   const renderTraitOption = (option) => {
@@ -51,20 +51,14 @@ const SeekerProfileScreen = () => {
       return (
         <ListItem>
           <ListItem.Text>{option.label}</ListItem.Text>
-          {/* <Checkbox
-            checked={!!traitPreferences[option.name]}
-            onCheckedChange={(value) => handleTraitChange(option.name, value)}
-          >
-            <Checkbox.Indicator>
-              <Check />
-            </Checkbox.Indicator>
-          </Checkbox> */}
           <Switch
             backgroundColor={
               !!traitPreferences[option.name] ? colorSet.grey3 : colorSet.grey0
             }
             checked={!!traitPreferences[option.name]}
-            onCheckedChange={(value) => handleTraitToggle(option.name, value)}
+            onCheckedChange={(value) =>
+              updateFilter('traitPreferences', {[option.name]: value})
+            }
           >
             <Switch.Thumb
               animation='quicker'
@@ -86,7 +80,9 @@ const SeekerProfileScreen = () => {
               type='single'
               value={traitPreferences[option.name]?.toString()}
               onValueChange={(value) =>
-                handleTraitToggle(option.name, parseInt(value))
+                updateFilter('traitPreferences', {
+                  [option.name]: parseInt(value),
+                })
               }
               flex={1}
             >
@@ -264,4 +260,4 @@ const dynamicStyles = (theme, colorScheme) => {
   });
 };
 
-export default SeekerProfileScreen;
+export default SeekerOnboardingScreen;

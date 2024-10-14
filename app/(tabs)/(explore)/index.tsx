@@ -17,7 +17,6 @@ import {
 import {ListFilter, ArrowRight, ChevronDown} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {useDispatch} from 'react-redux';
-import {updateFilter} from '../../../redux/reducers/filter';
 import {SortPopover} from './sort';
 import {BreedFilterSheet} from './filter';
 
@@ -37,15 +36,14 @@ export default function ExploreScreen() {
     searchText,
     filteredBreeds,
     traitPreferences,
-    handleSearchChange,
+    updateFilter,
     loading: breedsLoading,
     sortOption,
-    handleSortChange,
   } = useBreedSearch();
 
   useEffect(() => {
     if (currentUser?.traitPreferences) {
-      dispatch(updateFilter({traitPreferences: currentUser.traitPreferences}));
+      dispatch(updateFilter('traitPreferences', currentUser.traitPreferences));
     }
   }, [currentUser, dispatch]);
 
@@ -95,7 +93,7 @@ export default function ExploreScreen() {
             flex={1}
             color={colorSet.secondaryText}
             value={searchText}
-            onChangeText={(text) => handleSearchChange(text)}
+            onChangeText={(text) => updateFilter('searchText', text)}
             placeholder={localized('Search by breed')}
           />
 
@@ -122,10 +120,7 @@ export default function ExploreScreen() {
         </XStack>
 
         <XStack justifyContent='space-between' alignItems='center'>
-          <SortPopover
-            sortOption={sortOption}
-            handleSortChange={handleSortChange}
-          />
+          <SortPopover sortOption={sortOption} />
 
           <Text fontSize='$4' color={colorSet.primaryForeground}>
             {

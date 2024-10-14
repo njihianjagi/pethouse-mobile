@@ -46,7 +46,7 @@ import {useDispatch} from 'react-redux';
 // @ts-ignore
 navigator.geolocation = require('@react-native-community/geolocation');
 
-const BreederProfileScreen = () => {
+const BreederOnboardingScreen = () => {
   const currentUser = useCurrentUser();
   const router = useRouter();
 
@@ -585,7 +585,7 @@ const BreederProfileScreen = () => {
   );
 };
 
-export default BreederProfileScreen;
+export default BreederOnboardingScreen;
 
 const dynamicStyles = (theme, colorScheme) => {
   const colorSet = theme.colors[colorScheme];

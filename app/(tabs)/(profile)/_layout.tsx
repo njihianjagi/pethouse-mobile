@@ -9,16 +9,6 @@ export default function ExploreLayout() {
   return (
     <Stack>
       <Stack.Screen name='index' options={{headerShown: false}} />
-      <Stack.Screen
-        name='preferences'
-        options={{
-          headerShown: true,
-          title: 'Breed Preferences',
-          headerStyle: {
-            backgroundColor: colorSet.primaryBackground,
-          },
-        }}
-      />
     </Stack>
   );
 }

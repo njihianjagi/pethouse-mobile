@@ -4,12 +4,9 @@ export default function OnboardingLayout() {
   return (
     <Stack>
       <Stack.Screen name='index' options={{headerShown: false}} />
-      <Stack.Screen name='RoleSelectionScreen' options={{headerShown: false}} />
-      <Stack.Screen
-        name='BreederProfileScreen'
-        options={{headerShown: false}}
-      />
-      <Stack.Screen name='SeekerProfileScreen' options={{headerShown: false}} />
+      <Stack.Screen name='role' options={{headerShown: false}} />
+      <Stack.Screen name='breeder' options={{headerShown: false}} />
+      <Stack.Screen name='seeker' options={{headerShown: false}} />
     </Stack>
   );
 }

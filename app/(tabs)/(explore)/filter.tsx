@@ -33,26 +33,6 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const dispatch = useDispatch();
-  const {usePreferences, breedGroup, lifeSpan, weight} = useSelector(
-    (state: any) => state.filter
-  );
-
-  const handleUsePreferencesToggle = (value: boolean) => {
-    dispatch(toggleUsePreferences(value));
-  };
-
-  const handleBreedGroupChange = (group: string) => {
-    dispatch(updateFilter({breedGroup: group}));
-  };
-
-  const handleLifeSpanChange = (value: [number, number]) => {
-    dispatch(updateFilter({lifeSpan: value}));
-  };
-
-  const handleWeightChange = (value: [number, number]) => {
-    dispatch(updateFilter({weight: value}));
-  };
   return (
     <Sheet open={open} onOpenChange={onOpenChange} snapPoints={[90]}>
       <Sheet.Overlay />
@@ -98,13 +78,13 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
               >
                 Filter Breeds
               </Text>
-
+              {/* 
               <Switch
                 checked={usePreferences}
                 onCheckedChange={handleUsePreferencesToggle}
               >
                 <Text>Use Profile Preferences</Text>
-              </Switch>
+              </Switch> */}
             </YStack>
           </ScrollView>
           <YStack

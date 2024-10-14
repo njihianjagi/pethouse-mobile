@@ -32,7 +32,6 @@ export default function TabLayout() {
 
   return (
     <Tabs
-      initialRouteName='home' // Set the default tab to 'profile'
       screenOptions={{
         tabBarActiveTintColor: colorSet.primaryForeground,
         tabBarInactiveTintColor: colorSet.grey3,

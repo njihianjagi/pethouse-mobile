@@ -1,13 +1,20 @@
 import React, {useEffect} from 'react';
 import {useTheme, useTranslations} from '../../dopebase';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import {StyleSheet} from 'react-native';
 import {useNavigation, useRouter} from 'expo-router';
-import {Text, View, XStack, YStack} from 'tamagui';
-import {MapPin} from '@tamagui/lucide-icons';
+import {
+  Button,
+  Card,
+  H2,
+  ScrollView,
+  Text,
+  View,
+  XStack,
+  YStack,
+} from 'tamagui';
+import {ArrowRight, MapPin} from '@tamagui/lucide-icons';
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
   const router = useRouter();
 
   const currentUser = useCurrentUser();
@@ -23,125 +30,75 @@ export default function HomeScreen() {
     }
   }, [currentUser?.id]);
 
-  return (
-    <View backgroundColor={colorSet.primaryBackground} flex={1}>
-      <YStack padding='$4' gap='$4'>
-        <XStack gap='$2'>
-          <MapPin color={colorSet.primaryForeground} />
-          <Text>
-            {currentUser.location?.latitude}, {currentUser.location?.longitude}
-          </Text>
-        </XStack>
+  // TODO: Fetch highlighted breeders and upcoming litters based on user preferences
+  const highlightedBreeders: any = []; // This should be populated with actual data
+  const upcomingLitters: any = []; // This should be populated with actual data
 
-        <XStack></XStack>
+  const BreederCard = ({breeder}) => (
+    <Card
+      bordered
+      elevate
+      size='$4'
+      animation='bouncy'
+      scale={0.9}
+      hoverStyle={{scale: 0.925}}
+      pressStyle={{scale: 0.875}}
+      onPress={() => router.push(`/breeder/${breeder.id}`)}
+    >
+      <Card.Header padded>
+        <H2>{breeder.name}</H2>
+        <Text>{breeder.location}</Text>
+      </Card.Header>
+      <Card.Footer padded>
+        <XStack flex={1} />
+        <Button size='$3' circular icon={ArrowRight} />
+      </Card.Footer>
+    </Card>
+  );
+
+  const LitterCard = ({litter}) => (
+    <Card
+      bordered
+      elevate
+      size='$4'
+      animation='bouncy'
+      scale={0.9}
+      hoverStyle={{scale: 0.925}}
+      pressStyle={{scale: 0.875}}
+      onPress={() => router.push(`/litter/${litter.id}`)}
+    >
+      <Card.Header padded>
+        <H2>{litter.breed}</H2>
+        <Text>{`Expected: ${litter.expectedDate}`}</Text>
+      </Card.Header>
+      <Card.Footer padded>
+        <XStack flex={1} />
+        <Button size='$3' circular icon={ArrowRight} />
+      </Card.Footer>
+    </Card>
+  );
+
+  return (
+    <ScrollView style={{flex: 1, backgroundColor: colorSet.primaryBackground}}>
+      <YStack padding='$4'>
+        <H2>{localized('Highlighted Breeders')}</H2>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <XStack>
+            {highlightedBreeders.map((breeder) => (
+              <BreederCard key={breeder.id} breeder={breeder} />
+            ))}
+          </XStack>
+        </ScrollView>
+
+        <H2>{localized('Upcoming Litters')}</H2>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <XStack>
+            {upcomingLitters.map((litter) => (
+              <LitterCard key={litter.id} litter={litter} />
+            ))}
+          </XStack>
+        </ScrollView>
       </YStack>
-    </View>
+    </ScrollView>
   );
 }
-
-const dynamicStyles = (theme, appearance) => {
-  const colorSet = theme.colors[appearance];
-
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colorSet.primaryBackground,
-      alignContent: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    text: {
-      color: colorSet.primaryText,
-      marginTop: 16,
-      fontSize: 18,
-    },
-    image: {
-      height: 128,
-      width: 128,
-      borderRadius: 64,
-      marginTop: -320,
-    },
-  });
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-  },
-  header: {
-    padding: 20,
-    backgroundColor: '#a2d2ff',
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  headerSubText: {
-    fontSize: 16,
-  },
-  content: {
-    padding: 10,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  button: {
-    padding: 10,
-    backgroundColor: '#ffafcc',
-    borderRadius: 10,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  storyCard: {
-    marginVertical: 20,
-    padding: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-  },
-  storyImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  storyText: {
-    fontSize: 14,
-    marginTop: 10,
-  },
-  petList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-  },
-  petCard: {
-    width: 150,
-    padding: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  petImage: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-  },
-  petName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  petDetails: {
-    fontSize: 14,
-  },
-  petDistance: {
-    fontSize: 14,
-  },
-  navBar: {
-    height: 50,
-    backgroundColor: '#fff',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-});

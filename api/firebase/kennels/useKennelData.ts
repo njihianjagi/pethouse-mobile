@@ -1,13 +1,25 @@
 import {useState, useEffect} from 'react';
 import {db} from '../../../firebase/config'; // Adjust the path as necessary
 
+export interface Kennel {
+  id: string;
+  name: string;
+  location: string;
+  services: string[];
+  breeds: {
+    name: string;
+    images: string[];
+  }[];
+  userId: string;
+}
+
 export const useKennelData = () => {
   const [kennels, setKennels] = useState([] as any);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Fetch all kennels with their associated breeds
-  const fetchKennels = async () => {
+  const fetchAllKennels = async () => {
     setLoading(true);
     try {
       const response = await db.collection('kennels').get();
@@ -30,6 +42,28 @@ export const useKennelData = () => {
     } catch (err: any) {
       setError(err.message);
       console.error('Error fetching kennels:', err);
+    }
+    setLoading(false);
+  };
+
+  const fetchKennelsByBreed = async (breedName: string) => {
+    setLoading(true);
+    try {
+      const response = await db
+        .collection('kennels')
+        .where('breeds', 'array-contains', {name: breedName})
+        .get();
+
+      const kennelsData = response.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Kennel[];
+
+      setKennels(kennelsData);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Error fetching kennels by breed:', err);
     }
     setLoading(false);
   };
@@ -104,11 +138,6 @@ export const useKennelData = () => {
     }
   };
 
-  // Fetch kennels initially and on demand
-  useEffect(() => {
-    fetchKennels();
-  }, []);
-
   return {
     kennels,
     loading,
@@ -116,7 +145,8 @@ export const useKennelData = () => {
     addKennel,
     updateKennel,
     deleteKennel,
-    fetchKennels,
+    fetchAllKennels,
+    fetchKennelsByBreed,
     getKennelByUserId,
   };
 };

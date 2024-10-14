@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {useLocalSearchParams} from 'expo-router';
 import {ScrollView, StyleSheet} from 'react-native';
 import {
@@ -17,13 +17,37 @@ import {
   View,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../../dopebase';
-import {CheckCircle, Heart} from '@tamagui/lucide-icons';
+import {CheckCircle, Heart, MapPin} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
+import useKennelData from '../../../api/firebase/kennels/useKennelData';
+import {DogBreed} from '../../../api/firebase/breeds/useBreedData';
 
 export default function BreedDetailScreen() {
-  const {breedName} = useLocalSearchParams();
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
 
-  const {traitPreferences, allBreeds} = useBreedSearch();
+  const {localized} = useTranslations();
+
+  const {breedName} = useLocalSearchParams();
+  const unslugifyBreedName = (sluggedName: string): string => {
+    return sluggedName
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+  const unslugifiedBreedName = unslugifyBreedName(breedName as string);
+
+  const {
+    kennels,
+    loading: kennelsLoading,
+    error: kennelsError,
+    fetchKennelsByBreed,
+  } = useKennelData();
+
+  const [breed, setBreed] = useState({} as DogBreed);
+  const [relevantKennels, setRelevantKennels] = useState([] as any);
+
+  const {traitPreferences, findBreedByName} = useBreedSearch();
 
   // Function to determine if a trait matches user preferences
   const isTraitMatching = (traitName: string, traitValue: {score: number}) => {
@@ -38,27 +62,21 @@ export default function BreedDetailScreen() {
     return false;
   };
 
-  const unslugifyBreedName = (sluggedName: string): string => {
-    return sluggedName
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
+  useEffect(() => {
+    if (unslugifiedBreedName) {
+      const foundBreed = findBreedByName(breedName as string);
+      setBreed(foundBreed as DogBreed);
+      if (foundBreed) {
+        fetchKennelsByBreed(foundBreed.name);
+      }
+    }
+  }, [unslugifiedBreedName, findBreedByName, fetchKennelsByBreed]);
 
-  const findBreedByName = (name: string, breeds: any[]): any | undefined => {
-    return breeds.find(
-      (breed) => breed.name.toLowerCase() === name.toLowerCase()
-    );
-  };
-
-  const unslugifiedBreedName = unslugifyBreedName(breedName as string);
-  const breed = findBreedByName(unslugifiedBreedName, allBreeds);
-
-  const {theme, appearance} = useTheme();
-  const colorSet = theme.colors[appearance];
-
-  const {localized} = useTranslations();
-  const styles = dynamicStyles(theme, appearance);
+  useEffect(() => {
+    if (kennels) {
+      setRelevantKennels(kennels);
+    }
+  }, [kennels]);
 
   if (!breed) {
     return (
@@ -75,7 +93,7 @@ export default function BreedDetailScreen() {
       }}
     >
       <YStack>
-        <Image source={{uri: breed.image}} style={styles.image} />
+        <Image source={{uri: breed.image}} height={200} />
         <YStack padding='$4' gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <YStack>
@@ -152,21 +170,48 @@ export default function BreedDetailScreen() {
                 ))}
             </YGroup>
           </Card>
+
+          <Card bordered>
+            <YGroup gap='$4' padding='$4'>
+              <YGroup.Item>
+                <Text fontSize='$6' fontWeight='bold'>
+                  {localized('Kennels offering this breed')}
+                </Text>
+              </YGroup.Item>
+
+              {kennelsLoading ? (
+                <Spinner size='small' color={colorSet.primaryForeground} />
+              ) : kennelsError ? (
+                <Text color={colorSet.error}>{kennelsError}</Text>
+              ) : relevantKennels.length === 0 ? (
+                <Text>{localized('No kennels found for this breed')}</Text>
+              ) : (
+                relevantKennels.map((kennel) => (
+                  <YGroup.Item key={kennel.id}>
+                    <ListItem
+                      title={kennel.name}
+                      subTitle={kennel.location}
+                      icon={MapPin}
+                      iconAfter={
+                        <Button
+                          size='$2'
+                          variant='outlined'
+                          onPress={() => {
+                            // Navigate to kennel detail page
+                            // You'll need to implement this navigation
+                          }}
+                        >
+                          {localized('View')}
+                        </Button>
+                      }
+                    />
+                  </YGroup.Item>
+                ))
+              )}
+            </YGroup>
+          </Card>
         </YStack>
       </YStack>
     </ScrollView>
   );
 }
-
-const dynamicStyles = (theme, appearance) => {
-  return StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    image: {
-      width: '100%',
-      height: 300,
-      resizeMode: 'cover',
-    },
-  });
-};

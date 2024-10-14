@@ -1,12 +1,14 @@
 import React, {useState} from 'react';
 import {Popover, YStack, View, Text, Button, YGroup} from 'tamagui';
 import {ChevronDown} from '@tamagui/lucide-icons';
+import {useBreedSearch} from '../../../hooks/useBreedSearch';
 
-export const SortPopover = ({sortOption, handleSortChange}) => {
+export const SortPopover = ({sortOption}) => {
   const [open, setOpen] = useState(false);
 
+  const {updateFilter} = useBreedSearch();
   const handleSort = (option) => {
-    handleSortChange(option);
+    updateFilter('sortOption', option);
     setOpen(false);
   };
 

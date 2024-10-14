@@ -25,7 +25,7 @@ import {logout} from '../../../redux/reducers/auth';
 import {useRouter} from 'expo-router';
 import {useAuth} from '../../../hooks/useAuth';
 
-const profile = () => {
+const ProfileScreen = () => {
   const currentUser = useCurrentUser();
   const router = useRouter();
 
@@ -134,7 +134,6 @@ const profile = () => {
                   subTitle='Manage your breeds and services'
                   iconAfter={ChevronRight}
                   pressTheme
-                  onPress={() => router.push('(profile)/preferences')}
                 />
               ) : (
                 <ListItem
@@ -143,7 +142,6 @@ const profile = () => {
                   subTitle='Manage your preferred breeds'
                   iconAfter={ChevronRight}
                   pressTheme
-                  onPress={() => router.push('(profile)/preferences')}
                 />
               )}
               <Separator />
@@ -180,4 +178,4 @@ const profile = () => {
   );
 };
 
-export default profile;
+export default ProfileScreen;
