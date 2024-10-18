@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Sheet,
   YStack,
@@ -12,6 +12,7 @@ import {
   YGroup,
   Separator,
   View,
+  Spinner,
 } from 'tamagui';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {useTheme} from '../../../dopebase';
@@ -25,10 +26,14 @@ export default function BreedPreferences() {
   const colorSet = theme.colors[appearance];
   const currentUser = useCurrentUser();
 
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
+    setLoading(true);
     if (currentUser?.traitPreferences) {
       updateFilter('traitPreferences', currentUser.traitPreferences);
     }
+    setLoading(false);
   }, [currentUser]);
 
   const renderTraitOption = (option) => {
@@ -91,20 +96,27 @@ export default function BreedPreferences() {
       backgroundColor={colorSet.primaryBackground}
     >
       <YStack flex={1} width='100%' padding='$4'>
-        <ScrollView marginTop='$4'>
-          <YStack paddingBottom='$12' gap='$4'>
-            {traitCategories.map((category) => (
-              <YGroup key={category.name} bordered>
-                <YGroup.Item>
-                  <ListItem title={category.name} subTitle={category.caption} />
-                </YGroup.Item>
-                {category.options.map(renderTraitOption)}
+        {loading ? (
+          <Spinner />
+        ) : (
+          <ScrollView marginTop='$4'>
+            <YStack paddingBottom='$12' gap='$4'>
+              {traitCategories.map((category) => (
+                <YGroup key={category.name} bordered>
+                  <YGroup.Item>
+                    <ListItem
+                      title={category.name}
+                      subTitle={category.caption}
+                    />
+                  </YGroup.Item>
+                  {category.options.map(renderTraitOption)}
 
-                <Separator />
-              </YGroup>
-            ))}
-          </YStack>
-        </ScrollView>
+                  <Separator />
+                </YGroup>
+              ))}
+            </YStack>
+          </ScrollView>
+        )}
       </YStack>
     </View>
   );

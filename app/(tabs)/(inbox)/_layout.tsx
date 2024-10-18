@@ -2,7 +2,7 @@ import React, {useCallback} from 'react';
 import {Stack, useRouter} from 'expo-router';
 import {useTheme} from '../../../dopebase';
 import {Button} from 'tamagui';
-import {LogOut} from '@tamagui/lucide-icons';
+import {Bell, LogOut} from '@tamagui/lucide-icons';
 import {useAuth} from '../../../hooks/useAuth';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 
@@ -25,32 +25,16 @@ export default function ExploreLayout() {
         name='index'
         options={{
           headerShown: true,
-          title: 'Profile',
+          title: 'Inbox',
           headerRight: () => (
             <Button
-              onPress={onLogout}
+              onPress={() => {}}
               chromeless
-              icon={<LogOut size='$1' />}
+              icon={<Bell size='$1' />}
               color={colorSet.primaryForeground}
               size='$4'
             />
           ),
-        }}
-      />
-      <Stack.Screen
-        name='kennel'
-        options={{
-          headerShown: true,
-          title: 'Manage kennel',
-          headerShadowVisible: false,
-        }}
-      />
-      <Stack.Screen
-        name='preferences'
-        options={{
-          headerShown: true,
-          headerShadowVisible: false,
-          title: 'Your preferences',
         }}
       />
     </Stack>

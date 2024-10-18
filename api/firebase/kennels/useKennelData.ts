@@ -38,6 +38,7 @@ export const useKennelData = () => {
         })
       );
       setKennels(kennelsData);
+      console.log('all kennels', kennelsData);
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -47,8 +48,9 @@ export const useKennelData = () => {
   };
 
   const fetchKennelsByBreed = async (breedName: string) => {
-    setLoading(true);
     try {
+      setLoading(true);
+      console.log('fetching kennel for', breedName);
       const response = await db
         .collection('kennels')
         .where('breeds', 'array-contains', {name: breedName})
@@ -59,13 +61,18 @@ export const useKennelData = () => {
         ...doc.data(),
       })) as Kennel[];
 
+      console.log('kennels data: ', kennelsData);
+
       setKennels(kennelsData);
       setError(null);
+      setLoading(false);
     } catch (err: any) {
+      console.log('error: ', err);
       setError(err.message);
+      setLoading(false);
+
       console.error('Error fetching kennels by breed:', err);
     }
-    setLoading(false);
   };
 
   // Get a kennel by user ID

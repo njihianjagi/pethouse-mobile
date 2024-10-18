@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useLocalSearchParams} from 'expo-router';
-import {ScrollView, StyleSheet} from 'react-native';
+import {ScrollView} from 'react-native';
 import {
   Text,
   Image,
@@ -11,16 +11,19 @@ import {
   H2,
   Paragraph,
   ListItem,
-  Separator,
   YGroup,
   Spinner,
   View,
+  Separator,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../../dopebase';
-import {CheckCircle, Heart, MapPin} from '@tamagui/lucide-icons';
-import {useBreedSearch} from '../../../hooks/useBreedSearch';
+import {Heart, MapPin} from '@tamagui/lucide-icons';
 import useKennelData from '../../../api/firebase/kennels/useKennelData';
-import {DogBreed} from '../../../api/firebase/breeds/useBreedData';
+import {
+  DogBreed,
+  useBreedData,
+} from '../../../api/firebase/breeds/useBreedData';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 
 export default function BreedDetailScreen() {
   const {theme, appearance} = useTheme();
@@ -29,6 +32,7 @@ export default function BreedDetailScreen() {
   const {localized} = useTranslations();
 
   const {breedName} = useLocalSearchParams();
+
   const unslugifyBreedName = (sluggedName: string): string => {
     return sluggedName
       .split('-')
@@ -36,23 +40,51 @@ export default function BreedDetailScreen() {
       .join(' ')
       .toLowerCase();
   };
-  const unslugifiedBreedName = unslugifyBreedName(breedName as string);
 
   const {
     kennels,
     loading: kennelsLoading,
     error: kennelsError,
     fetchKennelsByBreed,
+    fetchAllKennels,
   } = useKennelData();
 
   const [breed, setBreed] = useState({} as DogBreed);
   const [relevantKennels, setRelevantKennels] = useState([] as any);
+  const currentUser = useCurrentUser();
 
-  const {traitPreferences, findBreedByName} = useBreedSearch();
+  const {loading: breedLoading, findBreedByName} = useBreedData();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (breedName) {
+        console.log(unslugifyBreedName(breedName as string));
+        const foundBreed = findBreedByName(
+          unslugifyBreedName(breedName as string) as string
+        );
+        setBreed(foundBreed as DogBreed);
+      }
+    };
+
+    fetchData();
+  }, [unslugifyBreedName, findBreedByName]);
+
+  useEffect(() => {
+    if (breed) {
+      fetchKennelsByBreed(breed.name);
+      fetchAllKennels();
+    }
+  }, [breed]);
+
+  useEffect(() => {
+    if (kennels) {
+      setRelevantKennels(kennels);
+    }
+  }, [kennels]);
 
   // Function to determine if a trait matches user preferences
   const isTraitMatching = (traitName: string, traitValue: {score: number}) => {
-    const preference = traitPreferences[traitName];
+    const preference = currentUser.traitPreferences[traitName];
     if (preference === null || preference === undefined) return false;
 
     if (typeof preference === 'boolean') {
@@ -63,26 +95,18 @@ export default function BreedDetailScreen() {
     return false;
   };
 
-  useEffect(() => {
-    if (unslugifiedBreedName) {
-      const foundBreed = findBreedByName(unslugifiedBreedName as string);
-      setBreed(foundBreed as DogBreed);
-      if (foundBreed) {
-        fetchKennelsByBreed(foundBreed.name);
-      }
-    }
-  }, [unslugifiedBreedName, findBreedByName, fetchKennelsByBreed]);
-
-  useEffect(() => {
-    if (kennels) {
-      setRelevantKennels(kennels);
-    }
-  }, [kennels]);
-
-  if (!breed) {
+  if (breedLoading && !breed) {
     return (
-      <View>
+      <View flex={1} justifyContent='center' alignItems='center'>
         <Spinner size='large' color={colorSet.primaryForeground} />
+      </View>
+    );
+  }
+
+  if (!breedLoading && !breed) {
+    return (
+      <View flex={1} justifyContent='center' alignItems='center'>
+        <Text>Error loading breed</Text>
       </View>
     );
   }
@@ -179,7 +203,7 @@ export default function BreedDetailScreen() {
                   {localized('Kennels offering this breed')}
                 </Text>
               </YGroup.Item>
-
+              <Separator />
               {kennelsLoading ? (
                 <Spinner size='small' color={colorSet.primaryForeground} />
               ) : kennelsError ? (

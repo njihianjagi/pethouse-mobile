@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
-import {useTheme, useTranslations} from '../../dopebase';
-import useCurrentUser from '../../hooks/useCurrentUser';
+import {useTheme, useTranslations} from '../../../dopebase';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 import {useNavigation, useRouter} from 'expo-router';
 import {
   Button,

@@ -14,6 +14,8 @@ export default function ExploreLayout() {
         name='index'
         options={{
           headerShown: true,
+          headerShadowVisible: false,
+          title: 'Explore Breeds',
           headerRight: () => (
             <Button
               onPress={() => {}}
@@ -27,7 +29,11 @@ export default function ExploreLayout() {
       />
       <Stack.Screen
         name='[breedName]'
-        options={{headerShown: true, title: 'Breed Details'}}
+        options={{
+          headerShown: true,
+          headerShadowVisible: false,
+          title: 'Breed Details',
+        }}
       />
     </Stack>
   );

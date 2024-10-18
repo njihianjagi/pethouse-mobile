@@ -150,8 +150,6 @@ const traitCategories = [
 ];
 
 export const useBreedSearch = () => {
-  const currentUser = useCurrentUser();
-
   const [searchText, setSearchText] = useState('');
   const [traitPreferences, setTraitPreferences] = useState<TraitPreferences>(
     {}
@@ -207,7 +205,6 @@ export const useBreedSearch = () => {
   const filterBreeds = useMemo(
     () =>
       debounce((preferences: typeof traitPreferences, searchQuery: string) => {
-        setLoading(true);
         const filtered = breeds.filter((breed) => {
           if (
             searchQuery &&
@@ -233,15 +230,15 @@ export const useBreedSearch = () => {
         });
         console.log('Matched breeds: ', filtered.length);
         setFilteredBreeds(filtered);
-        setLoading(false);
-      }, 600), // 300ms debounce time, adjust as needed
-    [breeds, evaluateTrait]
+      }, 300), // 300ms debounce time, adjust as needed
+    [breeds, searchText, evaluateTrait]
   );
 
   useEffect(() => {
     filterBreeds(traitPreferences, searchText);
+
     return () => {
-      filterBreeds.cancel(); // Cancel any pending debounced calls on cleanup
+      filterBreeds.cancel();
     };
   }, [traitPreferences, searchText, filterBreeds]);
 
@@ -271,6 +268,7 @@ export const useBreedSearch = () => {
       default:
         break;
     }
+    setLoading(false);
   }, []);
 
   return {

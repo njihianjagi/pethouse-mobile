@@ -64,8 +64,9 @@ const WelcomeScreen = (props) => {
 
   const tryToLoginFirst = async () => {
     setIsLoading(true);
-
+    console.log('trying to login first');
     if (!authManager?.retrievePersistedAuthUser) {
+      console.log('no persisted user');
       setIsLoading(false);
       return;
     }

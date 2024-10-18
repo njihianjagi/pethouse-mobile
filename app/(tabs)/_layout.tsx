@@ -32,7 +32,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name='index'
+        name='(home)'
         options={{
           title: 'Home',
           tabBarIcon: ({color, focused}) => (
@@ -56,7 +56,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name='inbox'
+        name='(inbox)'
         options={{
           title: 'Inbox',
           tabBarIcon: ({color, focused}) => (

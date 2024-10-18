@@ -5,6 +5,12 @@
       "request": "attach",
       "type": "reactnative",
       "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "radon-ide",
+      "request": "launch",
+      "name": "Radon IDE panel",
+      "android": {}
     }
   ]
 }

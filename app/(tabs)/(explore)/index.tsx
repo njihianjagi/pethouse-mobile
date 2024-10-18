@@ -30,6 +30,7 @@ export default function ExploreScreen() {
   const colorSet = theme.colors[appearance];
 
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   const {
     searchText,
@@ -45,6 +46,18 @@ export default function ExploreScreen() {
   //     updateFilter('traitPreferences', currentUser.traitPreferences);
   //   }
   // }, [currentUser]);
+
+  useEffect(() => {
+    if (searchText) {
+      setIsSearching(true);
+      const timer = setTimeout(() => {
+        setIsSearching(false);
+      }, 300); // Adjust this delay to match your debounce time in useBreedSearch
+      return () => clearTimeout(timer);
+    } else {
+      setIsSearching(false);
+    }
+  }, [searchText]);
 
   const CardItem = ({breed}) => (
     <Card
@@ -126,12 +139,12 @@ export default function ExploreScreen() {
           </Text>
         </XStack>
 
-        {breedsLoading ? (
-          <Spinner
-            size='large'
-            color={colorSet.primaryForeground}
-            margin='auto'
-          />
+        {isSearching || breedsLoading ? (
+          <View
+            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
+          >
+            <Spinner size='large' color={colorSet.primaryForeground} />
+          </View>
         ) : filteredBreeds.length === 0 ? (
           <Text>No breeds match your current filters.</Text>
         ) : (
