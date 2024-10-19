@@ -22,7 +22,7 @@ import {
   User,
 } from '@tamagui/lucide-icons';
 import {logout} from '../../../redux/reducers/auth';
-import {useRouter} from 'expo-router';
+import {Href, useRouter} from 'expo-router';
 import {useAuth} from '../../../hooks/useAuth';
 
 const ProfileScreen = () => {
@@ -132,7 +132,7 @@ const ProfileScreen = () => {
                   subTitle='Manage your breeds and services'
                   iconAfter={ChevronRight}
                   pressTheme
-                  onPress={() => router.push('(profile)/kennel')}
+                  onPress={() => router.push('/(profile)/kennel')}
                 />
               ) : (
                 <ListItem
@@ -141,7 +141,7 @@ const ProfileScreen = () => {
                   subTitle='Manage your preferred breeds'
                   iconAfter={ChevronRight}
                   pressTheme
-                  onPress={() => router.push('(profile)/preferences')}
+                  onPress={() => router.push('/(profile)/preferences')}
                 />
               )}
               <Separator />

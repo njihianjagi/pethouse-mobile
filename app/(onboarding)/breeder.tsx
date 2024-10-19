@@ -34,14 +34,14 @@ import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete'
 import {useTheme, useTranslations} from '../../dopebase';
 import {updateUser} from '../../api/firebase/users/userClient';
 import {useConfig} from '../../config';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import allBreeds from '../../assets/data/breeds_with_group.json';
 import debounce from 'lodash/debounce';
 import * as ImagePicker from 'expo-image-picker';
 import {storageAPI} from '../../api/firebase/media';
-import {useRouter} from 'expo-router';
+import {Href, useRouter} from 'expo-router';
 import {setUserData} from '../../redux/reducers/auth';
 import {useDispatch} from 'react-redux';
+import {useBreedData} from '../../api/firebase/breeds/useBreedData';
 
 // @ts-ignore
 navigator.geolocation = require('@react-native-community/geolocation');
@@ -54,9 +54,13 @@ const BreederOnboardingScreen = () => {
     addKennel,
     updateKennel,
     getKennelByUserId,
+    addKennelBreed,
+    removeKennelBreed,
     loading: kennelLoading,
-    error,
+    error: kennelError,
   } = useKennelData();
+
+  const {fetchBreedByName} = useBreedData();
 
   const [kennelName, setKennelName] = useState('');
   const [location, setLocation] = useState('');
@@ -209,6 +213,11 @@ const BreederOnboardingScreen = () => {
 
     setLoading(true);
     try {
+      const breedData = await fetchBreedByName(selectedBreed.name);
+      if (!breedData) {
+        throw new Error('Selected breed not found in the database');
+      }
+
       const uploadedImageUrls = await Promise.all(
         breedImages.map(async (uri) => storageAPI.uploadMedia({uri}))
       );
@@ -217,30 +226,35 @@ const BreederOnboardingScreen = () => {
         name: kennelName,
         location,
         services: selectedServices,
-        breeds: selectedBreed
-          ? [{name: selectedBreed.name, images: uploadedImageUrls}]
-          : [],
         userId: currentUser.id || currentUser.uid,
       };
 
-      if (existingKennel) {
-        await updateKennel(existingKennel.id, {
-          ...existingKennel,
-          ...kennelData,
-        });
-      } else {
-        const newKennel: any = await addKennel(kennelData);
-        const response: any = await updateUser(currentUser.id, {
-          kennelId: newKennel.id,
-        });
-        await dispatch(
-          setUserData({
-            user: response.user,
-          })
-        );
-      }
+      let kennelId;
+      // if (existingKennel) {
+      //   await updateKennel(existingKennel.id, kennelData);
+      //   kennelId = existingKennel.id;
+      // } else {
+      const newKennel = await addKennel(kennelData);
+      kennelId = newKennel?.id;
+      await updateUser(currentUser.id, {kennelId: newKennel?.id});
+      // }
 
-      router.replace('(tabs)');
+      // // Remove existing breed associations and add new ones
+      // if (existingKennel) {
+      //   await removeKennelBreed(kennelId, breedData.id!);
+      // }
+
+      await addKennelBreed({
+        kennelId,
+        breedId: breedData.id!,
+        breedName: breedData.name,
+        images: uploadedImageUrls.map((url) => ({
+          thumbnailURL: url,
+          downloadURL: url,
+        })),
+      });
+
+      router.replace('(tabs)' as Href);
 
       // Toast.show({
       //   title: 'Success',
@@ -271,7 +285,7 @@ const BreederOnboardingScreen = () => {
           color={theme.colors[appearance].primaryForeground}
         />
       ) : (
-        <KeyboardAwareScrollView
+        <ScrollView
           style={{width: '100%', height: '100%'}}
           keyboardShouldPersistTaps='always'
         >
@@ -579,7 +593,7 @@ const BreederOnboardingScreen = () => {
             </Sheet.Frame>
             <Sheet.Overlay />
           </Sheet>
-        </KeyboardAwareScrollView>
+        </ScrollView>
       )}
     </View>
   );

@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {FlatList, ScrollView} from 'react-native';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {useNavigation, useRouter} from 'expo-router';
+import {Href, useNavigation, useRouter} from 'expo-router';
 import {
   Text,
   View,
@@ -13,7 +13,10 @@ import {
   Card,
   Spinner,
   Popover,
+  Image,
 } from 'tamagui';
+import {LinearGradient} from 'tamagui/linear-gradient';
+
 import {ListFilter, ArrowRight, ChevronDown} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {useDispatch} from 'react-redux';
@@ -39,13 +42,10 @@ export default function ExploreScreen() {
     updateFilter,
     loading: breedsLoading,
     sortOption,
+    page,
+    hasMore,
+    loadMoreBreeds,
   } = useBreedSearch();
-
-  // useEffect(() => {
-  //   if (currentUser?.traitPreferences) {
-  //     updateFilter('traitPreferences', currentUser.traitPreferences);
-  //   }
-  // }, [currentUser]);
 
   useEffect(() => {
     if (searchText) {
@@ -66,14 +66,31 @@ export default function ExploreScreen() {
       margin={5}
       onPress={() =>
         router.push(
-          `(explore)/${breed.name.toLowerCase().replace(/\s+/g, '-')}`
+          `(explore)/${breed.name.toLowerCase().replace(/\s+/g, '-')}` as Href
         )
       }
       pressTheme
+      overflow='hidden'
     >
-      <Card.Header padded>
+      <Card.Background>
+        <Image
+          source={{uri: breed.image || ''}}
+          width='100%'
+          height='100%'
+          objectFit='cover'
+        />
+        <LinearGradient
+          start={[0, 0]}
+          end={[0, 1]}
+          fullscreen
+          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']}
+          zIndex={1}
+        />
+      </Card.Background>
+
+      <Card.Header padded zIndex={2}>
         <Text
-          color={colorSet.primaryForeground}
+          color={colorSet.primaryBackground}
           fontSize={24}
           fontWeight='bold'
         >
@@ -81,19 +98,14 @@ export default function ExploreScreen() {
         </Text>
       </Card.Header>
 
-      <Card.Footer padded>
+      <Card.Footer padded zIndex={2}>
         <XStack flex={1} />
         <Button
           borderRadius='$10'
-          icon={<ArrowRight size='$2' color={colorSet.primaryForeground} />}
+          icon={<ArrowRight size='$2' color={colorSet.primaryBackground} />}
           chromeless
-        ></Button>
+        />
       </Card.Footer>
-
-      <Card.Background
-        backgroundColor={colorSet.secondaryForeground}
-        borderRadius={16}
-      />
     </Card>
   );
 
@@ -131,12 +143,11 @@ export default function ExploreScreen() {
           )}
         </XStack>
 
-        <XStack justifyContent='space-between' alignItems='center'>
-          <SortPopover sortOption={sortOption} />
-
+        <XStack justifyContent='flex-end' alignItems='center'>
           <Text fontSize='$4' color={colorSet.primaryForeground}>
             {filteredBreeds.length} Breeds
           </Text>
+          <SortPopover sortOption={sortOption} />
         </XStack>
 
         {isSearching || breedsLoading ? (
@@ -148,19 +159,23 @@ export default function ExploreScreen() {
         ) : filteredBreeds.length === 0 ? (
           <Text>No breeds match your current filters.</Text>
         ) : (
-          <ScrollView>
-            <FlatList
-              data={filteredBreeds}
-              renderItem={({item, index}) => (
-                <XStack flex={1} key={index}>
-                  <CardItem breed={item} />
-                </XStack>
-              )}
-              keyExtractor={(item) => item.name}
-              numColumns={2}
-              scrollEnabled={false}
-            />
-          </ScrollView>
+          <FlatList
+            data={filteredBreeds}
+            renderItem={({item, index}) => (
+              <XStack flex={1} key={index}>
+                <CardItem breed={item} />
+              </XStack>
+            )}
+            keyExtractor={(item) => item.name}
+            numColumns={2}
+            onEndReached={loadMoreBreeds}
+            onEndReachedThreshold={0.1}
+            ListFooterComponent={() =>
+              hasMore ? (
+                <Spinner size='large' color={colorSet.primaryForeground} />
+              ) : null
+            }
+          />
         )}
       </YStack>
 

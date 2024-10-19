@@ -3,6 +3,7 @@ import {db} from '../../../firebase/config'; // Adjust the path as necessary
 import breedsData from '../../../assets/data/breeds_with_group_and_traits.json';
 
 export interface DogBreed {
+  id?: string;
   name: string;
   description: string;
   height: string;
@@ -41,79 +42,26 @@ export const useBreedData = () => {
     setLoading(false);
   };
 
-  // Fetch all breeds for a specific kennel
-  const fetchKennelBreeds = async (kennelId) => {
-    if (!kennelId) return;
+  // Get breed by ID
+  const getBreedById = async (id: string): Promise<DogBreed | null> => {
+    setLoading(true);
     try {
-      setLoading(true);
+      const breedDoc = await db.collection('breeds').doc(id).get();
 
-      const response = await db
-        .collection('kennel_breeds')
-        .where('kennel_id', '==', kennelId)
-        .get();
-      const kennelBreedsData: any = response.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setKennelBreeds(kennelBreedsData);
-      setError(null);
+      if (!breedDoc.exists) {
+        setLoading(false);
+        console.log('No breed found with the given ID');
+        return null;
+      }
+
+      const breed = {id: breedDoc.id, ...breedDoc.data()} as DogBreed;
       setLoading(false);
+      return breed;
     } catch (err: any) {
       setError(err.message);
       setLoading(false);
-
-      console.error('Error fetching kennel breeds:', err);
-    }
-  };
-
-  // Add a new breed to a kennel
-  const addKennelBreed = async (kennelId, breed) => {
-    if (!kennelId) return;
-    try {
-      setLoading(true);
-      const response = await db
-        .collection('kennel_breeds')
-        .add({...breed, kennel_id: kennelId});
-      setKennelBreeds((prev) => [...prev, {...breed, id: response.id}]);
-      setLoading(false);
-    } catch (err: any) {
-      setError(err.message);
-      setLoading(false);
-      console.error('Error adding kennel breed:', err);
-    }
-  };
-
-  // Update an existing breed
-  const updateKennelBreed = async (id, updatedData) => {
-    try {
-      setLoading(true);
-      await db.collection('kennel_breeds').doc(id).update(updatedData);
-      setKennelBreeds((prev) =>
-        prev.map((breed) =>
-          breed.id === id ? {...breed, ...updatedData} : breed
-        )
-      );
-      setLoading(false);
-    } catch (err: any) {
-      setError(err.message);
-      setLoading(false);
-      console.error('Error updating kennel breed:', err);
-    }
-  };
-
-  // Delete a breed
-  const deleteKennelBreed = async (id) => {
-    try {
-      setLoading(true);
-
-      await db.collection('kennel_breeds').doc(id).delete();
-      setKennelBreeds((prev) => prev.filter((breed) => breed.id !== id));
-      setLoading(false);
-    } catch (err: any) {
-      setLoading(false);
-
-      setError(err.message);
-      console.error('Error deleting kennel breed:', err);
+      console.error('Error fetching breed by ID:', err);
+      return null;
     }
   };
 
@@ -132,16 +80,40 @@ export const useBreedData = () => {
     }
   }, [breedsData]);
 
+  const fetchBreedByName = async (
+    breedName: string
+  ): Promise<DogBreed | null> => {
+    setLoading(true);
+    try {
+      const breedRef = db.collection('breeds').where('name', '==', breedName);
+      const snapshot = await breedRef.get();
+
+      if (snapshot.empty) {
+        setLoading(false);
+        console.log('No matching breed found');
+        return null;
+      }
+
+      const breedDoc = snapshot.docs[0];
+      const breed = {id: breedDoc.id, ...breedDoc.data()} as DogBreed;
+      setLoading(false);
+      return breed;
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+      console.error('Error fetching breed by name:', err);
+      return null;
+    }
+  };
+
   return {
     allBreeds,
     kennelBreeds,
     loading,
     error,
-    addKennelBreed,
-    updateKennelBreed,
-    deleteKennelBreed,
-    fetchKennelBreeds,
+    getBreedById,
     fetchAllBreeds,
     findBreedByName,
+    fetchBreedByName,
   };
 };

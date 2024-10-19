@@ -9,7 +9,6 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
   useTheme,
   useTranslations,
@@ -18,6 +17,7 @@ import {
 } from '../../dopebase';
 import {useAuth} from '../../hooks/useAuth';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
+import {ScrollView} from 'tamagui';
 
 const ResetPasswordScreen = (props) => {
   const authManager = useAuth();
@@ -76,7 +76,7 @@ const ResetPasswordScreen = (props) => {
 
   return (
     <View style={styles.container}>
-      <KeyboardAwareScrollView
+      <ScrollView
         style={{flex: 1, width: '100%'}}
         keyboardShouldPersistTaps='always'
       >
@@ -99,7 +99,7 @@ const ResetPasswordScreen = (props) => {
         >
           <Text style={styles.sendText}>{localized('Send')}</Text>
         </TouchableOpacity>
-      </KeyboardAwareScrollView>
+      </ScrollView>
       {isLoading && <ActivityIndicator />}
     </View>
   );

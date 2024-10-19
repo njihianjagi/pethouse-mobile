@@ -84,7 +84,7 @@ const WelcomeScreen = (props) => {
             handleInitialNotification();
           }
 
-          return router.push('(onboarding)');
+          return router.push('/(onboarding)');
         }
         setIsLoading(false);
       })
@@ -142,10 +142,10 @@ const WelcomeScreen = (props) => {
               onPress={() =>
                 config.isSMSAuthEnabled
                   ? router.push({
-                      pathname: '/SmsAuthenticationScreen',
+                      pathname: '/login-phone',
                       params: {isSigningUp: 'true'},
                     })
-                  : router.push('/SignupScreen')
+                  : router.push('/signup-email')
               }
             >
               {localized('Get Started')}
@@ -156,10 +156,10 @@ const WelcomeScreen = (props) => {
               onPress={() =>
                 config.isSMSAuthEnabled
                   ? router.push({
-                      pathname: '/SmsAuthenticationScreen',
+                      pathname: '/login-phone',
                       params: {isSigningUp: 'false'},
                     })
-                  : router.push('/LoginScreen')
+                  : router.push('/login-email')
               }
             >
               <Text style={styles.alreadyHaveAnAccountText}>

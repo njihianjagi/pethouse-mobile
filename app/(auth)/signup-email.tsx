@@ -12,7 +12,6 @@ import {
   View,
 } from 'react-native';
 // import { useNavigation } from '@react-navigation/core'
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {useDispatch} from 'react-redux';
 import {
   useTheme,
@@ -26,7 +25,7 @@ import {localizedErrorMessage} from '../../utils/ErrorCode';
 import TermsOfUseView from '../../components/TermsOfUseView';
 import {useAuth} from '../../hooks/useAuth';
 import {useConfig} from '../../config';
-import {Input} from 'tamagui';
+import {Input, ScrollView} from 'tamagui';
 
 const SignupScreen = () => {
   // const navigation = useNavigation()
@@ -197,7 +196,7 @@ const SignupScreen = () => {
 
   return (
     <View style={styles.container}>
-      <KeyboardAwareScrollView
+      <ScrollView
         style={{flex: 1, width: '100%'}}
         keyboardShouldPersistTaps='always'
       >
@@ -233,7 +232,7 @@ const SignupScreen = () => {
           privacyPolicyLink={config.privacyPolicyLink}
           style={styles.tos}
         />
-      </KeyboardAwareScrollView>
+      </ScrollView>
       {loading && <ActivityIndicator />}
     </View>
   );

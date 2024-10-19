@@ -9,6 +9,7 @@ export const ConfigContext = React.createContext({} as any);
 export const ConfigProvider = ({children}) => {
   const {localized} = useTranslations();
   const config = {
+    isDelayedLoginEnabled: true,
     isSMSAuthEnabled: true,
     isGoogleAuthEnabled: true,
     isFacebookAuthEnabled: false,

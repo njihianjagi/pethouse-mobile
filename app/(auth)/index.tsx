@@ -39,15 +39,15 @@ const LoadScreen = () => {
         fetchPersistedUserIfNeeded();
         return;
       }
-      router.push('/DelayedLoginScreen');
+      router.push('/delayed-login');
     } else {
-      router.push('/WalkthroughScreen');
+      router.push('/walkthrough');
     }
   };
 
   const fetchPersistedUserIfNeeded = async () => {
     if (!authManager?.retrievePersistedAuthUser) {
-      router.push('/WelcomeScreen');
+      router.push('/welcome');
     }
     authManager
       ?.retrievePersistedAuthUser(config)
@@ -65,7 +65,7 @@ const LoadScreen = () => {
       })
       .catch((error) => {
         console.log(error);
-        router.push('/WelcomeScreen');
+        router.push('/welcome');
       });
   };
 

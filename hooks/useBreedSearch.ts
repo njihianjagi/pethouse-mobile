@@ -167,14 +167,9 @@ export const useBreedSearch = () => {
   );
   const [filteredBreeds, setFilteredBreeds] = useState<DogBreed[]>([]);
 
-  const findBreedByName = useCallback(
-    (breedName: string): DogBreed | undefined => {
-      return breeds.find(
-        (breed) => breed.name.toLowerCase() === breedName.toLowerCase()
-      );
-    },
-    []
-  );
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const breedsPerPage = 8;
 
   const evaluateTrait = useCallback((breedTrait, preference, traitName) => {
     if (typeof preference === 'boolean') {
@@ -204,38 +199,62 @@ export const useBreedSearch = () => {
 
   const filterBreeds = useMemo(
     () =>
-      debounce((preferences: typeof traitPreferences, searchQuery: string) => {
-        const filtered = breeds.filter((breed) => {
-          if (
-            searchQuery &&
-            !breed.name.toLowerCase().includes(searchQuery.toLowerCase())
-          ) {
-            return false;
-          }
-
-          return Object.entries(preferences).every(([trait, preference]) => {
-            const mappedTrait = traitMapping[trait] || trait;
-            if (Array.isArray(mappedTrait)) {
-              return mappedTrait.every((subTrait) => {
-                const breedTrait = breed.traits && breed.traits[subTrait];
-                if (!breedTrait) return true;
-                return evaluateTrait(breedTrait, preference, subTrait);
-              });
-            } else {
-              const breedTrait = breed.traits && breed.traits[mappedTrait];
-              if (!breedTrait) return true;
-              return evaluateTrait(breedTrait, preference, mappedTrait);
+      debounce(
+        (
+          preferences: typeof traitPreferences,
+          searchQuery: string,
+          currentPage: number
+        ) => {
+          const filtered = breeds.filter((breed) => {
+            if (
+              searchQuery &&
+              !breed.name.toLowerCase().includes(searchQuery.toLowerCase())
+            ) {
+              return false;
             }
+
+            return Object.entries(preferences).every(([trait, preference]) => {
+              const mappedTrait = traitMapping[trait] || trait;
+              if (Array.isArray(mappedTrait)) {
+                return mappedTrait.every((subTrait) => {
+                  const breedTrait = breed.traits && breed.traits[subTrait];
+                  if (!breedTrait) return true;
+                  return evaluateTrait(breedTrait, preference, subTrait);
+                });
+              } else {
+                const breedTrait = breed.traits && breed.traits[mappedTrait];
+                if (!breedTrait) return true;
+                return evaluateTrait(breedTrait, preference, mappedTrait);
+              }
+            });
           });
-        });
-        console.log('Matched breeds: ', filtered.length);
-        setFilteredBreeds(filtered);
-      }, 300), // 300ms debounce time, adjust as needed
+
+          const start = (currentPage - 1) * breedsPerPage;
+          const end = start + breedsPerPage;
+          const paginatedBreeds = filtered.slice(0, end);
+
+          console.log('Matched breeds: ', filtered.length);
+          setFilteredBreeds(filtered);
+          setLoading(false);
+        },
+        300
+      ), // 300ms debounce time, adjust as needed
     [breeds, searchText, evaluateTrait]
   );
 
+  const loadMoreBreeds = useCallback(() => {
+    if (hasMore && !loading) {
+      setPage((prevPage) => prevPage + 1);
+      setLoading(true);
+      filterBreeds(traitPreferences, searchText, page + 1);
+      return () => {
+        filterBreeds.cancel();
+      };
+    }
+  }, [hasMore, loading, page, filterBreeds]);
+
   useEffect(() => {
-    filterBreeds(traitPreferences, searchText);
+    filterBreeds(traitPreferences, searchText, page);
 
     return () => {
       filterBreeds.cancel();
@@ -268,7 +287,6 @@ export const useBreedSearch = () => {
       default:
         break;
     }
-    setLoading(false);
   }, []);
 
   return {
@@ -284,6 +302,8 @@ export const useBreedSearch = () => {
     breedGroup,
     lifeSpan,
     weight,
-    findBreedByName,
+    page,
+    hasMore,
+    loadMoreBreeds,
   };
 };

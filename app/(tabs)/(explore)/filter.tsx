@@ -15,6 +15,12 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
+  // useEffect(() => {
+  //   if (currentUser?.traitPreferences) {
+  //     updateFilter('traitPreferences', currentUser.traitPreferences);
+  //   }
+  // }, [currentUser]);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange} snapPoints={[90]}>
       <Sheet.Overlay />

@@ -1,16 +1,31 @@
 import {useState, useEffect} from 'react';
 import {db} from '../../../firebase/config'; // Adjust the path as necessary
+import {
+  query,
+  where,
+  getDocs,
+  getDoc,
+  doc,
+  addDoc,
+  collection,
+  deleteDoc,
+  updateDoc,
+} from '@react-native-firebase/firestore';
 
 export interface Kennel {
   id: string;
   name: string;
   location: string;
   services: string[];
-  breeds: {
-    name: string;
-    images: string[];
-  }[];
   userId: string;
+}
+
+export interface KennelBreed {
+  id?: string;
+  kennelId: string;
+  breedId: string;
+  breedName: string;
+  images: {thumbnailURL: string; downloadURL: string}[];
 }
 
 export const useKennelData = () => {
@@ -23,22 +38,12 @@ export const useKennelData = () => {
     setLoading(true);
     try {
       const response = await db.collection('kennels').get();
-      const kennelsData = await Promise.all(
-        response.docs.map(async (doc) => {
-          const kennel: any = {id: doc.id, ...doc.data()};
-          const breedsResponse = await db
-            .collection('breeds')
-            .where('kennel_id', '==', doc.id)
-            .get();
-          kennel.breeds = breedsResponse.docs.map((breedDoc) => ({
-            id: breedDoc.id,
-            ...breedDoc.data(),
-          }));
-          return kennel;
-        })
-      );
+      const kennelsData = response.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setKennels(kennelsData);
-      console.log('all kennels', kennelsData);
+      // console.log('all kennels', JSON.stringify(kennelsData));
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -47,32 +52,31 @@ export const useKennelData = () => {
     setLoading(false);
   };
 
-  const fetchKennelsByBreed = async (breedName: string) => {
+  const fetchKennelsByBreed = async (breedId: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      console.log('fetching kennel for', breedName);
-      const response = await db
-        .collection('kennels')
-        .where('breeds', 'array-contains', {name: breedName})
-        .get();
+      const kennelBreedsCollection = db.collection('kennel_breeds');
+      const q = query(kennelBreedsCollection, where('breedId', '==', breedId));
+      const kennelBreedsSnapshot = await getDocs(q);
 
-      const kennelsData = response.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Kennel[];
+      const kennelIds = kennelBreedsSnapshot.docs.map(
+        (doc) => doc.data().kennelId
+      );
 
-      console.log('kennels data: ', kennelsData);
+      const kennelsData = await Promise.all(
+        kennelIds.map(async (id) => {
+          const kennelDoc = await getDoc(doc(db, 'kennels', id));
+          return {id: kennelDoc.id, ...kennelDoc.data()} as Kennel;
+        })
+      );
 
       setKennels(kennelsData);
       setError(null);
-      setLoading(false);
     } catch (err: any) {
-      console.log('error: ', err);
       setError(err.message);
-      setLoading(false);
-
       console.error('Error fetching kennels by breed:', err);
     }
+    setLoading(false);
   };
 
   // Get a kennel by user ID
@@ -83,11 +87,16 @@ export const useKennelData = () => {
         .collection('kennels')
         .where('userId', '==', userId)
         .get();
+
       if (response.empty) {
+        setLoading(false);
+        console.log('kennel not found');
         return null;
       }
 
       const kennelData = response.docs[0].data();
+      console.log('user kennel', kennelData);
+
       setLoading(false);
       return {id: response.docs[0].id, ...kennelData};
     } catch (err: any) {
@@ -98,37 +107,38 @@ export const useKennelData = () => {
     }
   };
 
-  // Add a new kennel
-  const addKennel = async (kennel) => {
+  const addKennel = async (kennelData: Omit<Kennel, 'id'>) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await db.collection('kennels').add(kennel);
-      setKennels((prev) => [...prev, {id: response.id, ...kennel}]);
-      setLoading(false);
-      return response;
+      const kennelsCollection = collection(db, 'kennels');
+      const docRef = await addDoc(kennelsCollection, kennelData);
+      const newKennel = {id: docRef.id, ...kennelData};
+      setKennels((prev) => [...prev, newKennel]);
+      setError(null);
+      return newKennel;
     } catch (err: any) {
       setError(err.message);
-      setLoading(false);
       console.error('Error adding kennel:', err);
     }
+    setLoading(false);
   };
 
-  // Update an existing kennel
-  const updateKennel = async (id, updatedData) => {
+  const updateKennel = async (id: string, updatedData: Partial<Kennel>) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      console.log(updatedData);
-      await db.collection('kennels').doc(id).update(updatedData);
+      const kennelRef = doc(db, 'kennels', id);
+      await updateDoc(kennelRef, updatedData);
       setKennels((prev) =>
         prev.map((kennel) =>
           kennel.id === id ? {...kennel, ...updatedData} : kennel
         )
       );
+      setError(null);
     } catch (err: any) {
       setError(err.message);
-      setLoading(false);
       console.error('Error updating kennel:', err);
     }
+    setLoading(false);
   };
 
   // Delete a kennel
@@ -145,16 +155,52 @@ export const useKennelData = () => {
     }
   };
 
+  const addKennelBreed = async (kennelBreedData: Omit<KennelBreed, 'id'>) => {
+    setLoading(true);
+    try {
+      const kennelBreedsCollection = collection(db, 'kennel_breeds');
+      await addDoc(kennelBreedsCollection, kennelBreedData);
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Error adding kennel breed:', err);
+    }
+    setLoading(false);
+  };
+
+  const removeKennelBreed = async (kennelId: string, breedId: string) => {
+    setLoading(true);
+    try {
+      const kennelBreedsCollection = collection(db, 'kennel_breeds');
+      const q = query(
+        kennelBreedsCollection,
+        where('kennelId', '==', kennelId),
+        where('breedId', '==', breedId)
+      );
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (document) => {
+        await deleteDoc(doc(db, 'kennel_breeds', document.id));
+      });
+      setError(null);
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Error removing kennel breed:', err);
+    }
+    setLoading(false);
+  };
+
   return {
     kennels,
     loading,
     error,
-    addKennel,
-    updateKennel,
-    deleteKennel,
     fetchAllKennels,
     fetchKennelsByBreed,
     getKennelByUserId,
+    addKennel,
+    updateKennel,
+    deleteKennel,
+    addKennelBreed,
+    removeKennelBreed,
   };
 };
 

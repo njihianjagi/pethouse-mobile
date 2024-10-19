@@ -5,17 +5,21 @@ import {Button} from 'tamagui';
 import {LogOut} from '@tamagui/lucide-icons';
 import {useAuth} from '../../../hooks/useAuth';
 import useCurrentUser from '../../../hooks/useCurrentUser';
+import {logout} from '../../../redux/reducers/auth';
 
 export default function ExploreLayout() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
   const currentUser = useCurrentUser();
+
   const authManager = useAuth();
 
   const router = useRouter();
+
   const onLogout = useCallback(() => {
-    authManager?.logout(currentUser);
+    logout();
+    authManager.logout(currentUser);
     router.push('/');
   }, [currentUser]);
 

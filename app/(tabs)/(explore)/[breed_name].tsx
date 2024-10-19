@@ -24,14 +24,19 @@ import {
   useBreedData,
 } from '../../../api/firebase/breeds/useBreedData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
+import {useRoute} from '@react-navigation/native';
 
-export default function BreedDetailScreen() {
+function BreedDetailScreen() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
   const {localized} = useTranslations();
 
-  const {breedName} = useLocalSearchParams();
+  const [breed, setBreed] = useState({} as DogBreed);
+  const [relevantKennels, setRelevantKennels] = useState([] as any);
+  const currentUser = useCurrentUser();
+
+  const {breed_name} = useLocalSearchParams();
 
   const unslugifyBreedName = (sluggedName: string): string => {
     return sluggedName
@@ -42,42 +47,41 @@ export default function BreedDetailScreen() {
   };
 
   const {
+    fetchKennelsByBreed,
     kennels,
     loading: kennelsLoading,
     error: kennelsError,
-    fetchKennelsByBreed,
-    fetchAllKennels,
   } = useKennelData();
 
-  const [breed, setBreed] = useState({} as DogBreed);
-  const [relevantKennels, setRelevantKennels] = useState([] as any);
-  const currentUser = useCurrentUser();
-
-  const {loading: breedLoading, findBreedByName} = useBreedData();
+  const {
+    loading: breedLoading,
+    error: breedError,
+    fetchBreedByName,
+    findBreedByName,
+  } = useBreedData();
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (breedName) {
-        console.log(unslugifyBreedName(breedName as string));
-        const foundBreed = findBreedByName(
-          unslugifyBreedName(breedName as string) as string
-        );
-        setBreed(foundBreed as DogBreed);
-      }
+    const fetchBreed = async () => {
+      const breedData = await fetchBreedByName(
+        unslugifyBreedName(breed_name as string)
+      );
+      const localBreedData = await findBreedByName(
+        unslugifyBreedName(breed_name as string)
+      );
+
+      setBreed({...breedData, ...localBreedData} as DogBreed);
     };
-
-    fetchData();
-  }, [unslugifyBreedName, findBreedByName]);
+    fetchBreed();
+  }, [breed_name]);
 
   useEffect(() => {
-    if (breed) {
-      fetchKennelsByBreed(breed.name);
-      fetchAllKennels();
+    if (breed?.id) {
+      fetchKennelsByBreed(breed.id);
     }
   }, [breed]);
 
   useEffect(() => {
-    if (kennels) {
+    if (kennels?.length) {
       setRelevantKennels(kennels);
     }
   }, [kennels]);
@@ -95,7 +99,7 @@ export default function BreedDetailScreen() {
     return false;
   };
 
-  if (breedLoading && !breed) {
+  if (breedLoading && !breedError && !breed?.id) {
     return (
       <View flex={1} justifyContent='center' alignItems='center'>
         <Spinner size='large' color={colorSet.primaryForeground} />
@@ -103,7 +107,7 @@ export default function BreedDetailScreen() {
     );
   }
 
-  if (!breedLoading && !breed) {
+  if (!breedLoading && breedError) {
     return (
       <View flex={1} justifyContent='center' alignItems='center'>
         <Text>Error loading breed</Text>
@@ -240,3 +244,5 @@ export default function BreedDetailScreen() {
     </ScrollView>
   );
 }
+
+export default BreedDetailScreen;

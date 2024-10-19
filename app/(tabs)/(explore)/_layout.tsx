@@ -28,7 +28,7 @@ export default function ExploreLayout() {
         }}
       />
       <Stack.Screen
-        name='[breedName]'
+        name='[breed_name]'
         options={{
           headerShown: true,
           headerShadowVisible: false,

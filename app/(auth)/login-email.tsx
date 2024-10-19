@@ -22,12 +22,12 @@ import {
   ActivityIndicator,
   Alert,
 } from '../../dopebase';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {setUserData} from '../../redux/reducers/auth';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 import {useAuth} from '../../hooks/useAuth';
 import {useConfig} from '../../config';
 import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton';
+import {ScrollView} from 'tamagui';
 
 const LoginScreen = () => {
   // const navigation = useNavigation()
@@ -206,7 +206,7 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <KeyboardAwareScrollView
+      <ScrollView
         style={{flex: 1, width: '100%'}}
         keyboardShouldPersistTaps='always'
       >
@@ -297,7 +297,7 @@ const LoginScreen = () => {
           </TouchableOpacity>
         )}
         {loading && <ActivityIndicator />}
-      </KeyboardAwareScrollView>
+      </ScrollView>
     </View>
   );
 };
