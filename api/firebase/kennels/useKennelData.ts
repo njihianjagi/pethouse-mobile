@@ -11,6 +11,7 @@ import {
   deleteDoc,
   updateDoc,
 } from '@react-native-firebase/firestore';
+import {useBreedData} from '../breeds/useBreedData';
 
 export interface Kennel {
   id: string;
@@ -34,6 +35,7 @@ export const useKennelData = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [kennelBreeds, setKennelBreeds] = useState([] as any);
+  const {fetchBreedById} = useBreedData();
 
   // Fetch all kennels with their associated breeds
   const fetchAllKennels = async () => {
@@ -158,29 +160,43 @@ export const useKennelData = () => {
   };
 
   // Fetch all breeds for a specific kennel
-  const fetchKennelBreeds = async (kennelId) => {
-    if (!kennelId) return;
+  const fetchKennelBreeds = async (kennelId: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
+      const kennelBreedsCollection = collection(db, 'kennel_breeds');
+      const q = query(
+        kennelBreedsCollection,
+        where('kennelId', '==', kennelId)
+      );
+      const querySnapshot = await getDocs(q);
 
-      const response = await db
-        .collection('kennel_breeds')
-        .where('kennel_id', '==', kennelId)
-        .get();
-      const kennelBreedsData: any = response.docs.map((doc) => ({
+      const kennelBreeds: any = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setKennelBreeds(kennelBreedsData);
+
+      // Populate breed data for each kennel breed
+      const populatedBreeds = await Promise.all(
+        kennelBreeds.map(async (kennelBreed) => {
+          const breedData = await fetchBreedById(kennelBreed.breedId);
+          return {
+            ...kennelBreed,
+            breedName: breedData?.name || 'Unknown Breed',
+            breedGroup: breedData?.breedGroup || 'Unknown Group',
+          };
+        })
+      );
+
+      setKennelBreeds(populatedBreeds);
       setError(null);
       setLoading(false);
-      return kennelBreedsData;
+      return populatedBreeds;
     } catch (err: any) {
       setError(err.message);
-      setLoading(false);
-
       console.error('Error fetching kennel breeds:', err);
     }
+    setLoading(false);
+    return kennelBreeds;
   };
 
   // Add a new breed to a kennel

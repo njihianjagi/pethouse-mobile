@@ -101,23 +101,8 @@ const ManageKennelScreen = () => {
 
   useEffect(() => {
     const loadKennelBreeds = async () => {
-      // Fetch kennel breeds from the new collection
-      const kennelBreeds = await fetchKennelBreeds(existingKennel.id);
-      console.log('breeds', kennelBreeds);
-      if (kennelBreeds.length) {
-        // Populate breed data for each kennel breed
-        const populatedBreeds = await Promise.all(
-          kennelBreeds.map(async (kennelBreed) => {
-            const breedData = await fetchBreedById(kennelBreed.breedId);
-            return {
-              ...kennelBreed,
-              breedName: breedData?.name,
-              breedGroup: breedData?.breedGroup,
-              // You can add more breed data here if needed
-            };
-          })
-        );
-
+      if (existingKennel?.id) {
+        const populatedBreeds = await fetchKennelBreeds(existingKennel.id);
         setSelectedBreeds(populatedBreeds);
       }
     };
