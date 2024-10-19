@@ -3,16 +3,17 @@ import {Stack} from 'expo-router';
 export default function AuthLayout() {
   return (
     <Stack>
+      <Stack.Screen name='index' options={{headerShown: false}} />
       <Stack.Screen name='welcome' options={{headerShown: false}} />
       <Stack.Screen name='walkthrough' options={{headerShown: false}} />
       <Stack.Screen name='delayed-login' options={{headerShown: false}} />
       <Stack.Screen
-        name='login-email'
-        options={{title: 'Login', headerShown: false}}
-      />
-      <Stack.Screen
         name='login-phone'
         options={{title: 'Continue to Doghouse', headerShown: false}}
+      />
+      <Stack.Screen
+        name='login-email'
+        options={{title: 'Login', headerShown: false}}
       />
       <Stack.Screen
         name='signup-email'

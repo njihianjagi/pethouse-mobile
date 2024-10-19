@@ -7,13 +7,13 @@ export const checkUserOnboardingStage = (user: any) => {
     // Redirect to the appropriate profile creation screen based on the role
     if (user.role === 'breeder') {
       console.log('going to breeder profile');
-      router.replace('(onboarding)/BreederProfileScreen');
+      router.replace('/(onboarding)/breeder');
     } else if (user.role === 'seeker') {
       console.log('going to seeker profile');
-      router.replace('(onboarding)/SeekerProfileScreen');
+      router.replace('/(onboarding)/seeker');
     }
   } else {
     console.log('going to role selection');
-    router.replace('(onboarding)/RoleSelectionScreen');
+    router.replace('/(onboarding)/role');
   }
 };

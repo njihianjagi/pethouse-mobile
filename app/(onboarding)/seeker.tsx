@@ -116,7 +116,7 @@ const SeekerOnboardingScreen = () => {
           user: response.user,
         })
       );
-      router.replace('(tabs)');
+      router.replace('/(tabs)');
     } catch (error: any) {
       setLoading(false);
       Alert.alert(

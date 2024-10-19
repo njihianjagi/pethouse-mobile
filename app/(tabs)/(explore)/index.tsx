@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {FlatList, ScrollView} from 'react-native';
+import {FlatList} from 'react-native';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {Href, useNavigation, useRouter} from 'expo-router';
@@ -12,19 +12,16 @@ import {
   Input,
   Card,
   Spinner,
-  Popover,
   Image,
 } from 'tamagui';
 import {LinearGradient} from 'tamagui/linear-gradient';
 
-import {ListFilter, ArrowRight, ChevronDown} from '@tamagui/lucide-icons';
+import {ListFilter, ArrowRight} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
-import {useDispatch} from 'react-redux';
 import {SortPopover} from './sort';
 import {BreedFilterSheet} from './filter';
 
 export default function ExploreScreen() {
-  const navigation = useNavigation();
   const router = useRouter();
 
   const currentUser = useCurrentUser();
@@ -33,7 +30,6 @@ export default function ExploreScreen() {
   const colorSet = theme.colors[appearance];
 
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
 
   const {
     searchText,
@@ -47,19 +43,7 @@ export default function ExploreScreen() {
     loadMoreBreeds,
   } = useBreedSearch();
 
-  useEffect(() => {
-    if (searchText) {
-      setIsSearching(true);
-      const timer = setTimeout(() => {
-        setIsSearching(false);
-      }, 300); // Adjust this delay to match your debounce time in useBreedSearch
-      return () => clearTimeout(timer);
-    } else {
-      setIsSearching(false);
-    }
-  }, [searchText]);
-
-  const CardItem = ({breed}) => (
+  const BreedCard = ({breed}) => (
     <Card
       bordered
       flex={1}
@@ -98,7 +82,7 @@ export default function ExploreScreen() {
         </Text>
       </Card.Header>
 
-      <Card.Footer padded zIndex={2}>
+      <Card.Footer zIndex={2}>
         <XStack flex={1} />
         <Button
           borderRadius='$10'
@@ -143,39 +127,39 @@ export default function ExploreScreen() {
           )}
         </XStack>
 
-        <XStack justifyContent='flex-end' alignItems='center'>
+        <XStack justifyContent='space-between' alignItems='center'>
+          <SortPopover sortOption={sortOption} />
           <Text fontSize='$4' color={colorSet.primaryForeground}>
             {filteredBreeds.length} Breeds
           </Text>
-          <SortPopover sortOption={sortOption} />
         </XStack>
 
-        {isSearching || breedsLoading ? (
-          <View
-            style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
-          >
+        {breedsLoading ? (
+          <View flex={1} justifyContent='center' alignItems='center'>
             <Spinner size='large' color={colorSet.primaryForeground} />
           </View>
         ) : filteredBreeds.length === 0 ? (
           <Text>No breeds match your current filters.</Text>
         ) : (
-          <FlatList
-            data={filteredBreeds}
-            renderItem={({item, index}) => (
-              <XStack flex={1} key={index}>
-                <CardItem breed={item} />
-              </XStack>
-            )}
-            keyExtractor={(item) => item.name}
-            numColumns={2}
-            onEndReached={loadMoreBreeds}
-            onEndReachedThreshold={0.1}
-            ListFooterComponent={() =>
-              hasMore ? (
-                <Spinner size='large' color={colorSet.primaryForeground} />
-              ) : null
-            }
-          />
+          <View paddingBottom='$12'>
+            <FlatList
+              data={filteredBreeds}
+              renderItem={({item, index}) => (
+                <XStack flex={1} key={index}>
+                  <BreedCard breed={item} />
+                </XStack>
+              )}
+              keyExtractor={(item) => item.name}
+              numColumns={2}
+              onEndReached={loadMoreBreeds}
+              onEndReachedThreshold={0.1}
+              ListFooterComponent={() =>
+                hasMore ? (
+                  <Spinner size='large' color={colorSet.primaryForeground} />
+                ) : null
+              }
+            />
+          </View>
         )}
       </YStack>
 

@@ -15,16 +15,16 @@ import {
   Spinner,
   View,
   Separator,
+  Tabs,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../../dopebase';
-import {Heart, MapPin} from '@tamagui/lucide-icons';
+import {CheckCircle, Heart, MapPin} from '@tamagui/lucide-icons';
 import useKennelData from '../../../api/firebase/kennels/useKennelData';
 import {
   DogBreed,
   useBreedData,
 } from '../../../api/firebase/breeds/useBreedData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {useRoute} from '@react-navigation/native';
 
 function BreedDetailScreen() {
   const {theme, appearance} = useTheme();
@@ -37,6 +37,8 @@ function BreedDetailScreen() {
   const currentUser = useCurrentUser();
 
   const {breed_name} = useLocalSearchParams();
+
+  const [expanded, setExpanded] = useState(false);
 
   const unslugifyBreedName = (sluggedName: string): string => {
     return sluggedName
@@ -122,123 +124,162 @@ function BreedDetailScreen() {
       }}
     >
       <YStack>
-        <Image source={{uri: breed.image}} height={200} />
+        <Image source={{uri: breed.image}} aspectRatio={3 / 2} />
         <YStack padding='$4' gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <YStack>
               <H2>{breed.name}</H2>
-              <Text>{`${breed.breedGroup} group • ${breed.popularity}% match`}</Text>
+              <Text>
+                {`${breed.breedGroup} group${
+                  currentUser?.traitPreferences
+                    ? ` • ${breed.popularity}% match`
+                    : ''
+                }`}
+              </Text>
             </YStack>
             <Button icon={Heart} circular size='$5' themeShallow />
           </XStack>
 
-          <Card bordered padding='$4'>
-            <YStack gap='$2'>
-              <Text fontSize='$6' fontWeight='bold'>
-                {localized('Overview')}
-              </Text>
-              <Paragraph numberOfLines={3}>{breed.description}</Paragraph>
-              <Button variant='outlined'>{localized('Read more...')}</Button>
-            </YStack>
-          </Card>
+          <Tabs
+            defaultValue='tab1'
+            orientation='horizontal'
+            flexDirection='column'
+          >
+            <Tabs.List flex={1} paddingBottom='$4' bordered>
+              <Tabs.Tab value='tab1' flex={1}>
+                <Text>{localized('Overview')}</Text>
+              </Tabs.Tab>
+              <Tabs.Tab value='tab2' flex={1}>
+                <Text>{localized('Traits')}</Text>
+              </Tabs.Tab>
+              <Tabs.Tab value='tab3' flex={1}>
+                <Text>{localized('Kennels')}</Text>
+              </Tabs.Tab>
+            </Tabs.List>
 
-          <Card bordered padding='$4'>
-            <YGroup gap='$4'>
-              <YGroup.Item>
-                <Text fontSize='$6' fontWeight='bold'>
-                  {localized('About the breed')}
-                </Text>
-              </YGroup.Item>
-              <YGroup.Item>
-                <YStack gap='$2'>
-                  <XStack gap='$2' alignItems='center'>
-                    <Text fontWeight='bold'>{localized('Height')}:</Text>
-                    <Text>{breed.height}</Text>
-                  </XStack>
-                  <XStack gap='$2' alignItems='center'>
-                    <Text fontWeight='bold'>{localized('Weight')}:</Text>
-                    <Text>{breed.weight}</Text>
-                  </XStack>
-                  <XStack gap='$2' alignItems='center'>
-                    <Text fontWeight='bold'>{localized('Life Span')}:</Text>
-                    <Text>{breed.lifeSpan}</Text>
-                  </XStack>
-                </YStack>
-              </YGroup.Item>
-            </YGroup>
-          </Card>
+            <Tabs.Content value='tab1'>
+              <YStack gap='$4'>
+                <Card bordered padding='$4'>
+                  <YStack gap='$2'>
+                    <Text fontSize='$6' fontWeight='bold'>
+                      {localized('Overview')}
+                    </Text>
+                    <Paragraph numberOfLines={expanded ? undefined : 3}>
+                      {breed.description}
+                    </Paragraph>
+                    <Button
+                      variant='outlined'
+                      onPress={() => setExpanded(!expanded)}
+                    >
+                      {localized(expanded ? 'Show less' : 'Read more...')}
+                    </Button>
+                  </YStack>
+                </Card>
 
-          {/* <Card bordered>
-            <YGroup gap='$4' padding='$4'>
-              <YGroup.Item>
-                <Text fontSize='$6' fontWeight='bold'>
-                  {localized('Traits')}
-                </Text>
-              </YGroup.Item>
+                <Card bordered padding='$4'>
+                  <YGroup gap='$4'>
+                    <YGroup.Item>
+                      <Text fontSize='$6' fontWeight='bold'>
+                        {localized('About the breed')}
+                      </Text>
+                    </YGroup.Item>
+                    <YGroup.Item>
+                      <YStack gap='$2'>
+                        <XStack gap='$2' alignItems='center'>
+                          <Text fontWeight='bold'>{localized('Height')}:</Text>
+                          <Text>{breed.height}</Text>
+                        </XStack>
+                        <XStack gap='$2' alignItems='center'>
+                          <Text fontWeight='bold'>{localized('Weight')}:</Text>
+                          <Text>{breed.weight}</Text>
+                        </XStack>
+                        <XStack gap='$2' alignItems='center'>
+                          <Text fontWeight='bold'>
+                            {localized('Life Span')}:
+                          </Text>
+                          <Text>{breed.lifeSpan}</Text>
+                        </XStack>
+                      </YStack>
+                    </YGroup.Item>
+                  </YGroup>
+                </Card>
+              </YStack>
+            </Tabs.Content>
 
-              {breed.traits &&
-                Object.entries(breed.traits).map(([key, value]) => (
-                  <YGroup.Item key={key}>
-                    <ListItem
-                      title={key}
-                      subTitle={`Score: ${(value as {score: number}).score}`}
-                      iconAfter={
-                        isTraitMatching(key, value as {score: number}) ? (
-                          <CheckCircle
-                            color={theme.colors[appearance].primary}
-                          />
-                        ) : undefined
-                      }
-                      backgroundColor={
-                        isTraitMatching(key, value as {score: number})
-                          ? theme.colors[appearance].secondaryBackground
-                          : undefined
-                      }
-                    />
+            <Tabs.Content value='tab2'>
+              <Card bordered>
+                <YGroup separator={<Separator />}>
+                  {breed.traits &&
+                    Object.entries(breed.traits).map(([key, value]) => (
+                      <YGroup.Item key={key}>
+                        <ListItem
+                          title={value.name}
+                          subTitle={`Score: ${
+                            (value as {score: number}).score
+                          }`}
+                          iconAfter={
+                            currentUser?.traitPreferences &&
+                            isTraitMatching(key, value as {score: number}) ? (
+                              <CheckCircle
+                                color={theme.colors[appearance].primary}
+                              />
+                            ) : undefined
+                          }
+                          backgroundColor={
+                            currentUser?.traitPreferences &&
+                            isTraitMatching(key, value as {score: number})
+                              ? theme.colors[appearance].secondaryBackground
+                              : undefined
+                          }
+                        />
+                      </YGroup.Item>
+                    ))}
+                </YGroup>
+              </Card>
+            </Tabs.Content>
+
+            <Tabs.Content value='tab3'>
+              <Card bordered>
+                <YGroup gap='$4' padding='$4'>
+                  <YGroup.Item>
+                    <Text fontSize='$6' fontWeight='bold'>
+                      {localized('Kennels offering this breed')}
+                    </Text>
                   </YGroup.Item>
-                ))}
-            </YGroup>
-          </Card> */}
-
-          <Card bordered>
-            <YGroup gap='$4' padding='$4'>
-              <YGroup.Item>
-                <Text fontSize='$6' fontWeight='bold'>
-                  {localized('Kennels offering this breed')}
-                </Text>
-              </YGroup.Item>
-              <Separator />
-              {kennelsLoading ? (
-                <Spinner size='small' color={colorSet.primaryForeground} />
-              ) : kennelsError ? (
-                <Text color={colorSet.error}>{kennelsError}</Text>
-              ) : relevantKennels.length === 0 ? (
-                <Text>{localized('No kennels found for this breed')}</Text>
-              ) : (
-                relevantKennels.map((kennel) => (
-                  <YGroup.Item key={kennel.id}>
-                    <ListItem
-                      title={kennel.name}
-                      subTitle={kennel.location}
-                      icon={MapPin}
-                      iconAfter={
-                        <Button
-                          size='$2'
-                          variant='outlined'
-                          onPress={() => {
-                            // Navigate to kennel detail page
-                            // You'll need to implement this navigation
-                          }}
-                        >
-                          {localized('View')}
-                        </Button>
-                      }
-                    />
-                  </YGroup.Item>
-                ))
-              )}
-            </YGroup>
-          </Card>
+                  <Separator />
+                  {kennelsLoading ? (
+                    <Spinner size='small' color={colorSet.primaryForeground} />
+                  ) : kennelsError ? (
+                    <Text color={colorSet.error}>{kennelsError}</Text>
+                  ) : relevantKennels.length === 0 ? (
+                    <Text>{localized('No kennels found for this breed')}</Text>
+                  ) : (
+                    relevantKennels.map((kennel) => (
+                      <YGroup.Item key={kennel.id}>
+                        <ListItem
+                          title={kennel.name}
+                          subTitle={kennel.location}
+                          icon={MapPin}
+                          iconAfter={
+                            <Button
+                              size='$2'
+                              variant='outlined'
+                              onPress={() => {
+                                // Navigate to kennel detail page
+                                // You'll need to implement this navigation
+                              }}
+                            >
+                              {localized('View')}
+                            </Button>
+                          }
+                        />
+                      </YGroup.Item>
+                    ))
+                  )}
+                </YGroup>
+              </Card>
+            </Tabs.Content>
+          </Tabs>
         </YStack>
       </YStack>
     </ScrollView>

@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {db} from '../../../firebase/config'; // Adjust the path as necessary
 import breedsData from '../../../assets/data/breeds_with_group_and_traits.json';
+import {getDoc, doc} from '@react-native-firebase/firestore';
 
 export interface DogBreed {
   id?: string;
@@ -23,7 +24,6 @@ export interface DogBreed {
 
 export const useBreedData = () => {
   const [allBreeds, setAllBreeds] = useState(breedsData as any);
-  const [kennelBreeds, setKennelBreeds] = useState([] as any);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -40,29 +40,6 @@ export const useBreedData = () => {
       console.error('Error fetching all breeds:', err);
     }
     setLoading(false);
-  };
-
-  // Get breed by ID
-  const getBreedById = async (id: string): Promise<DogBreed | null> => {
-    setLoading(true);
-    try {
-      const breedDoc = await db.collection('breeds').doc(id).get();
-
-      if (!breedDoc.exists) {
-        setLoading(false);
-        console.log('No breed found with the given ID');
-        return null;
-      }
-
-      const breed = {id: breedDoc.id, ...breedDoc.data()} as DogBreed;
-      setLoading(false);
-      return breed;
-    } catch (err: any) {
-      setError(err.message);
-      setLoading(false);
-      console.error('Error fetching breed by ID:', err);
-      return null;
-    }
   };
 
   const findBreedByName = (breedName: string): DogBreed | undefined => {
@@ -106,14 +83,26 @@ export const useBreedData = () => {
     }
   };
 
+  const fetchBreedById = async (breedId: string): Promise<DogBreed | null> => {
+    try {
+      const breedDoc = await db.collection('breeds').doc(breedId).get();
+      if (breedDoc.exists) {
+        return {id: breedDoc.id, ...breedDoc.data()} as DogBreed;
+      }
+      return null;
+    } catch (err: any) {
+      console.error('Error fetching breed by ID:', err);
+      return null;
+    }
+  };
+
   return {
     allBreeds,
-    kennelBreeds,
     loading,
     error,
-    getBreedById,
     fetchAllBreeds,
     findBreedByName,
     fetchBreedByName,
+    fetchBreedById,
   };
 };

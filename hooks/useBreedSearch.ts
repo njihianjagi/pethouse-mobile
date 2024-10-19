@@ -245,7 +245,6 @@ export const useBreedSearch = () => {
   const loadMoreBreeds = useCallback(() => {
     if (hasMore && !loading) {
       setPage((prevPage) => prevPage + 1);
-      setLoading(true);
       filterBreeds(traitPreferences, searchText, page + 1);
       return () => {
         filterBreeds.cancel();
@@ -261,33 +260,37 @@ export const useBreedSearch = () => {
     };
   }, [traitPreferences, searchText, filterBreeds]);
 
-  const updateFilter = useCallback((type, value) => {
-    switch (type) {
-      case 'searchText':
-        setSearchText(value);
-        break;
-      case 'traitPreferences':
-        setTraitPreferences((prev) => ({...prev, ...value}));
-        break;
-      case 'usePreferences':
-        setUsePreferences(value);
-        break;
-      case 'breedGroup':
-        setBreedGroup(value);
-        break;
-      case 'lifeSpan':
-        setLifeSpan(value);
-        break;
-      case 'weight':
-        setWeight(value);
-        break;
-      case 'sortOption':
-        setSortOption(value);
-        break;
-      default:
-        break;
-    }
-  }, []);
+  const updateFilter = useCallback(
+    (type, value) => {
+      setLoading(true);
+      switch (type) {
+        case 'searchText':
+          setSearchText(value);
+          break;
+        case 'traitPreferences':
+          setTraitPreferences((prev) => ({...prev, ...value}));
+          break;
+        case 'usePreferences':
+          setUsePreferences(value);
+          break;
+        case 'breedGroup':
+          setBreedGroup(value);
+          break;
+        case 'lifeSpan':
+          setLifeSpan(value);
+          break;
+        case 'weight':
+          setWeight(value);
+          break;
+        case 'sortOption':
+          setSortOption(value);
+          break;
+        default:
+          break;
+      }
+    },
+    [loading, setLoading]
+  );
 
   return {
     searchText,

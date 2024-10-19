@@ -13,40 +13,34 @@ import {
   ScrollView,
   Label,
   Spinner,
-  Tabs,
-  Circle,
   ListItem,
   YGroup,
-  Paragraph,
-  Accordion,
-  Square,
 } from 'tamagui';
-import {useKennelData} from '../../../api/firebase/kennels/useKennelData';
+import {
+  KennelBreed,
+  useKennelData,
+} from '../../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {
-  CheckCircle2,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   Heart,
   Home,
   Plus,
   Scissors,
   Trash,
   Upload,
-  X,
 } from '@tamagui/lucide-icons';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import {useTheme, useTranslations} from '../../../dopebase';
-import {updateUser} from '../../../api/firebase/users/userClient';
 import {useConfig} from '../../../config';
 import allBreeds from '../../../assets/data/breeds_with_group.json';
 import debounce from 'lodash/debounce';
 import * as ImagePicker from 'expo-image-picker';
 import {storageAPI} from '../../../api/firebase/media';
 import {useRouter} from 'expo-router';
-import {setUserData} from '../../../redux/reducers/auth';
 import {useDispatch} from 'react-redux';
+import {useBreedData} from '../../../api/firebase/breeds/useBreedData';
+import {updateUser} from '../../../api/firebase/users/userClient';
+import {setUserData} from '../../../redux/reducers/auth';
 
 // @ts-ignore
 navigator.geolocation = require('@react-native-community/geolocation');
@@ -54,14 +48,26 @@ navigator.geolocation = require('@react-native-community/geolocation');
 const ManageKennelScreen = () => {
   const currentUser = useCurrentUser();
   const router = useRouter();
+  const {theme, appearance} = useTheme();
+  const styles = dynamicStyles(theme, appearance);
+  const colorSet = theme?.colors[appearance];
+  const config = useConfig();
+  const {localized} = useTranslations();
+  const dispatch = useDispatch();
 
   const {
     addKennel,
     updateKennel,
     getKennelByUserId,
+    fetchKennelBreeds,
+    updateKennelBreed,
+    addKennelBreed,
+    deleteKennelBreed,
     loading: kennelLoading,
     error,
   } = useKennelData();
+
+  const {allBreeds, fetchBreedByName, fetchBreedById} = useBreedData();
 
   const [kennelName, setKennelName] = useState('');
   const [location, setLocation] = useState('');
@@ -72,49 +78,52 @@ const ManageKennelScreen = () => {
   const [existingKennel, setExistingKennel] = useState(null as any);
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
   const [isBreedsSheetOpen, setIsBreedsSheetOpen] = useState(false);
-
-  const [activeTab, setActiveTab] = useState('tab1');
-
-  const tabs = ['tab1', 'tab2', 'tab3'];
-  const currentIndex = tabs.indexOf(activeTab);
-
-  const handleBack = () => {
-    if (currentIndex > 0) {
-      setActiveTab(tabs[currentIndex - 1]);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentIndex < tabs.length - 1) {
-      setActiveTab(tabs[currentIndex + 1]);
-    }
-  };
-
-  const {theme, appearance} = useTheme();
-  const styles = dynamicStyles(theme, appearance);
-  const colorSet = theme?.colors[appearance];
-
-  const config = useConfig();
-
-  const {localized} = useTranslations();
-  const dispatch = useDispatch();
+  const [searchText, setSearchText] = useState('');
+  const [filteredBreeds, setFilteredBreeds] = useState(allBreeds.slice(0, 10));
 
   useEffect(() => {
-    if (currentUser) {
-      getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
+    const fetchKennelData = async () => {
+      if (currentUser) {
+        const kennel = await getKennelByUserId(
+          currentUser.id || currentUser.uid
+        );
         if (kennel) {
           setExistingKennel(kennel);
           setKennelName(kennel.name);
           setLocation(kennel.location);
           setSelectedServices(kennel.services || []);
-          setSelectedBreeds(kennel.breeds || []);
-          // setBreedImages(
-          //   kennel.breeds[0].images?.length ? kennel.breeds[0].images : []
-          // );
         }
-      });
-    }
-  }, [currentUser?.id]);
+      }
+    };
+
+    fetchKennelData();
+  }, [currentUser.id]);
+
+  useEffect(() => {
+    const loadKennelBreeds = async () => {
+      // Fetch kennel breeds from the new collection
+      const kennelBreeds = await fetchKennelBreeds(existingKennel.id);
+      console.log('breeds', kennelBreeds);
+      if (kennelBreeds.length) {
+        // Populate breed data for each kennel breed
+        const populatedBreeds = await Promise.all(
+          kennelBreeds.map(async (kennelBreed) => {
+            const breedData = await fetchBreedById(kennelBreed.breedId);
+            return {
+              ...kennelBreed,
+              breedName: breedData?.name,
+              breedGroup: breedData?.breedGroup,
+              // You can add more breed data here if needed
+            };
+          })
+        );
+
+        setSelectedBreeds(populatedBreeds);
+      }
+    };
+
+    loadKennelBreeds();
+  }, [existingKennel?.id]);
 
   const services = [
     {name: 'Breeding', subtitle: 'Responsible breeding programs', icon: Heart},
@@ -133,9 +142,6 @@ const ManageKennelScreen = () => {
         : [...prev, service]
     );
   };
-
-  const [searchText, setSearchText] = useState('');
-  const [filteredBreeds, setFilteredBreeds] = useState(allBreeds.slice(0, 10)); // Use slice instead of splice to avoid mutating original array
 
   // Debounced search function using Lodash
   const debouncedSearch = useCallback(
@@ -179,96 +185,114 @@ const ManageKennelScreen = () => {
     debouncedSearch(text);
   };
 
-  const handleAddBreed = (breed) => {
-    setSelectedBreeds((prev) => [...prev, {name: breed.name, images: []}]);
+  const handleAddBreed = async (breed) => {
+    const breedData = await fetchBreedByName(breed.name);
+    if (breedData && existingKennel) {
+      const newKennelBreed: KennelBreed = {
+        kennelId: existingKennel.id,
+        breedId: breedData.id!,
+        breedName: breedData.name,
+        breedGroup: breedData.breedGroup,
+        images: [],
+      };
+      await addKennelBreed(existingKennel.id, newKennelBreed);
+      setSelectedBreeds((prev) => [...prev, newKennelBreed]);
+    }
     setIsBreedsSheetOpen(false);
     Keyboard.dismiss();
   };
 
-  const handleRemoveBreed = (breedName) => {
-    setSelectedBreeds((prev) =>
-      prev.filter((breed) => breed.name !== breedName)
-    );
-  };
-
-  const handleSelectImage = useCallback(async (breedName) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
+  const handleRemoveBreed = async (breedId: string) => {
+    if (existingKennel) {
+      await deleteKennelBreed(breedId);
       setSelectedBreeds((prev) =>
-        prev.map((breed) =>
-          breed.name === breedName
-            ? {
-                ...breed,
-                images: [
-                  ...breed.images,
-                  {downloadURL: imageUri, thumbnailURL: imageUri},
-                ],
-              }
-            : breed
-        )
+        prev.filter((breed) => breed.breedId !== breedId)
       );
     }
-  }, []);
+  };
 
-  const handleRemoveImage = useCallback((breedName, imageIndex) => {
-    setSelectedBreeds((prev) =>
-      prev.map((breed) =>
-        breed.name === breedName
-          ? {
-              ...breed,
-              images: breed.images.filter((_, index) => index !== imageIndex),
-            }
-          : breed
-      )
-    );
-  }, []);
+  const handleSelectImage = useCallback(
+    async (breedId: string) => {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled && existingKennel) {
+        const imageUri = result.assets[0].uri;
+        const uploadedImageUrl = await storageAPI.uploadMedia({uri: imageUri});
+        const updatedBreed = selectedBreeds.find(
+          (breed) => breed.breedId === breedId
+        );
+        if (updatedBreed) {
+          const newImage = {
+            downloadURL: uploadedImageUrl,
+            thumbnailURL: uploadedImageUrl,
+          };
+          updatedBreed.images = [...(updatedBreed.images || []), newImage];
+          await addKennelBreed(existingKennel.id, updatedBreed);
+          setSelectedBreeds((prev) =>
+            prev.map((breed) =>
+              breed.breedId === breedId ? updatedBreed : breed
+            )
+          );
+        }
+      }
+    },
+    [existingKennel, selectedBreeds]
+  );
+
+  const handleRemoveImage = useCallback(
+    async (breedId: string, imageIndex: number) => {
+      if (existingKennel) {
+        const updatedBreed = selectedBreeds.find(
+          (breed) => breed.breedId === breedId
+        );
+        if (updatedBreed) {
+          updatedBreed.images = updatedBreed.images.filter(
+            (_, index) => index !== imageIndex
+          );
+          await addKennelBreed(existingKennel.id, updatedBreed);
+          setSelectedBreeds((prev) =>
+            prev.map((breed) =>
+              breed.breedId === breedId ? updatedBreed : breed
+            )
+          );
+        }
+      }
+    },
+    [existingKennel, selectedBreeds]
+  );
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      const uploadedBreeds = await Promise.all(
-        selectedBreeds.map(async (breed) => {
-          const uploadedImages = await Promise.all(
-            breed.images.map(async (image) => {
-              if (image.downloadURL.startsWith('file://')) {
-                const uploadedImageUrl = await storageAPI.uploadMedia({
-                  uri: image.downloadURL,
-                });
-                return {
-                  downloadURL: uploadedImageUrl,
-                  thumbnailURL: uploadedImageUrl,
-                };
-              }
-              return image;
-            })
-          );
-          return {...breed, images: uploadedImages};
-        })
-      );
-
       const kennelData = {
         name: kennelName,
         location,
         services: selectedServices,
-        breeds: uploadedBreeds,
         userId: currentUser.id || currentUser.uid,
       };
 
-      await updateKennel(existingKennel.id, {
-        ...existingKennel,
-        ...kennelData,
-      });
-
-      router.replace('(tabs)');
+      if (existingKennel) {
+        await updateKennel(existingKennel.id, kennelData);
+      } else {
+        const newKennel = await addKennel(kennelData);
+        await Promise.all(
+          selectedBreeds.map((breed) =>
+            addKennelBreed(newKennel?.id, {...breed, kennelId: newKennel?.id})
+          )
+        );
+        await updateUser(currentUser.id, {kennelId: newKennel?.id});
+        dispatch(
+          setUserData({user: {...currentUser, kennelId: newKennel?.id}})
+        );
+      }
     } catch (error) {
-      // Handle error
+      console.error('Error saving kennel data:', error);
+      // Handle error (e.g., show an error message to the user)
     } finally {
       setLoading(false);
     }
@@ -378,11 +402,11 @@ const ManageKennelScreen = () => {
                     {selectedBreeds.map((breed, index) => (
                       <YGroup.Item key={index}>
                         <ListItem
-                          title={breed.name}
+                          title={breed.breedName}
                           subTitle={breed.breedGroup}
                           iconAfter={
                             <Trash
-                              onPress={() => handleRemoveBreed(breed.name)}
+                              onPress={() => handleRemoveBreed(breed.breedId)}
                             />
                           }
                         ></ListItem>

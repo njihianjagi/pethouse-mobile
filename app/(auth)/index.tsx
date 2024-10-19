@@ -1,6 +1,6 @@
 import React, {useCallback, useLayoutEffect} from 'react';
 import {Keyboard} from 'react-native';
-import {useFocusEffect, useNavigation, useRouter} from 'expo-router';
+import {Href, useFocusEffect, useNavigation, useRouter} from 'expo-router';
 import deviceStorage from '../../utils/AuthDeviceStorage';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/reducers/auth';
@@ -15,15 +15,8 @@ const LoadScreen = () => {
 
   const dispatch = useDispatch();
   const authManager = useAuth();
-  const navigation = useNavigation();
 
   const config = useConfig();
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    });
-  }, [navigation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,8 +39,10 @@ const LoadScreen = () => {
   };
 
   const fetchPersistedUserIfNeeded = async () => {
+    console.log('fetching..');
     if (!authManager?.retrievePersistedAuthUser) {
-      router.push('/welcome');
+      console.log('goign to welcome');
+      return router.push('/welcome');
     }
     authManager
       ?.retrievePersistedAuthUser(config)
@@ -59,13 +54,14 @@ const LoadScreen = () => {
             })
           );
           Keyboard.dismiss();
+          console.log('goign to onboarding');
 
-          checkUserOnboardingStage(response.user);
+          return router.replace('/(onboarding)');
         }
       })
       .catch((error) => {
         console.log(error);
-        router.push('/welcome');
+        return router.push('/welcome');
       });
   };
 

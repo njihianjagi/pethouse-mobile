@@ -22,14 +22,14 @@ export default function OnboardingModal() {
         } else {
           console.log('user has kennel');
 
-          router.replace('(tabs)' as Href);
+          router.replace('/(tabs)');
         }
       } else if (currentUser.role === 'seeker') {
         console.log('seeker..');
         if (!currentUser.preferredBreeds) {
           router.replace('/seeker');
         } else {
-          router.replace('(tabs)' as Href);
+          router.replace('/(tabs)');
         }
       }
     } else {

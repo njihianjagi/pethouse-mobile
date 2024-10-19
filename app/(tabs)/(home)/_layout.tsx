@@ -25,6 +25,7 @@ export default function HomeLayout() {
         name='index'
         options={{
           headerShown: true,
+          headerShadowVisible: false,
           title: 'Home',
           headerRight: () => (
             <Button

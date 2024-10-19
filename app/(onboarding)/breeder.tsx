@@ -55,7 +55,7 @@ const BreederOnboardingScreen = () => {
     updateKennel,
     getKennelByUserId,
     addKennelBreed,
-    removeKennelBreed,
+    deleteKennelBreed,
     loading: kennelLoading,
     error: kennelError,
   } = useKennelData();
@@ -244,7 +244,7 @@ const BreederOnboardingScreen = () => {
       //   await removeKennelBreed(kennelId, breedData.id!);
       // }
 
-      await addKennelBreed({
+      await addKennelBreed(kennelId, {
         kennelId,
         breedId: breedData.id!,
         breedName: breedData.name,
@@ -254,7 +254,7 @@ const BreederOnboardingScreen = () => {
         })),
       });
 
-      router.replace('(tabs)' as Href);
+      router.replace('/(tabs)');
 
       // Toast.show({
       //   title: 'Success',

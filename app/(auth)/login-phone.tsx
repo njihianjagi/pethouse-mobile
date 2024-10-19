@@ -146,7 +146,7 @@ const SmsAuthenticationScreen = () => {
         const user = response.user;
         dispatch(setUserData({user}));
         Keyboard.dismiss();
-        router.replace('(onboarding)');
+        router.replace('/(onboarding)');
       } else {
         setLoading(false);
         Alert.alert(
@@ -262,7 +262,7 @@ const SmsAuthenticationScreen = () => {
           const user = response.user;
           dispatch(setUserData({user}));
           Keyboard.dismiss();
-          router.replace('(onboarding)');
+          router.replace('/(onboarding)');
         }
       });
   };
@@ -344,7 +344,7 @@ const SmsAuthenticationScreen = () => {
           );
 
           router.push({
-            pathname: '(auth)/SmsAuthenticationScreen',
+            pathname: '/(auth)/login-phone',
             params: {isSigningUp: 'true'},
           });
         } else {
@@ -352,7 +352,7 @@ const SmsAuthenticationScreen = () => {
           const user = response.user;
           dispatch(setUserData({user}));
           Keyboard.dismiss();
-          router.replace('(onboarding)');
+          router.replace('/(onboarding)');
         }
       });
     }
@@ -447,10 +447,10 @@ const SmsAuthenticationScreen = () => {
             onPress={() =>
               config.isSMSAuthEnabled
                 ? router.push({
-                    pathname: '/SmsAuthenticationScreen',
+                    pathname: '/login-phone',
                     params: {isSigningUp: 'false'},
                   })
-                : router.push('/LoginScreen')
+                : router.push('/login-email')
             }
           >
             <Text style={styles.alreadyHaveAnAccountText}>
@@ -642,10 +642,10 @@ const SmsAuthenticationScreen = () => {
           onPress={() =>
             config.isSMSAuthEnabled
               ? router.push({
-                  pathname: '/SmsAuthenticationScreen',
+                  pathname: '/login-phone',
                   params: {isSigningUp: 'true'},
                 })
-              : router.push('/SignupScreen')
+              : router.push('/signup-email')
           }
         >
           <Text style={styles.alreadyHaveAnAccountText}>

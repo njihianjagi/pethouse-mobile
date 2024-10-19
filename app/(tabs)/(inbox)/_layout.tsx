@@ -25,6 +25,7 @@ export default function ExploreLayout() {
         name='index'
         options={{
           headerShown: true,
+          headerShadowVisible: false,
           title: 'Inbox',
           headerRight: () => (
             <Button
