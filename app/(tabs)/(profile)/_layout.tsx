@@ -43,7 +43,7 @@ export default function ExploreLayout() {
         }}
       />
       <Stack.Screen
-        name='kennel'
+        name='manage-kennel'
         options={{
           headerShown: true,
           title: 'Manage kennel',
@@ -51,11 +51,20 @@ export default function ExploreLayout() {
         }}
       />
       <Stack.Screen
-        name='preferences'
+        name='user-preferences'
         options={{
           headerShown: true,
           headerShadowVisible: false,
           title: 'Your preferences',
+        }}
+      />
+
+      <Stack.Screen
+        name='edit-profile'
+        options={{
+          headerShown: true,
+          headerShadowVisible: false,
+          title: 'Edit Profile',
         }}
       />
     </Stack>

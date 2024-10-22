@@ -29,24 +29,20 @@ const ProfileScreen = () => {
   const currentUser = useCurrentUser();
   const router = useRouter();
 
-  const {getKennelByUserId, kennels, loading} = useKennelData();
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
   const authManager = useAuth();
 
-  const [kennel, setKennel] = useState({} as any);
-  // const [isUpdating, setIsUpdating] = useState(false);
-
-  useEffect(() => {
-    if (currentUser?.role === 'breeder') {
-      getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
-        if (kennels) {
-          setKennel(kennel);
-        }
-      });
-    }
-  }, [currentUser]);
+  // useEffect(() => {
+  //   if (currentUser?.role === 'breeder') {
+  //     getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
+  //       if (kennels) {
+  //         setKennel(kennel);
+  //       }
+  //     });
+  //   }
+  // }, [currentUser]);
 
   // const handleUpdateProfile = async () => {
   //   setIsUpdating(true);
@@ -75,105 +71,99 @@ const ProfileScreen = () => {
       justifyContent='center'
       backgroundColor={colorSet.primaryBackground}
     >
-      {currentUser?.role === 'breeder' && loading ? (
-        <Spinner
-          size='large'
-          color={theme.colors[appearance].primaryForeground}
-        />
-      ) : (
-        <ScrollView
-          contentContainerStyle={{
-            width: '100%',
-            backgroundColor: colorSet.primaryBackground,
-          }}
-        >
-          <YStack p='$4' gap='$6' width='100%'>
-            <YStack alignItems='center' gap='$4'>
-              <Avatar circular size='$12'>
-                <Avatar.Image
-                  accessibilityLabel='Cam'
-                  src={currentUser.profilePictureURL}
-                />
-                <Avatar.Fallback backgroundColor='$blue10' />
-              </Avatar>
+      <ScrollView
+        contentContainerStyle={{
+          width: '100%',
+          backgroundColor: colorSet.primaryBackground,
+        }}
+      >
+        <YStack p='$4' gap='$6' width='100%'>
+          <YStack alignItems='center' gap='$4'>
+            <Avatar circular size='$12'>
+              <Avatar.Image
+                accessibilityLabel='Cam'
+                src={currentUser.profilePictureURL}
+              />
+              <Avatar.Fallback backgroundColor='$blue10' />
+            </Avatar>
 
-              <YStack gap='$2' alignItems='center'>
-                <Text
-                  fontSize='$8'
-                  fontWeight='bold'
-                  color={colorSet.primaryForeground}
-                >
-                  {currentUser.username ||
-                    `${currentUser.firstName} ${currentUser.lastName}` ||
-                    currentUser.displayName}
-                </Text>
+            <YStack gap='$2' alignItems='center'>
+              <Text
+                fontSize='$8'
+                fontWeight='bold'
+                color={colorSet.primaryForeground}
+              >
+                {currentUser.username ||
+                  `${currentUser.firstName} ${currentUser.lastName}` ||
+                  currentUser.displayName}
+              </Text>
 
-                <Text>{currentUser.phoneNumber || currentUser.email}</Text>
+              <Text>{currentUser.phoneNumber || currentUser.email}</Text>
 
-                <Text>
-                  Joined {new Date(currentUser.createdAt).toLocaleDateString()}
-                </Text>
-              </YStack>
+              <Text>
+                Joined {new Date(currentUser.createdAt).toLocaleDateString()}
+              </Text>
             </YStack>
+          </YStack>
 
-            <YGroup bordered width='100%'>
+          <YGroup bordered width='100%'>
+            <ListItem
+              title='Profile'
+              subTitle='View and edit your profile'
+              icon={User}
+              iconAfter={ChevronRight}
+              pressTheme
+              onPress={() => router.push('/(profile)/edit-profile')}
+            />
+            <Separator />
+            {currentUser.role === 'breeder' ? (
               <ListItem
-                title='Profile'
-                subTitle='View and edit your profile'
-                icon={User}
+                icon={Dog}
+                title='Kennel'
+                subTitle='Manage your breeds and services'
                 iconAfter={ChevronRight}
                 pressTheme
+                onPress={() => router.push('/(profile)/manage-kennel')}
               />
-              <Separator />
-              {currentUser.role === 'breeder' ? (
-                <ListItem
-                  icon={Dog}
-                  title='Kennel'
-                  subTitle='Manage your breeds and services'
-                  iconAfter={ChevronRight}
-                  pressTheme
-                  onPress={() => router.push('/(profile)/kennel')}
-                />
-              ) : (
-                <ListItem
-                  icon={Dog}
-                  title='Breed preferences'
-                  subTitle='Manage your preferred breeds'
-                  iconAfter={ChevronRight}
-                  pressTheme
-                  onPress={() => router.push('/(profile)/preferences')}
-                />
-              )}
-              <Separator />
-
-              <Separator />
+            ) : (
               <ListItem
-                icon={Settings}
-                title='Settings'
-                subTitle='Account settings'
+                icon={Dog}
+                title='Breed preferences'
+                subTitle='Manage your preferred breeds'
                 iconAfter={ChevronRight}
+                pressTheme
+                onPress={() => router.push('/(profile)/user-preferences')}
               />
-            </YGroup>
+            )}
+            <Separator />
 
-            <YGroup bordered>
-              <ListItem
-                icon={HelpCircle}
-                title='Help & Contact'
-                iconAfter={ChevronRight}
-              />
-              <Separator />
+            <Separator />
+            <ListItem
+              icon={Settings}
+              title='Settings'
+              subTitle='Account settings'
+              iconAfter={ChevronRight}
+            />
+          </YGroup>
 
-              <Separator />
-              <ListItem
-                icon={LogOut}
-                title='Log out'
-                iconAfter={ChevronRight}
-                onPress={onLogout}
-              />
-            </YGroup>
-          </YStack>
-        </ScrollView>
-      )}
+          <YGroup bordered>
+            <ListItem
+              icon={HelpCircle}
+              title='Help & Contact'
+              iconAfter={ChevronRight}
+            />
+            <Separator />
+
+            <Separator />
+            <ListItem
+              icon={LogOut}
+              title='Log out'
+              iconAfter={ChevronRight}
+              onPress={onLogout}
+            />
+          </YGroup>
+        </YStack>
+      </ScrollView>
     </View>
   );
 };

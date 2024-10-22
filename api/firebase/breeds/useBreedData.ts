@@ -106,3 +106,5 @@ export const useBreedData = () => {
     fetchBreedById,
   };
 };
+
+export default useBreedData;

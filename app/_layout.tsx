@@ -91,6 +91,14 @@ export default function RootLayout() {
                               name='(kennels)'
                               options={{headerShown: false}}
                             />
+                            <Stack.Screen
+                              name='(listings)'
+                              options={{headerShown: false}}
+                            />
+                            <Stack.Screen
+                              name='(litters)'
+                              options={{headerShown: false}}
+                            />
                             <Stack.Screen name='+not-found' />
                           </Stack>
                         </SafeAreaView>

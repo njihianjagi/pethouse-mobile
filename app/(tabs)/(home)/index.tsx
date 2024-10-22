@@ -1,76 +1,38 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {Href, useNavigation, useRouter} from 'expo-router';
+import {Href, useRouter} from 'expo-router';
 import {
   Button,
   Card,
-  H2,
   H3,
   ListItem,
   ScrollView,
   Text,
   View,
   XStack,
-  YGroup,
   YStack,
-  Image,
   Spinner,
-  H4,
+  Tabs,
+  Separator,
 } from 'tamagui';
-import {ArrowRight, MapPin} from '@tamagui/lucide-icons';
-import useKennelData, {
-  Kennel,
-} from '../../../api/firebase/kennels/useKennelData';
+import {ArrowRight, MapPin, Plus} from '@tamagui/lucide-icons';
+import {useLitterData} from '../../../api/firebase/litters/useLittersData';
+import {useListingData} from '../../../api/firebase/listings/useListingsData';
 
-export default function HomeScreen() {
+const HomeScreen = () => {
   const router = useRouter();
-
   const currentUser = useCurrentUser();
-
   const {localized} = useTranslations();
   const {theme, appearance} = useTheme();
-  //const styles = dynamicStyles(theme, appearance)
   const colorSet = theme.colors[appearance];
-  const upcomingLitters: any = []; // This should be populated with actual data
-  const [populatedKennels, setPopulatedKennels] = useState([] as any);
 
-  useEffect(() => {
-    if (!currentUser?.id) {
-      return;
-    }
-  }, [currentUser?.id]);
+  const [activeTab, setActiveTab] = useState('pets');
 
-  const {
-    kennels: highlightedKennels,
-    loading: kennelsLoading,
-    error: kennelsError,
-    fetchAllKennels,
-    fetchKennelBreeds,
-  } = useKennelData();
+  const {listings, loading: listingsLoading} = useListingData();
+  const {litters, loading: littersLoading} = useLitterData();
 
-  useEffect(() => {
-    fetchAllKennels();
-  }, []);
-
-  useEffect(() => {
-    const populateKennelBreeds = async () => {
-      const populatedKennelsData = await Promise.all(
-        highlightedKennels.map(async (kennel) => {
-          const breeds = await fetchKennelBreeds(kennel.id);
-          console.log('kennel breeds', breeds);
-          return {...kennel, breeds};
-        })
-      );
-      setPopulatedKennels(populatedKennelsData);
-    };
-
-    if (highlightedKennels.length > 0) {
-      populateKennelBreeds();
-    }
-  }, [highlightedKennels]);
-
-  const KennelCard = ({kennel}) => (
+  const PetCard = ({listing}) => (
     <Card
       bordered
       elevate
@@ -78,67 +40,25 @@ export default function HomeScreen() {
       scale={0.9}
       hoverStyle={{scale: 0.925}}
       pressStyle={{scale: 0.875}}
-      onPress={() => router.push(`/(kennels)/${kennel.id}` as Href)}
+      onPress={() => router.push(`/(listings)/${listing.id}` as Href)}
     >
-      <Card.Header padding={0}>
+      <Card.Header padded>
         <ListItem
-          title={kennel.name}
+          title={listing.name}
           subTitle={
             <XStack gap='$2' alignItems='center'>
               <MapPin size={16} color={colorSet.primaryForeground} />
               <Text fontSize='$2' color={colorSet.primaryForeground}>
-                {kennel.location}
+                {listing.location}
               </Text>
             </XStack>
           }
-        ></ListItem>
-      </Card.Header>
-
-      <Card.Footer padded>
-        <YGroup gap='$2'>
-          {kennelsLoading ? (
-            <Spinner size='small' />
-          ) : (
-            kennel.breeds &&
-            kennel.breeds.map((breed, index) => (
-              <YGroup.Item>
-                <XStack key={index} gap='$2' alignItems='center'>
-                  <Image
-                    source={{
-                      uri:
-                        breed.images[0]?.thumbnailURL ||
-                        'https://via.placeholder.com/50',
-                    }}
-                    width={40}
-                    height={40}
-                    borderRadius='$2'
-                  />
-                  <YStack>
-                    <Text fontSize='$3' fontWeight='bold'>
-                      {breed.breedName}
-                    </Text>
-                    <Text fontSize='$2' color={colorSet.primaryForeground}>
-                      {breed.breedGroup}
-                    </Text>
-                  </YStack>
-                </XStack>
-              </YGroup.Item>
-            ))
-          )}
-        </YGroup>
-      </Card.Footer>
-
-      <Card.Background>
-        <Image
-          source={{
-            uri: kennel.coverImage || 'https://via.placeholder.com/300x200',
-          }}
-          resizeMode='cover'
-          width='100%'
-          height='100%'
-          opacity={0.2}
         />
-      </Card.Background>
+      </Card.Header>
+      <Card.Footer padded>
+        <Text fontSize='$2'>{listing.breed}</Text>
+        <Text fontSize='$2'>{listing.age}</Text>
+      </Card.Footer>
     </Card>
   );
 
@@ -146,110 +66,203 @@ export default function HomeScreen() {
     <Card
       bordered
       elevate
-      size='$4'
       animation='bouncy'
       scale={0.9}
       hoverStyle={{scale: 0.925}}
       pressStyle={{scale: 0.875}}
-      onPress={() => router.push(`/litter/${litter.id}` as Href)}
+      onPress={() => router.push(`/(litters)/${litter.id}` as Href)}
     >
       <Card.Header padded>
-        <H2>{litter.breed}</H2>
+        <H3>{litter.breed}</H3>
         <Text>{`Expected: ${litter.expectedDate}`}</Text>
       </Card.Header>
       <Card.Footer padded>
-        <XStack flex={1} />
-        <Button size='$3' circular icon={ArrowRight} />
+        <Text fontSize='$2'>{`Puppies: ${litter.puppyCount}`}</Text>
       </Card.Footer>
     </Card>
   );
 
+  const SeekerCTA = () => {
+    return (
+      <XStack gap='$4'>
+        <Card bordered flex={1}>
+          <Card.Header padded>
+            <Text
+              color={colorSet.primaryForeground}
+              fontSize={24}
+              fontWeight='bold'
+            >
+              Discover your new pet
+            </Text>
+          </Card.Header>
+
+          <Card.Footer padded>
+            <XStack flex={1} />
+            <Button
+              borderRadius='$10'
+              icon={<ArrowRight size='$2' color={colorSet.primaryForeground} />}
+              chromeless
+            ></Button>
+          </Card.Footer>
+
+          <Card.Background
+            backgroundColor={colorSet.secondaryForeground}
+            borderRadius={16}
+          />
+        </Card>
+
+        <Card
+          bordered
+          flex={1}
+          pressTheme
+          onPress={() => router.push('/(listings)/create')}
+        >
+          <Card.Header padded>
+            <Text
+              color={colorSet.secondaryForeground}
+              fontSize={24}
+              fontWeight='bold'
+            >
+              List your pet for adoption
+            </Text>
+          </Card.Header>
+
+          <Card.Footer padded>
+            <XStack flex={1} />
+            <Button
+              borderRadius='$10'
+              icon={
+                <ArrowRight size='$2' color={colorSet.secondaryForeground} />
+              }
+              chromeless
+            ></Button>
+          </Card.Footer>
+
+          <Card.Background
+            backgroundColor={colorSet.primaryForeground}
+            borderRadius={16}
+          />
+        </Card>
+      </XStack>
+    );
+  };
+
+  const BreederCTA = () => {
+    return (
+      <XStack gap='$4'>
+        <Card
+          bordered
+          flex={1}
+          onPress={() => router.push('/(listings)/create')}
+        >
+          <Card.Header padded>
+            <Text
+              color={colorSet.primaryForeground}
+              fontSize={24}
+              fontWeight='bold'
+            >
+              Looking to rehome your pet?
+            </Text>
+          </Card.Header>
+          <Card.Footer padded>
+            <XStack flex={1} />
+            <Button
+              borderRadius='$10'
+              iconAfter={<Plus size='$2' color={colorSet.primaryForeground} />}
+              chromeless
+            >
+              List for adoption{' '}
+            </Button>
+          </Card.Footer>
+          <Card.Background
+            backgroundColor={colorSet.secondaryForeground}
+            borderRadius={16}
+          />
+        </Card>
+
+        <Card bordered flex={1} onPress={() => router.push('/add-litter')}>
+          <Card.Header padded>
+            <Text
+              color={colorSet.secondaryForeground}
+              fontSize={24}
+              fontWeight='bold'
+            >
+              Expecting a new litter?
+            </Text>
+          </Card.Header>
+          <Card.Footer padded>
+            <XStack flex={1} />
+            <Button
+              borderRadius='$10'
+              icon={<Plus size='$2' color={colorSet.secondaryForeground} />}
+              chromeless
+            >
+              Add for booking
+            </Button>
+          </Card.Footer>
+          <Card.Background
+            backgroundColor={colorSet.primaryForeground}
+            borderRadius={16}
+          />
+        </Card>
+      </XStack>
+    );
+  };
+
   return (
     <ScrollView style={{flex: 1, backgroundColor: colorSet.primaryBackground}}>
       <YStack padding='$4' gap='$4'>
-        <XStack gap='$2'>
+        <XStack gap='$2' alignItems='center'>
           <MapPin color={colorSet.primaryForeground} />
           <Text>
             {currentUser.location?.latitude}, {currentUser.location?.longitude}
           </Text>
         </XStack>
 
-        <XStack gap='$4'>
-          <Card bordered flex={1}>
-            <Card.Header padded>
-              <Text
-                color={colorSet.primaryForeground}
-                fontSize={24}
-                fontWeight='bold'
-              >
-                Discover your new pet
-              </Text>
-            </Card.Header>
+        {currentUser.role === 'breeder' ? <BreederCTA /> : <SeekerCTA />}
 
-            <Card.Footer padded>
-              <XStack flex={1} />
-              <Button
-                borderRadius='$10'
-                icon={
-                  <ArrowRight size='$2' color={colorSet.primaryForeground} />
-                }
-                chromeless
-              ></Button>
-            </Card.Footer>
-
-            <Card.Background
-              backgroundColor={colorSet.secondaryForeground}
-              borderRadius={16}
-            />
-          </Card>
-
-          <Card bordered flex={1}>
-            <Card.Header padded>
-              <Text
-                color={colorSet.secondaryForeground}
-                fontSize={24}
-                fontWeight='bold'
-              >
-                List your pet for adoption
-              </Text>
-            </Card.Header>
-
-            <Card.Footer padded>
-              <XStack flex={1} />
-              <Button
-                borderRadius='$10'
-                icon={
-                  <ArrowRight size='$2' color={colorSet.secondaryForeground} />
-                }
-                chromeless
-              ></Button>
-            </Card.Footer>
-
-            <Card.Background
-              backgroundColor={colorSet.primaryForeground}
-              borderRadius={16}
-            />
-          </Card>
-        </XStack>
-
-        <H3 fontWeight='bold'>{localized('Highlighted Kennels')}</H3>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <XStack>
-            {populatedKennels.map((kennel) => (
-              <KennelCard key={kennel.id} kennel={kennel} />
-            ))}
+        <YStack gap='$4'>
+          <XStack justifyContent='space-between' alignItems='center'>
+            <H3 fontWeight='bold'>{localized('Latest Pet Listings')}</H3>
+            <Button onPress={() => router.push('/all-pet-listings')}>
+              {localized('See All')}
+            </Button>
           </XStack>
-        </ScrollView>
+          {listingsLoading ? (
+            <Spinner />
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <XStack gap='$2'>
+                {listings.slice(0, 5).map((listing) => (
+                  <PetCard key={listing.id} listing={listing} />
+                ))}
+              </XStack>
+            </ScrollView>
+          )}
+        </YStack>
 
-        <H3 fontWeight='bold'>{localized('Upcoming Litters')}</H3>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <XStack>
-            {upcomingLitters.map((litter) => (
-              <LitterCard key={litter.id} litter={litter} />
-            ))}
+        <YStack gap='$4'>
+          <XStack justifyContent='space-between' alignItems='center'>
+            <H3 fontWeight='bold'>{localized('Upcoming Litters')}</H3>
+            <Button onPress={() => router.push('/all-litters')}>
+              {localized('See All')}
+            </Button>
           </XStack>
-        </ScrollView>
+          {littersLoading ? (
+            <Spinner />
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <XStack gap='$2'>
+                {litters.slice(0, 5).map((litter) => (
+                  <LitterCard key={litter.id} litter={litter} />
+                ))}
+              </XStack>
+            </ScrollView>
+          )}
+        </YStack>
       </YStack>
     </ScrollView>
   );
-}
+};
+
+export default HomeScreen;
