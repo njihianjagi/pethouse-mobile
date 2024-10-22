@@ -232,9 +232,7 @@ export const useBreedSearch = () => {
           const start = (currentPage - 1) * breedsPerPage;
           const end = start + breedsPerPage;
           const paginatedBreeds = filtered.slice(0, end);
-
-          console.log('Matched breeds: ', filtered.length);
-          setFilteredBreeds(filtered);
+          setFilteredBreeds(paginatedBreeds);
           setLoading(false);
         },
         300

@@ -8,53 +8,72 @@ import {
   Input,
   Separator,
   ListItem,
+  Spinner,
 } from 'tamagui';
-import {useTranslations} from '../dopebase';
-import useKennelData from '../api/firebase/kennels/useKennelData';
+import {useTheme, useTranslations} from '../dopebase';
+import useKennelData, {
+  KennelBreed,
+} from '../api/firebase/kennels/useKennelData';
 import {useBreedSearch} from '../hooks/useBreedSearch';
+import useBreedData, {DogBreed} from '../api/firebase/breeds/useBreedData';
+import {ChevronRight, Star} from '@tamagui/lucide-icons';
+import {Alert, FlatList} from 'react-native';
 
 interface BreedSelectorProps {
-  onSelectBreed: (breedId: string, breedName: string) => void;
-  kennelId?: string;
+  onSelectBreed: (breed: DogBreed) => void;
+  kennelBreeds: KennelBreed[];
   buttonText?: string;
   maxHeight?: number | string;
 }
 
 const BreedSelector: React.FC<BreedSelectorProps> = ({
   onSelectBreed,
-  kennelId,
+  kennelBreeds,
   buttonText = 'Select Breed',
-  maxHeight = '60%',
 }) => {
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
+
   const [open, setOpen] = useState(false);
   const {localized} = useTranslations();
-  const {kennelBreeds, fetchKennelBreeds} = useKennelData();
-  const {searchText, updateFilter, filteredBreeds, loading} = useBreedSearch();
 
-  useEffect(() => {
-    if (kennelId) {
-      fetchKennelBreeds(kennelId);
-    }
-  }, [kennelId, fetchKennelBreeds]);
+  const {searchText, updateFilter, filteredBreeds, loadMoreBreeds, hasMore} =
+    useBreedSearch();
+  const {
+    loading: breedLoading,
+    error: breedError,
+    fetchBreedByName,
+  } = useBreedData();
 
   const handleSearchTextChange = (text: string) => {
     updateFilter('searchText', text);
   };
 
-  const handleSelectBreed = (breedId: string, breedName: string) => {
-    onSelectBreed(breedId, breedName);
-    setOpen(false);
+  const handleSelectBreed = async (breed: DogBreed | KennelBreed) => {
+    const breedName = 'name' in breed ? breed.name : breed.breedName;
+    const breedDoc = await fetchBreedByName(breedName);
+
+    if (!breedLoading && breedDoc) {
+      onSelectBreed({...breedDoc, ...breed});
+      setOpen(false);
+    }
+
+    if (breedError) {
+      Alert.alert('Error selecting breed');
+    }
   };
 
   return (
     <>
-      <Button onPress={() => setOpen(true)}>{localized(buttonText)}</Button>
+      <Button onPress={() => setOpen(true)} disabled={breedLoading}>
+        {breedLoading ? <Spinner /> : localized(buttonText)}
+      </Button>
       <Sheet
         modal
         open={open}
         onOpenChange={setOpen}
-        snapPoints={[maxHeight]}
-        snapPointsMode='constant'
+        snapPoints={[60, 80]}
+        snapPointsMode='percent'
         dismissOnSnapToBottom
       >
         <Sheet.Overlay />
@@ -70,44 +89,49 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
               onChangeText={handleSearchTextChange}
               marginBottom='$4'
             />
-            <ScrollView>
-              {kennelId && kennelBreeds.length > 0 && (
-                <>
-                  <Text fontSize='$5' fontWeight='bold' marginBottom='$2'>
-                    {localized('Kennel Breeds')}
-                  </Text>
-                  {kennelBreeds.map((breed) => (
-                    <Button
-                      key={breed.breedId}
-                      onPress={() =>
-                        handleSelectBreed(breed.breedId, breed.breedName)
-                      }
-                      marginBottom='$2'
-                    >
-                      {breed.breedName}
-                    </Button>
-                  ))}
-                  <Separator marginVertical='$4' />
-                </>
-              )}
 
-              <Text fontSize='$5' fontWeight='bold' marginBottom='$2'>
-                {localized('All Breeds')}
-              </Text>
-              {loading ? (
-                <Text>{localized('Loading...')}</Text>
-              ) : (
-                filteredBreeds.map((breed) => (
-                  <ListItem
-                    key={breed.id}
-                    title={breed.name}
-                    subTitle={breed.breedGroup}
-                    onPress={() => handleSelectBreed(breed.id!, breed.name)}
-                    marginBottom='$2'
-                  ></ListItem>
-                ))
+            <YStack gap='$4'>
+              {kennelBreeds.length > 0 && (
+                <YStack>
+                  <Text>{localized('Your Breeds')}</Text>
+                  {kennelBreeds.map((breed) => (
+                    <ListItem
+                      key={breed.id}
+                      title={breed.breedName}
+                      onPress={() => handleSelectBreed(breed)}
+                      iconAfter={<Star />}
+                    />
+                  ))}
+                  <Separator />
+                </YStack>
               )}
-            </ScrollView>
+              <YStack gap='$2'>
+                <Text>{localized('All Breeds')}</Text>
+
+                <FlatList
+                  data={filteredBreeds}
+                  renderItem={({item, index}) => (
+                    <ListItem
+                      key={index}
+                      title={item.name}
+                      onPress={() => handleSelectBreed(item)}
+                    ></ListItem>
+                  )}
+                  keyExtractor={(item) => item.name}
+                  numColumns={2}
+                  onEndReached={loadMoreBreeds}
+                  onEndReachedThreshold={0.1}
+                  ListFooterComponent={() =>
+                    hasMore ? (
+                      <Spinner
+                        size='large'
+                        color={colorSet.primaryForeground}
+                      />
+                    ) : null
+                  }
+                />
+              </YStack>
+            </YStack>
           </YStack>
         </Sheet.Frame>
       </Sheet>

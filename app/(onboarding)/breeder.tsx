@@ -244,10 +244,11 @@ const BreederOnboardingScreen = () => {
       //   await removeKennelBreed(kennelId, breedData.id!);
       // }
 
-      await addKennelBreed(kennelId, {
+      await addKennelBreed({
         kennelId,
         breedId: breedData.id!,
         breedName: breedData.name,
+        breedGroup: breedData.breedGroup,
         images: uploadedImageUrls.map((url) => ({
           thumbnailURL: url,
           downloadURL: url,

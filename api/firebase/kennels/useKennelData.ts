@@ -27,7 +27,8 @@ export interface KennelBreed {
   breedId: string;
   breedName: string;
   breedGroup: string;
-  images: {thumbnailURL: string; downloadURL: string}[];
+  images?: {thumbnailURL: string; downloadURL: string}[];
+  videos?: {downloadURL: string}[];
 }
 
 export const useKennelData = () => {
@@ -200,15 +201,13 @@ export const useKennelData = () => {
   };
 
   // Add a new breed to a kennel
-  const addKennelBreed = async (kennelId, breed) => {
-    if (!kennelId) return;
+  const addKennelBreed = async (kennelBreed: KennelBreed) => {
     try {
       setLoading(true);
-      const response = await db
-        .collection('kennel_breeds')
-        .add({...breed, kennel_id: kennelId});
-      setKennelBreeds((prev) => [...prev, {...breed, id: response.id}]);
+      const response = await db.collection('kennel_breeds').add(kennelBreed);
+      setKennelBreeds((prev) => [...prev, {...kennelBreed, id: response.id}]);
       setLoading(false);
+      return {...kennelBreed, id: response.id};
     } catch (err: any) {
       setError(err.message);
       setLoading(false);

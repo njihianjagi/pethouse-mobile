@@ -8,11 +8,15 @@ export interface Listing {
   kennelBreedId: string;
   name: string;
   breed: string;
+  sex: 'male' | 'female';
   age: string;
-  location: string;
-  description: string;
+  traits: {
+    [key: string]: number;
+  };
   images: string[];
+  videos: string[];
 }
+
 export const useListingData = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
