@@ -4,23 +4,25 @@
     "slug": "doghouse",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "com.doghouse.ke",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/logo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.doghouse.ke"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.doghouse.ke"
+      "package": "com.doghouse.ke",
+      "googleServicesFile": "./google-services.json",
+      "userInterfaceStyle": "automatic"
     },
     "web": {
       "bundler": "metro",
@@ -38,7 +40,9 @@
             "buildToolsVersion": "34.0.0"
           }
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin",
+      "./translucent-default-splash-screen-config"
     ],
     "experiments": {
       "typedRoutes": true

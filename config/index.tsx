@@ -9,16 +9,16 @@ export const ConfigContext = React.createContext({} as any);
 export const ConfigProvider = ({children}) => {
   const {localized} = useTranslations();
   const config = {
+    isDelayedLoginEnabled: false,
     isSMSAuthEnabled: true,
-    isGoogleAuthEnabled: false,
-    isAppleAuthEnabled: false,
+    isGoogleAuthEnabled: true,
     isFacebookAuthEnabled: false,
+    isAppleAuthEnabled: false,
     forgotPasswordEnabled: true,
-    appIdentifier: `com.doghouse.ke`,
+    appIdentifier: 'com.doghouse.ke',
     facebookIdentifier: '285315185217069',
-    googleMapsApiKey: 'AIzaSyAsA_NXnLAmxVq4UGGpHyt3SmpyHveI-UE',
-    webClientId:
-      '1099201876026-7p9f7c1ukg55958ck45fc0bn0luilka4.apps.googleusercontent.com',
+    googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+    webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
     onboardingConfig: {
       welcomeTitle: localized('Your home for quality breeds'),
       welcomeCaption: localized(
@@ -82,7 +82,8 @@ export const ConfigProvider = ({children}) => {
       ],
     },
     tosLink: 'https://www.doghouse.co.ke/terms-of-service/',
-    isUsernameFieldEnabled: false,
+    privacyPolicyLink: 'https://www.doghouse.co.ke/privacy-policy/',
+    isUsernameFieldEnabled: true,
     smsSignupFields: [
       // {
       //   displayName: localized('First Name'),

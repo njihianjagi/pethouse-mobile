@@ -1,96 +1,85 @@
-import { Tabs, useRouter } from 'expo-router';
-import React, { useCallback } from 'react';
+import {Tabs, useRouter} from 'expo-router';
+import React, {useCallback} from 'react';
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { TouchableIcon, useTheme, useTranslations } from '../../dopebase';
-import { View } from 'react-native';
-import { useAuth } from '../../hooks/useAuth';
+import {useColorScheme} from '@/hooks/useColorScheme';
+import {useTheme, useTranslations} from '../../dopebase';
+import {useAuth} from '../../hooks/useAuth';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { Home, Search, MessageSquare, User2 } from '@tamagui/lucide-icons'
+import {
+  Home,
+  Search,
+  MessageSquare,
+  User2,
+  LogOut,
+  Bell,
+} from '@tamagui/lucide-icons';
+import {Button} from 'tamagui';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
-  const { localized } = useTranslations()
-  const { theme, appearance } = useTheme()
-  const colorSet = theme.colors[appearance]
-
-  const currentUser = useCurrentUser()
-  const authManager = useAuth()
-
-  const router = useRouter();
-
-  const onLogout = useCallback(() => {
-    authManager?.logout(currentUser)
-    // navigation.reset({
-    //   index: 0,
-    //   routes: [
-    //     {
-    //       name: 'LoadScreen',
-    //     },
-    //   ],
-    // })
-    router.push('/')
-
-  }, [currentUser])
+  const {localized} = useTranslations();
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colorSet.primaryForeground,
-        headerShown: true,
-
-      }}>
-
+        tabBarInactiveTintColor: colorSet.secondaryText,
+        tabBarStyle: {
+          backgroundColor: colorSet.primaryBackground,
+        },
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name='(home)'
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            // <Ionicons name={focused ? 'home' : 'home-outline'} color={color} size={24} />
+          tabBarIcon: ({color, focused}) => (
             <Home color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
+
+          headerShown: false,
         }}
       />
 
       <Tabs.Screen
-        name="explore"
+        name='(explore)'
         options={{
           title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            // <TabBarIcon name={focused ? 'search' : 'search-outline'} color={color} />
+          tabBarIcon: ({color, focused}) => (
             <Search color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
+
+          headerShown: false,
         }}
       />
 
       <Tabs.Screen
-        name="inbox"
+        name='(inbox)'
         options={{
           title: 'Inbox',
-          tabBarIcon: ({ color, focused }) => (
-            // <TabBarIcon name={focused ? 'chatbox' : 'chatbox-outline'} color={color} />
-            <MessageSquare color={focused ? colorSet.primaryForeground : '$gray9'} />
+          tabBarIcon: ({color, focused}) => (
+            <MessageSquare
+              color={focused ? colorSet.primaryForeground : '$gray9'}
+            />
           ),
+
+          headerShown: false,
         }}
       />
-
-
 
       <Tabs.Screen
-        name="profile"
+        name='(profile)'
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, focused }) => (
-            // <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
+          tabBarIcon: ({color, focused}) => (
             <User2 color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
+
+          headerShown: false,
         }}
       />
-
-
     </Tabs>
   );
 }

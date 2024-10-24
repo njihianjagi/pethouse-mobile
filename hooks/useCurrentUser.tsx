@@ -1,8 +1,8 @@
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
+import {RootState} from '../redux/reducers';
 
 const useCurrentUser = () => {
-  // @ts-ignore
-  const user = useSelector(state => state.auth.user);
+  const user: any = useSelector<RootState>((state) => state.auth.user);
   return user;
 };
 

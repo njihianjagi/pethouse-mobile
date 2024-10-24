@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "838635783062-45gs6qg33a5vef2922fan8a3tods53jc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.doghouse.ke",
+            "certificate_hash": "4e32d5fa49d4cdffea12dda03d109896f378193c"
+          }
+        },
+        {
           "client_id": "838635783062-lum2hnj0eujchm0hrac0e7iimbmraenb.apps.googleusercontent.com",
           "client_type": 3
         }

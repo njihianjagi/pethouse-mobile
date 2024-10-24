@@ -11,7 +11,7 @@ import {Provider} from 'react-redux';
 import {ConfigProvider, useConfig} from '../config';
 import {TranslationProvider, DopebaseProvider, extendTheme} from '../dopebase';
 import {AuthProvider} from '../hooks/useAuth';
-import {authManager} from '../api';
+import {authManager} from '../api/firebase/auth';
 import translations from '../translations';
 import configureStore from '../redux/store/dev';
 import DoghouseTheme from '../theme';
@@ -39,6 +39,8 @@ declare module '@tamagui/core' {
 export default function RootLayout() {
   const theme = extendTheme(DoghouseTheme);
   const colorScheme = useColorScheme();
+
+  console.log('color scheme: ', colorScheme);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/Oswald-Regular.ttf'),
   });
@@ -64,14 +66,14 @@ export default function RootLayout() {
               <MenuProvider>
                 <ActionSheetProvider>
                   <ThemeProvider
-                    value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}
+                    value={colorScheme === 'dark' ? DefaultTheme : DefaultTheme}
                   >
                     <TamaguiProvider
                       config={tamaguiConfig}
-                      defaultTheme='light'
+                      defaultTheme={colorScheme as string | undefined}
                     >
                       <SafeAreaProvider>
-                        <SafeAreaView style={{flex: 1, paddingTop: insets.top}}>
+                        <SafeAreaView style={{flex: 1, paddingTop: 0}}>
                           <Stack>
                             <Stack.Screen
                               name='(auth)'
@@ -83,6 +85,18 @@ export default function RootLayout() {
                             />
                             <Stack.Screen
                               name='(tabs)'
+                              options={{headerShown: false}}
+                            />
+                            <Stack.Screen
+                              name='(kennels)'
+                              options={{headerShown: false}}
+                            />
+                            <Stack.Screen
+                              name='(listings)'
+                              options={{headerShown: false}}
+                            />
+                            <Stack.Screen
+                              name='(litters)'
                               options={{headerShown: false}}
                             />
                             <Stack.Screen name='+not-found' />
