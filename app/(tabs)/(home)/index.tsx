@@ -17,8 +17,8 @@ import {
   Separator,
 } from 'tamagui';
 import {ArrowRight, MapPin, Plus} from '@tamagui/lucide-icons';
-import {useLitterData} from '../../../api/firebase/litters/useLittersData';
-import {useListingData} from '../../../api/firebase/listings/useListingsData';
+import {useLitterData} from '../../../api/firebase/litters/useLitterData';
+import {useListingData} from '../../../api/firebase/listings/useListingData';
 
 const HomeScreen = () => {
   const router = useRouter();

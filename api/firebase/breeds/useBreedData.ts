@@ -4,7 +4,7 @@ import breedsData from '../../../assets/data/breeds_with_group_and_traits.json';
 import {getDoc, doc} from '@react-native-firebase/firestore';
 
 export interface DogBreed {
-  id?: string;
+  id: string;
   name: string;
   description: string;
   height: string;

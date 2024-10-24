@@ -113,18 +113,47 @@ const ProfileScreen = () => {
               icon={User}
               iconAfter={ChevronRight}
               pressTheme
-              onPress={() => router.push('/(profile)/edit-profile')}
+              onPress={() => router.push('/(profile)/edit')}
             />
             <Separator />
             {currentUser.role === 'breeder' ? (
-              <ListItem
-                icon={Dog}
-                title='Kennel'
-                subTitle='Manage your breeds and services'
-                iconAfter={ChevronRight}
-                pressTheme
-                onPress={() => router.push('/(profile)/manage-kennel')}
-              />
+              <>
+                <ListItem
+                  icon={Dog}
+                  title='Kennel'
+                  subTitle='Manage your kennel information'
+                  iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('/(profile)/kennel')}
+                />
+                <Separator />
+                <ListItem
+                  icon={Dog}
+                  title='Breeds'
+                  subTitle='View and manage your breeds'
+                  iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('/(profile)/breeds')}
+                />
+                <Separator />
+                <ListItem
+                  icon={Dog}
+                  title='Listings'
+                  subTitle='View and manage your listings'
+                  iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('/(profile)/listings')}
+                />
+                <Separator />
+                <ListItem
+                  icon={Dog}
+                  title='Litters'
+                  subTitle='View and manage your litters'
+                  iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('/(profile)/litters')}
+                />
+              </>
             ) : (
               <ListItem
                 icon={Dog}
@@ -132,20 +161,10 @@ const ProfileScreen = () => {
                 subTitle='Manage your preferred breeds'
                 iconAfter={ChevronRight}
                 pressTheme
-                onPress={() => router.push('/(profile)/user-preferences')}
+                onPress={() => router.push('/(profile)/preferences')}
               />
             )}
-            <Separator />
-
-            <Separator />
-            <ListItem
-              icon={Settings}
-              title='Settings'
-              subTitle='Account settings'
-              iconAfter={ChevronRight}
-            />
           </YGroup>
-
           <YGroup bordered>
             <ListItem
               icon={HelpCircle}

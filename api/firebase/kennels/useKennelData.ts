@@ -17,7 +17,6 @@ export interface Kennel {
   id: string;
   name: string;
   location: string;
-  services: string[];
   userId: string;
 }
 
@@ -31,7 +30,7 @@ export interface KennelBreed {
   videos?: {downloadURL: string}[];
 }
 
-export const useKennelData = () => {
+export const useKennelData = (kennelId?: string) => {
   const [kennels, setKennels] = useState([] as any);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -248,6 +247,12 @@ export const useKennelData = () => {
       console.error('Error deleting kennel breed:', err);
     }
   };
+
+  useEffect(() => {
+    if (kennelId) {
+      fetchKennelBreeds(kennelId);
+    }
+  }, [kennelId]);
 
   return {
     kennels,

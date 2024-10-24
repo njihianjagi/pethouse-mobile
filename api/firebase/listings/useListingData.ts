@@ -6,6 +6,8 @@ export interface Listing {
   id: string;
   userId: string;
   kennelBreedId: string;
+  breedId: string;
+  kennelId: string;
   name: string;
   breed: string;
   sex: 'male' | 'female';
@@ -41,6 +43,32 @@ export const useListingData = () => {
     } catch (err) {
       console.error('Error fetching listings:', err);
       setError('Failed to fetch listings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchListingsByKennelId = async (kennelId: string) => {
+    setLoading(true);
+    try {
+      const snapshot = await db
+        .collection('listings')
+        .where('kennelId', '==', kennelId)
+        .orderBy('createdAt', 'desc')
+        .get();
+
+      const fetchedListings = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Listing[];
+
+      setListings(fetchedListings);
+      setError(null);
+      return fetchedListings;
+    } catch (err) {
+      console.error('Error fetching listings by kennel ID:', err);
+      setError('Failed to fetch listings');
+      return [];
     } finally {
       setLoading(false);
     }
@@ -99,5 +127,6 @@ export const useListingData = () => {
     addListing,
     updateListing,
     deleteListing,
+    fetchListingsByKennelId,
   };
 };

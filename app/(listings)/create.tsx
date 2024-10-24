@@ -18,7 +18,10 @@ import {
   View,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../dopebase';
-import {useListingData} from '../../api/firebase/listings/useListingsData';
+import {
+  Listing,
+  useListingData,
+} from '../../api/firebase/listings/useListingData';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import BreedSelector from '../../components/BreedSelector';
 import ImageManager from '../../components/ImageManager';
@@ -118,12 +121,13 @@ const CreateListingScreen = () => {
       ?.id;
   };
 
-  const createListingObject = (kennelBreedId: string) => ({
+  const createListingObject = (kennelBreedId: string): Omit<Listing, 'id'> => ({
     userId: currentUser.id,
     kennelId: currentUser.kennelId,
     kennelBreedId,
     ...formData,
     breed: formData.selectedBreed.name,
+    breedId: formData.selectedBreed.id,
   });
 
   const handleCreateListing = async () => {

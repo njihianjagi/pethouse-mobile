@@ -54,8 +54,8 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
     const breedDoc = await fetchBreedByName(breedName);
 
     if (!breedLoading && breedDoc) {
-      onSelectBreed({...breedDoc, ...breed});
       setOpen(false);
+      onSelectBreed({...breedDoc, ...breed});
     }
 
     if (breedError) {

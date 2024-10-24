@@ -4,9 +4,11 @@ import {db} from '../../../firebase/config';
 
 export interface Litter {
   id: string;
-  breederId: string;
+  kennelBreedId: string;
+  breedId: string;
   breed: string;
   expectedDate: string;
+  birthDate: string;
   puppyCount: number;
   availablePuppies: number;
   images: string[];
@@ -87,6 +89,32 @@ export const useLitterData = () => {
     fetchLitters();
   }, []);
 
+  const fetchLittersByKennelId = async (kennelId: string) => {
+    setLoading(true);
+    try {
+      const snapshot = await db
+        .collection('litters')
+        .where('kennelId', '==', kennelId)
+        .orderBy('expectedDate', 'asc')
+        .get();
+
+      const fetchedLitters = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Litter[];
+
+      setLitters(fetchedLitters);
+      setError(null);
+      return fetchedLitters;
+    } catch (err) {
+      console.error('Error fetching litters by kennel ID:', err);
+      setError('Failed to fetch litters');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     litters,
     loading,
@@ -95,5 +123,6 @@ export const useLitterData = () => {
     addLitter,
     updateLitter,
     deleteLitter,
+    fetchLittersByKennelId,
   };
 };

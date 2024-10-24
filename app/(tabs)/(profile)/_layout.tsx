@@ -43,15 +43,42 @@ export default function ExploreLayout() {
         }}
       />
       <Stack.Screen
-        name='manage-kennel'
+        name='kennel'
         options={{
           headerShown: true,
           title: 'Manage kennel',
           headerShadowVisible: false,
         }}
       />
+
       <Stack.Screen
-        name='user-preferences'
+        name='breeds'
+        options={{
+          headerShown: true,
+          title: 'Manage your breeds',
+          headerShadowVisible: false,
+        }}
+      />
+
+      <Stack.Screen
+        name='listings'
+        options={{
+          headerShown: true,
+          title: 'Manage your listings',
+          headerShadowVisible: false,
+        }}
+      />
+
+      <Stack.Screen
+        name='litters'
+        options={{
+          headerShown: true,
+          title: 'Manage your litters',
+          headerShadowVisible: false,
+        }}
+      />
+      <Stack.Screen
+        name='preferences'
         options={{
           headerShown: true,
           headerShadowVisible: false,
@@ -60,7 +87,7 @@ export default function ExploreLayout() {
       />
 
       <Stack.Screen
-        name='edit-profile'
+        name='edit'
         options={{
           headerShown: true,
           headerShadowVisible: false,
