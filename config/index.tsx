@@ -17,9 +17,8 @@ export const ConfigProvider = ({children}) => {
     forgotPasswordEnabled: true,
     appIdentifier: 'com.doghouse.ke',
     facebookIdentifier: '285315185217069',
-    googleMapsApiKey: 'AIzaSyAsA_NXnLAmxVq4UGGpHyt3SmpyHveI-UE',
-    webClientId:
-      '838635783062-5u4n4gerafbra1qlaakuadi30mq7sv84.apps.googleusercontent.com',
+    googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+    webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
     onboardingConfig: {
       welcomeTitle: localized('Your home for quality breeds'),
       welcomeCaption: localized(
