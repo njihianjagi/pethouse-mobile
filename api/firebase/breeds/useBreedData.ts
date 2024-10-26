@@ -38,7 +38,7 @@ export const useBreedData = (userId?: string) => {
   const [allBreeds, setAllBreeds] = useState(breedsData as any);
   const [userBreeds, setUserBreeds] = useState<UserBreed[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null as any);
 
   // Fetch all breeds
   const fetchAllBreeds = async () => {
@@ -126,6 +126,36 @@ export const useBreedData = (userId?: string) => {
       console.error('Error fetching user breeds:', err);
     }
     setLoading(false);
+  };
+
+  const fetchUserBreedById = async (
+    userBreedId: string
+  ): Promise<UserBreed | null> => {
+    setLoading(true);
+    try {
+      const userBreedDoc = await db
+        .collection('user_breeds')
+        .doc(userBreedId)
+        .get();
+      if (userBreedDoc.exists) {
+        const userBreedData = {
+          id: userBreedDoc.id,
+          ...userBreedDoc.data(),
+        } as UserBreed;
+        setError(null);
+        setLoading(false);
+        return userBreedData;
+      } else {
+        setError('User breed not found');
+        setLoading(false);
+        return null;
+      }
+    } catch (err: any) {
+      setError(err.message);
+      console.error('Error fetching user breed by ID:', err);
+      setLoading(false);
+      return null;
+    }
   };
 
   const addUserBreed = async (userBreed: Omit<UserBreed, 'id'>) => {
@@ -228,6 +258,7 @@ export const useBreedData = (userId?: string) => {
     fetchBreedByName,
     fetchBreedById,
     fetchUserBreeds,
+    fetchUserBreedById,
     fetchUserBreedsByBreedId,
     addUserBreed,
     updateUserBreed,
