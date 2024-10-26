@@ -27,15 +27,13 @@ const BreedsScreen = () => {
   const colorSet = theme?.colors[appearance];
   const {localized} = useTranslations();
 
-  const {loading: kennelLoading, error, getKennelByUserId} = useKennelData();
-
   const {
     userBreeds,
     fetchUserBreeds,
     addUserBreed,
     deleteUserBreed,
-    loading: breedLoading,
-    error: breedError,
+    loading,
+    error,
   } = useBreedData(currentUser.id);
 
   useEffect(() => {
@@ -61,7 +59,7 @@ const BreedsScreen = () => {
     <View flex={1} backgroundColor={colorSet.primaryBackground}>
       <ScrollView>
         <YStack padding='$4' gap='$4'>
-          {breedLoading ? (
+          {loading ? (
             <Spinner size='large' />
           ) : error ? (
             <Text color='$red10'>{error}</Text>

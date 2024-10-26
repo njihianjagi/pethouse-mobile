@@ -5,7 +5,7 @@ import {db} from '../../../firebase/config';
 export interface Listing {
   id: string;
   userId: string;
-  kennelBreedId: string;
+  userBreedId: string;
   breedId: string;
   kennelId: string;
   name: string;

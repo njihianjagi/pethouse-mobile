@@ -34,16 +34,6 @@ const ProfileScreen = () => {
 
   const authManager = useAuth();
 
-  // useEffect(() => {
-  //   if (currentUser?.role === 'breeder') {
-  //     getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
-  //       if (kennels) {
-  //         setKennel(kennel);
-  //       }
-  //     });
-  //   }
-  // }, [currentUser]);
-
   // const handleUpdateProfile = async () => {
   //   setIsUpdating(true);
   //   try {

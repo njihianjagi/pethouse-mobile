@@ -8,39 +8,19 @@ import {
   Text,
   Sheet,
   Separator,
-  XStack,
   Spinner,
   ListItem,
   YGroup,
-  Tabs,
-  Card,
 } from 'tamagui';
 import {
   Kennel,
-  KennelBreed,
   useKennelData,
 } from '../../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {
-  Heart,
-  Home,
-  Plus,
-  Scissors,
-  Trash,
-  ArrowRight,
-} from '@tamagui/lucide-icons';
+import {Heart, Home, Plus, Scissors, Trash} from '@tamagui/lucide-icons';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import {useTheme, useTranslations} from '../../../dopebase';
 import {useConfig} from '../../../config';
-import BreedSelector from '../../../components/BreedSelector';
-import {
-  Listing,
-  useListingData,
-} from '../../../api/firebase/listings/useListingData';
-import {
-  Litter,
-  useLitterData,
-} from '../../../api/firebase/litters/useLitterData';
 import {useRouter} from 'expo-router';
 
 const ManageKennelScreen = () => {
@@ -52,16 +32,10 @@ const ManageKennelScreen = () => {
   const {localized} = useTranslations();
 
   const {
-    kennelBreeds,
     updateKennel,
     getKennelByUserId,
-    fetchKennelBreeds,
-    deleteKennelBreed,
     loading: kennelLoading,
   } = useKennelData();
-
-  const {fetchListingsByKennelId} = useListingData();
-  const {fetchLittersByKennelId} = useLitterData();
 
   const [formData, setFormData] = useState({
     kennelName: '',
@@ -72,7 +46,6 @@ const ManageKennelScreen = () => {
   const [existingKennel, setExistingKennel] = useState({} as Kennel);
 
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('info');
 
   useEffect(() => {
     const fetchKennelData = async () => {
@@ -128,7 +101,7 @@ const ManageKennelScreen = () => {
       await updateKennel(existingKennel.id, {
         name: formData.kennelName,
         location: formData.location,
-        // services: formData.selectedServices,
+        services: formData.selectedServices,
       });
       Alert.alert('Success', 'Kennel information updated successfully');
     } catch (error) {
