@@ -27,18 +27,19 @@ import BreedSelector from '../../components/BreedSelector';
 import ImageManager from '../../components/ImageManager';
 // import VideoManager from '../../components/VideoManager';
 import {DogBreed, useBreedData} from '../../api/firebase/breeds/useBreedData';
-import useKennelData, {
-  KennelBreed,
-} from '../../api/firebase/kennels/useKennelData';
 
 const CreateListingScreen = () => {
   const router = useRouter();
+
   const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
+
   const {localized} = useTranslations();
   const currentUser = useCurrentUser();
   const {addListing} = useListingData();
-  const {fetchBreedByName} = useBreedData();
-  const colorSet = theme.colors[appearance];
+
+  const {fetchBreedByName, userBreeds, fetchUserBreeds, addUserBreed} =
+    useBreedData(currentUser?.id);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -61,16 +62,9 @@ const CreateListingScreen = () => {
 
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('tab1');
-  const {kennelBreeds, fetchKennelBreeds, addKennelBreed} = useKennelData();
 
   const tabs = ['tab1', 'tab2', 'tab3'];
   const currentIndex = tabs.indexOf(activeTab);
-
-  useEffect(() => {
-    if (currentUser.kennelId) {
-      fetchKennelBreeds(currentUser.kennelId);
-    }
-  }, [currentUser.kennelId]);
 
   useEffect(() => {
     if (formData.selectedBreed.name) {
@@ -101,30 +95,31 @@ const CreateListingScreen = () => {
     handleInputChange('selectedBreed', breed);
   };
 
-  const isNewKennelBreed = () => {
-    return !kennelBreeds.some(
+  const isNewUserBreed = () => {
+    return !userBreeds.some(
       (breed) => breed.breedId === formData.selectedBreed.id
     );
   };
 
-  const handleKennelBreed = async () => {
-    if (isNewKennelBreed()) {
-      const newKennelBreed: any = await addKennelBreed({
-        kennelId: currentUser.kennelId,
+  const handleUserBreed = async () => {
+    if (isNewUserBreed()) {
+      const newUserBreed: any = await addUserBreed({
+        userId: currentUser.id,
         breedId: formData.selectedBreed.id!,
         breedName: formData.selectedBreed.name,
         breedGroup: formData.selectedBreed.breedGroup,
+        isOwner: currentUser.isBreeder,
       });
-      return newKennelBreed.id;
+      return newUserBreed.id;
     }
-    return kennelBreeds.find((kb) => kb.breedId === formData.selectedBreed.id)
+    return userBreeds.find((ub) => ub.breedId === formData.selectedBreed.id)
       ?.id;
   };
 
-  const createListingObject = (kennelBreedId: string): Omit<Listing, 'id'> => ({
+  const createListingObject = (userBreedId: string): Omit<Listing, 'id'> => ({
     userId: currentUser.id,
     kennelId: currentUser.kennelId,
-    kennelBreedId,
+    userBreedId,
     ...formData,
     breed: formData.selectedBreed.name,
     breedId: formData.selectedBreed.id,
@@ -141,8 +136,8 @@ const CreateListingScreen = () => {
 
     setLoading(true);
     try {
-      const kennelBreedId = await handleKennelBreed();
-      const newListing = createListingObject(kennelBreedId);
+      const userBreedId = await handleUserBreed();
+      const newListing = createListingObject(userBreedId);
       await addListing(newListing);
       Alert.alert('Success', 'Listing created successfully');
       router.back();
@@ -238,12 +233,12 @@ const CreateListingScreen = () => {
                   <Text>{localized('Breed')}</Text>
                   <BreedSelector
                     onSelectBreed={handleSelectBreed}
-                    kennelBreeds={kennelBreeds}
+                    userBreeds={userBreeds}
                     buttonText={
                       formData.selectedBreed.name || localized('Select Breed')
                     }
                   />
-                  {formData.selectedBreed?.id && isNewKennelBreed() && (
+                  {formData.selectedBreed?.id && isNewUserBreed() && (
                     <Text color='$green10'>
                       {localized(
                         'This breed will be added to your kennel when the listing is created.'

@@ -107,7 +107,6 @@ const SeekerOnboardingScreen = () => {
       setLoading(true);
 
       const response: any = await updateUser(currentUser.id, {
-        preferredBreeds: filteredBreeds.map((breed) => breed.name),
         traitPreferences: traitPreferences,
       });
 

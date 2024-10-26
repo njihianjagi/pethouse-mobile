@@ -49,17 +49,12 @@ function BreedDetailScreen() {
   };
 
   const {
-    fetchKennelsByBreed,
-    kennels,
-    loading: kennelsLoading,
-    error: kennelsError,
-  } = useKennelData();
-
-  const {
     loading: breedLoading,
     error: breedError,
+    userBreeds,
     fetchBreedByName,
     findBreedByName,
+    fetchUserBreedsByBreedId,
   } = useBreedData();
 
   useEffect(() => {
@@ -78,15 +73,9 @@ function BreedDetailScreen() {
 
   useEffect(() => {
     if (breed?.id) {
-      fetchKennelsByBreed(breed.id);
+      fetchUserBreedsByBreedId(breed.id);
     }
   }, [breed]);
-
-  useEffect(() => {
-    if (kennels?.length) {
-      setRelevantKennels(kennels);
-    }
-  }, [kennels]);
 
   // Function to determine if a trait matches user preferences
   const isTraitMatching = (traitName: string, traitValue: {score: number}) => {
@@ -243,29 +232,39 @@ function BreedDetailScreen() {
                 <YGroup gap='$4' padding='$4'>
                   <YGroup.Item>
                     <Text fontSize='$6' fontWeight='bold'>
-                      {localized('Kennels offering this breed')}
+                      {localized('Owners and Kennels offering this breed')}
                     </Text>
                   </YGroup.Item>
                   <Separator />
-                  {kennelsLoading ? (
+                  {breedLoading ? (
                     <Spinner size='small' color={colorSet.primaryForeground} />
-                  ) : kennelsError ? (
-                    <Text color={colorSet.error}>{kennelsError}</Text>
-                  ) : relevantKennels.length === 0 ? (
-                    <Text>{localized('No kennels found for this breed')}</Text>
+                  ) : breedError ? (
+                    <Text color={colorSet.error}>{breedError}</Text>
+                  ) : userBreeds.length === 0 ? (
+                    <Text>
+                      {localized('No owners or kennels found for this breed')}
+                    </Text>
                   ) : (
-                    relevantKennels.map((kennel) => (
-                      <YGroup.Item key={kennel.id}>
+                    userBreeds.map((userBreed) => (
+                      <YGroup.Item key={userBreed.id}>
                         <ListItem
-                          title={kennel.name}
-                          subTitle={kennel.location}
-                          icon={MapPin}
+                          title={
+                            userBreed.user?.name ||
+                            userBreed.kennel?.name ||
+                            'Unknown'
+                          }
+                          subTitle={
+                            userBreed.user?.location ||
+                            userBreed.kennel?.location ||
+                            'Unknown location'
+                          }
+                          icon={userBreed.kennelId ? MapPin : Heart}
                           iconAfter={
                             <Button
                               size='$2'
                               variant='outlined'
                               onPress={() => {
-                                // Navigate to kennel detail page
+                                // Navigate to kennel or user detail page
                                 // You'll need to implement this navigation
                               }}
                             >

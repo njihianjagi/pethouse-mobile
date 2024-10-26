@@ -10,10 +10,7 @@ import {
   ListItem,
   Spinner,
 } from 'tamagui';
-import {
-  KennelBreed,
-  useKennelData,
-} from '../../../api/firebase/kennels/useKennelData';
+import {useKennelData} from '../../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {Trash, Plus, ChevronRight} from '@tamagui/lucide-icons';
 import {useTheme, useTranslations} from '../../../dopebase';
@@ -21,6 +18,7 @@ import BreedSelector from '../../../components/BreedSelector';
 import {useListingData} from '../../../api/firebase/listings/useListingData';
 import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useRouter} from 'expo-router';
+import useBreedData from '../../../api/firebase/breeds/useBreedData';
 
 const BreedsScreen = () => {
   const currentUser = useCurrentUser();
@@ -29,82 +27,48 @@ const BreedsScreen = () => {
   const colorSet = theme?.colors[appearance];
   const {localized} = useTranslations();
 
-  const {
-    loading,
-    error,
-    getKennelByUserId,
-    fetchKennelBreeds,
-    addKennelBreed,
-    deleteKennelBreed,
-  } = useKennelData();
-  const {fetchListingsByKennelId} = useListingData();
-  const {fetchLittersByKennelId} = useLitterData();
+  const {loading: kennelLoading, error, getKennelByUserId} = useKennelData();
 
-  const [kennelBreeds, setKennelBreeds] = useState([] as KennelBreed[]);
-  const [listings, setListings] = useState({});
-  const [litters, setLitters] = useState({});
+  const {
+    userBreeds,
+    fetchUserBreeds,
+    addUserBreed,
+    deleteUserBreed,
+    loading: breedLoading,
+    error: breedError,
+  } = useBreedData(currentUser.id);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (currentUser) {
-        const kennel = await getKennelByUserId(
-          currentUser.id || currentUser.uid
-        );
-        if (kennel) {
-          const breeds = await fetchKennelBreeds(kennel.id);
-          setKennelBreeds(breeds);
-
-          const kennelListings = await fetchListingsByKennelId(kennel.id);
-          const listingsByBreed = kennelListings.reduce((acc, listing) => {
-            acc[listing.breedId] = (acc[listing.breedId] || 0) + 1;
-            return acc;
-          }, {});
-          setListings(listingsByBreed);
-
-          const kennelLitters = await fetchLittersByKennelId(kennel.id);
-          const littersByBreed = kennelLitters.reduce((acc, litter) => {
-            acc[litter.breedId] = (acc[litter.breedId] || 0) + 1;
-            return acc;
-          }, {});
-          setLitters(littersByBreed);
-        }
-      }
-    };
-
-    fetchData();
+    fetchUserBreeds(currentUser.id);
   }, [currentUser.id]);
 
   const handleAddBreed = async (breed) => {
-    if (kennelBreeds.some((kb) => kb.breedId === breed.id)) {
+    if (userBreeds.some((kb) => kb.breedId === breed.id)) {
       Alert.alert(
         'Breed already added',
         'This breed is already in your kennel.'
       );
       return;
     }
-    await addKennelBreed(breed);
-    setKennelBreeds((prev) => [...prev, {...breed, breedId: breed.id}]);
+    await addUserBreed(breed);
   };
 
-  const handleRemoveBreed = async (kennelBreedId) => {
-    await deleteKennelBreed(kennelBreedId);
-    setKennelBreeds((prev) =>
-      prev.filter((breed) => breed.id !== kennelBreedId)
-    );
+  const handleRemoveBreed = async (userBreedId) => {
+    await deleteUserBreed(userBreedId);
   };
 
   return (
     <View flex={1} backgroundColor={colorSet.primaryBackground}>
       <ScrollView>
         <YStack padding='$4' gap='$4'>
-          {loading ? (
+          {breedLoading ? (
             <Spinner size='large' />
           ) : error ? (
             <Text color='$red10'>{error}</Text>
-          ) : kennelBreeds.length === 0 ? (
+          ) : userBreeds.length === 0 ? (
             <Text>{localized('No breeds added yet.')}</Text>
           ) : (
-            kennelBreeds.map((breed) => (
+            userBreeds.map((breed) => (
               <YGroup key={breed.id} separator={<Separator />} flex={1}>
                 <YGroup.Item>
                   <ListItem
@@ -121,7 +85,7 @@ const BreedsScreen = () => {
                   />
                 </YGroup.Item>
 
-                <YGroup.Item>
+                {/* <YGroup.Item>
                   <ListItem
                     title='Listings'
                     iconAfter={
@@ -152,13 +116,13 @@ const BreedsScreen = () => {
                       </Button>
                     }
                   />
-                </YGroup.Item>
+                </YGroup.Item> */}
               </YGroup>
             ))
           )}
           <BreedSelector
             onSelectBreed={handleAddBreed}
-            kennelBreeds={kennelBreeds}
+            userBreeds={userBreeds}
             buttonText={localized('Add Breed')}
           />
         </YStack>

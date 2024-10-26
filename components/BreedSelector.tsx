@@ -11,62 +11,63 @@ import {
   Spinner,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../dopebase';
-import useKennelData, {
-  KennelBreed,
-} from '../api/firebase/kennels/useKennelData';
+
 import {useBreedSearch} from '../hooks/useBreedSearch';
-import useBreedData, {DogBreed} from '../api/firebase/breeds/useBreedData';
+import useBreedData, {
+  DogBreed,
+  UserBreed,
+} from '../api/firebase/breeds/useBreedData';
 import {ChevronRight, Star} from '@tamagui/lucide-icons';
 import {Alert, FlatList} from 'react-native';
+import useCurrentUser from '../hooks/useCurrentUser';
 
 interface BreedSelectorProps {
   onSelectBreed: (breed: DogBreed) => void;
-  kennelBreeds: KennelBreed[];
+  userBreeds?: UserBreed[];
   buttonText?: string;
   maxHeight?: number | string;
 }
 
 const BreedSelector: React.FC<BreedSelectorProps> = ({
   onSelectBreed,
-  kennelBreeds,
+  userBreeds,
   buttonText = 'Select Breed',
 }) => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
+  const currentUser = useCurrentUser();
+
   const [open, setOpen] = useState(false);
   const {localized} = useTranslations();
 
+  const {loading, error, fetchBreedByName} = useBreedData(currentUser?.id);
+
   const {searchText, updateFilter, filteredBreeds, loadMoreBreeds, hasMore} =
     useBreedSearch();
-  const {
-    loading: breedLoading,
-    error: breedError,
-    fetchBreedByName,
-  } = useBreedData();
 
   const handleSearchTextChange = (text: string) => {
     updateFilter('searchText', text);
   };
 
-  const handleSelectBreed = async (breed: DogBreed | KennelBreed) => {
+  const handleSelectBreed = async (breed: DogBreed | UserBreed) => {
     const breedName = 'name' in breed ? breed.name : breed.breedName;
     const breedDoc = await fetchBreedByName(breedName);
 
-    if (!breedLoading && breedDoc) {
+    if (!loading && breedDoc) {
       setOpen(false);
       onSelectBreed({...breedDoc, ...breed});
     }
 
-    if (breedError) {
+    if (error) {
       Alert.alert('Error selecting breed');
     }
   };
 
   return (
     <>
-      <Button onPress={() => setOpen(true)} disabled={breedLoading}>
-        {breedLoading ? <Spinner /> : localized(buttonText)}
+      <Button onPress={() => setOpen(true)} disabled={loading}>
+        {loading ? <Spinner /> : localized(buttonText)}
       </Button>
       <Sheet
         modal
@@ -91,10 +92,10 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
             />
 
             <YStack gap='$4'>
-              {kennelBreeds.length > 0 && (
+              {userBreeds && userBreeds.length > 0 && (
                 <YStack>
                   <Text>{localized('Your Breeds')}</Text>
-                  {kennelBreeds.map((breed) => (
+                  {userBreeds.map((breed) => (
                     <ListItem
                       key={breed.id}
                       title={breed.breedName}

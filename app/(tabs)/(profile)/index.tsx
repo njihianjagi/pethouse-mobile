@@ -118,15 +118,19 @@ const ProfileScreen = () => {
             <Separator />
             {currentUser.role === 'breeder' ? (
               <>
-                <ListItem
-                  icon={Dog}
-                  title='Kennel'
-                  subTitle='Manage your kennel information'
-                  iconAfter={ChevronRight}
-                  pressTheme
-                  onPress={() => router.push('/(profile)/kennel')}
-                />
-                <Separator />
+                {currentUser.isKennelOwner && (
+                  <>
+                    <ListItem
+                      icon={Dog}
+                      title='Kennel'
+                      subTitle='Manage your kennel information'
+                      iconAfter={ChevronRight}
+                      pressTheme
+                      onPress={() => router.push('/(profile)/kennel')}
+                    />
+                    <Separator />
+                  </>
+                )}
                 <ListItem
                   icon={Dog}
                   title='Breeds'

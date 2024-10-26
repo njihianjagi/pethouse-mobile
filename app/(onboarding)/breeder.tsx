@@ -16,24 +16,26 @@ import {
 import {useTheme, useTranslations} from '../../dopebase';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import BreedSelector from '../../components/BreedSelector';
-import {DogBreed} from '../../api/firebase/breeds/useBreedData';
+import useBreedData, {DogBreed} from '../../api/firebase/breeds/useBreedData';
 import useKennelData from '../../api/firebase/kennels/useKennelData';
 import {Minus} from '@tamagui/lucide-icons';
+import {updateUser} from '../../api/firebase/users/userClient';
 
 const BreederOnboardingScreen = () => {
   const router = useRouter();
   const {theme} = useTheme();
   const {localized} = useTranslations();
   const currentUser = useCurrentUser();
-  const {addKennelBreed, kennelBreeds, updateKennel} = useKennelData(
-    currentUser.kennelId
-  );
+
+  const {addUserBreed} = useBreedData(currentUser?.id);
+  const {addKennel} = useKennelData();
 
   const [formData, setFormData] = useState({
     kennelName: '',
     description: '',
     location: '',
     selectedBreeds: [] as DogBreed[],
+    hasKennel: false,
   });
   const [activeTab, setActiveTab] = useState('tab1');
   const [loading, setLoading] = useState(false);
@@ -59,44 +61,40 @@ const BreederOnboardingScreen = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.kennelName || formData.selectedBreeds.length === 0) {
-      Alert.alert(
-        'Error',
-        'Please fill in all required fields and select at least one breed.'
-      );
-      return;
-    }
-
     setLoading(true);
     try {
-      // Update kennel information
-      await updateKennel(currentUser.kennelId, {
-        name: formData.kennelName,
-        // description: formData.description,
-        location: formData.location,
-      });
-
-      // Add new kennel breeds
-      for (const breed of formData.selectedBreeds) {
-        if (!kennelBreeds.some((kb) => kb.breedId === breed.id)) {
-          await addKennelBreed({
-            kennelId: currentUser.kennelId,
-            breedId: breed.id!,
-            breedName: breed.name,
-            breedGroup: breed.breedGroup,
-            // Note: We're not including images here as per your suggestion
-          });
-        }
+      let kennelId;
+      if (formData.hasKennel) {
+        const kennel: any = await addKennel({
+          name: formData.kennelName,
+          location: formData.location,
+          userId: currentUser.id,
+        });
+        kennelId = kennel.id;
       }
 
-      Alert.alert('Success', 'Breeder profile updated successfully');
+      const userBreeds = await Promise.all(
+        formData.selectedBreeds.map((breed) =>
+          addUserBreed({
+            userId: currentUser.id,
+            breedId: breed.id,
+            breedName: breed.name,
+            breedGroup: breed.breedGroup,
+            isOwner: true,
+            kennelId: kennelId,
+          })
+        )
+      );
+
+      await updateUser(currentUser.id, {
+        isBreeder: true,
+        kennelId: kennelId,
+      });
+
+      updateUser(currentUser.id, {isBreeder: true, kennelId: kennelId});
       router.push('/(tabs)');
     } catch (error) {
-      console.error('Error updating breeder profile:', error);
-      Alert.alert(
-        'Error',
-        'Failed to update breeder profile. Please try again.'
-      );
+      Alert.alert('Error', 'Failed to save breeder information');
     } finally {
       setLoading(false);
     }
@@ -145,10 +143,9 @@ const BreederOnboardingScreen = () => {
             </Tabs.Content>
 
             <Tabs.Content value='tab2'>
-              <YStack space='$4'>
+              <YStack gap='$4'>
                 <BreedSelector
                   onSelectBreed={handleSelectBreed}
-                  kennelBreeds={kennelBreeds}
                   buttonText={localized('Add Breed')}
                 />
                 <YGroup>
