@@ -51,7 +51,7 @@ const ProfileScreen = () => {
   const onLogout = useCallback(() => {
     logout();
     authManager.logout(currentUser);
-    router.push('/');
+    router.replace('/');
   }, []);
 
   return (

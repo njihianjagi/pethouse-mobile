@@ -28,7 +28,7 @@ const lightColors = {
   primaryForeground: '#85643D',
   secondaryForeground: '#DFBD98',
   foregroundContrast: 'white',
-  primaryText: '#',
+  primaryText: '#000000',
   secondaryText: '#7e7e7e',
   hairline: '#e0e0e0',
   grey0: '#fafafa',

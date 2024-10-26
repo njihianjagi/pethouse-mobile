@@ -9,6 +9,8 @@ import {
   YGroup,
   ListItem,
   Spinner,
+  Card,
+  XStack,
 } from 'tamagui';
 import {useKennelData} from '../../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
@@ -19,6 +21,8 @@ import {useListingData} from '../../../api/firebase/listings/useListingData';
 import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useRouter} from 'expo-router';
 import useBreedData from '../../../api/firebase/breeds/useBreedData';
+import {LinearGradient} from 'tamagui/linear-gradient';
+import {EmptyStateCard} from '../../../components/EmptyStateCard';
 
 const BreedsScreen = () => {
   const currentUser = useCurrentUser();
@@ -64,7 +68,16 @@ const BreedsScreen = () => {
           ) : error ? (
             <Text color='$red10'>{error}</Text>
           ) : userBreeds.length === 0 ? (
-            <Text>{localized('No breeds added yet.')}</Text>
+            <EmptyStateCard
+              title={localized('No breeds added yet.')}
+              buttonText={localized('Add a Breed')}
+              onPress={() => {
+                /* Add breed action */
+              }}
+              icon={<Plus size='$2' color={colorSet.primaryBackground} />}
+              backgroundImage={require('../../../assets/images/doggos_3.png')}
+              backgroundColor={colorSet.secondaryForeground}
+            />
           ) : (
             userBreeds.map((breed) => (
               <YGroup key={breed.id} separator={<Separator />} flex={1}>
