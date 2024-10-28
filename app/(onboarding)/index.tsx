@@ -17,11 +17,9 @@ export default function OnboardingModal() {
   const checkUserOnboardingStage = () => {
     if (currentUser.role) {
       if (currentUser.role === 'breeder') {
-        if (!currentUser.kennelId) {
+        if (!currentUser.userBreeds) {
           router.replace('/breeder');
         } else {
-          console.log('user has kennel');
-
           router.replace('/(tabs)');
         }
       } else if (currentUser.role === 'seeker') {

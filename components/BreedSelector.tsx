@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   Sheet,
   Button,
@@ -18,7 +18,7 @@ import useBreedData, {
   UserBreed,
 } from '../api/firebase/breeds/useBreedData';
 import {ChevronRight, Star} from '@tamagui/lucide-icons';
-import {Alert, FlatList} from 'react-native';
+import {Alert, FlatList, Keyboard} from 'react-native';
 import useCurrentUser from '../hooks/useCurrentUser';
 
 interface BreedSelectorProps {
@@ -41,10 +41,22 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
   const [open, setOpen] = useState(false);
   const {localized} = useTranslations();
 
-  const {loading, error, fetchBreedByName} = useBreedData(currentUser?.id);
+  const searchInputRef = useRef('' as any);
 
-  const {searchText, updateFilter, filteredBreeds, loadMoreBreeds, hasMore} =
-    useBreedSearch();
+  const {
+    loading: breedLoading,
+    error,
+    fetchBreedByName,
+  } = useBreedData(currentUser?.id);
+
+  const {
+    loading,
+    searchText,
+    updateFilter,
+    filteredBreeds,
+    loadMoreBreeds,
+    hasMore,
+  } = useBreedSearch();
 
   const handleSearchTextChange = (text: string) => {
     updateFilter('searchText', text);
@@ -66,8 +78,17 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
 
   return (
     <>
-      <Button onPress={() => setOpen(true)} disabled={loading}>
-        {loading ? <Spinner /> : localized(buttonText)}
+      <Button
+        onPress={() => setOpen(true)}
+        disabled={loading}
+        backgroundColor={colorSet.secondaryForeground}
+        color={colorSet.primaryForeground}
+      >
+        {loading ? (
+          <Spinner color={colorSet.primaryForeground} />
+        ) : (
+          localized(buttonText)
+        )}
       </Button>
       <Sheet
         modal
@@ -80,20 +101,28 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
         <Sheet.Overlay />
         <Sheet.Frame>
           <Sheet.Handle />
-          <YStack padding='$4'>
+          <YStack padding='$4' gap='$4'>
             <Text fontSize='$6' fontWeight='bold' marginBottom='$4'>
               {localized('Select a Breed')}
             </Text>
             <Input
+              ref={searchInputRef}
               placeholder={localized('Search breeds')}
               value={searchText}
               onChangeText={handleSearchTextChange}
               marginBottom='$4'
+              onLayout={() => {
+                open && searchInputRef.current?.focus();
+                Keyboard.dismiss();
+                setTimeout(() => {
+                  open && searchInputRef.current?.focus();
+                }, 100);
+              }}
             />
 
             <YStack gap='$4'>
               {userBreeds && userBreeds.length > 0 && (
-                <YStack>
+                <YStack gap='$2'>
                   <Text>{localized('Your Breeds')}</Text>
                   {userBreeds.map((breed) => (
                     <ListItem
@@ -103,12 +132,11 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
                       iconAfter={<Star />}
                     />
                   ))}
-                  <Separator />
                 </YStack>
               )}
+
               <YStack gap='$2'>
                 <Text>{localized('All Breeds')}</Text>
-
                 <FlatList
                   data={filteredBreeds}
                   renderItem={({item, index}) => (
@@ -123,7 +151,7 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
                   onEndReached={loadMoreBreeds}
                   onEndReachedThreshold={0.1}
                   ListFooterComponent={() =>
-                    hasMore ? (
+                    hasMore && loading ? (
                       <Spinner
                         size='large'
                         color={colorSet.primaryForeground}

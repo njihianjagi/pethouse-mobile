@@ -23,6 +23,7 @@ import {useRouter} from 'expo-router';
 import useBreedData from '../../../api/firebase/breeds/useBreedData';
 import {LinearGradient} from 'tamagui/linear-gradient';
 import {EmptyStateCard} from '../../../components/EmptyStateCard';
+import {updateUser} from '../../../api/firebase/users/userClient';
 
 const BreedsScreen = () => {
   const currentUser = useCurrentUser();
@@ -52,11 +53,23 @@ const BreedsScreen = () => {
       );
       return;
     }
-    await addUserBreed(breed);
+    const userBreed = await addUserBreed(breed);
+
+    await updateUser(currentUser.id, {
+      userBreeds: {...currentUser.userBreeds, userBreed},
+    });
   };
 
   const handleRemoveBreed = async (userBreedId) => {
     await deleteUserBreed(userBreedId);
+
+    await updateUser(currentUser.id, {
+      userBreeds: {
+        ...(currentUser.userBreeds || []).filter(
+          (userBreed) => userBreed.id !== userBreedId
+        ),
+      },
+    });
   };
 
   return (

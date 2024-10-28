@@ -72,7 +72,7 @@ const SmsAuthenticationScreen = () => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [countryCode, setCountryCode] = useState('KE' as any); // Default country code
 
-  const phoneRef = useRef(null); // Create a ref for the phone input
+  const phoneRef = useRef(null as any); // Create a ref for the phone input
 
   const codeInputCellCount = 6;
 
@@ -421,6 +421,7 @@ const SmsAuthenticationScreen = () => {
             keyboardType='number-pad'
             textContentType='oneTimeCode'
             renderCell={renderCodeInputCell}
+            autoFocus
           />
 
           <TouchableOpacity onPress={onPressSend}>
@@ -554,18 +555,33 @@ const SmsAuthenticationScreen = () => {
 
   const renderAsLoginState = () => {
     return (
-      <YStack gap='$6'>
+      <YStack gap='$8'>
         {isConfirmResetPasswordCode ? (
           <Text style={styles.title}>{localized('Reset Password')}</Text>
         ) : (
           <YStack gap='$2' marginBottom='$4'>
-            <Text style={styles.title}>
-              {localized('Log in to your account')}
-            </Text>
+            <Text style={styles.title}>{localized(' Login to continue')}</Text>
             {/* 
-            <Text style={styles.caption}>
-              {localized('Login to your account')}
-            </Text> */}
+            // <Text style={styles.caption}>
+            //   {localized('Login to your account')}
+            // </Text> */}
+
+            <TouchableOpacity
+              style={styles.alreadyHaveAnAccountContainer}
+              onPress={() =>
+                config.isSMSAuthEnabled
+                  ? router.push({
+                      pathname: '/login-phone',
+                      params: {isSigningUp: 'true'},
+                    })
+                  : router.push('/signup-email')
+              }
+            >
+              <Text style={styles.alreadyHaveAnAccountText}>
+                {localized("Don't have an account? ")}
+                <Text color={colorSet.primaryForeground}>Sign Up</Text>
+              </Text>
+            </TouchableOpacity>
           </YStack>
         )}
 
@@ -578,6 +594,14 @@ const SmsAuthenticationScreen = () => {
             keyboardType='numeric'
             value={phoneNumber}
             onChangeText={(text) => setPhoneNumber(text)}
+            autoFocus
+            onLayout={() => {
+              phoneRef.current?.focus();
+              Keyboard.dismiss();
+              setTimeout(() => {
+                phoneRef.current?.focus();
+              }, 100);
+            }}
           />
 
           <Button
@@ -636,23 +660,6 @@ const SmsAuthenticationScreen = () => {
             </Button>
           )}
         </YStack>
-
-        <TouchableOpacity
-          style={styles.alreadyHaveAnAccountContainer}
-          onPress={() =>
-            config.isSMSAuthEnabled
-              ? router.push({
-                  pathname: '/login-phone',
-                  params: {isSigningUp: 'true'},
-                })
-              : router.push('/signup-email')
-          }
-        >
-          <Text style={styles.alreadyHaveAnAccountText}>
-            {localized("Don't have an account? ")}
-            <Text color={colorSet.primaryForeground}>Sign Up</Text>
-          </Text>
-        </TouchableOpacity>
       </YStack>
     );
   };
@@ -674,7 +681,7 @@ const SmsAuthenticationScreen = () => {
         backgroundColor: colorSet.primaryBackground,
       }}
     >
-      <YStack gap='$2' alignItems='center' paddingHorizontal='$8'>
+      <YStack gap='$2' alignItems='center' paddingHorizontal='$4'>
         <YStack gap='$2'>
           <View style={styles?.logo}>
             <Image style={styles.logoImage} source={theme.icons?.logo} />
@@ -759,11 +766,11 @@ const dynamicStyles = (theme, colorScheme) => {
       color: '#ffffff',
     },
     InputContainer: {
-      height: 48,
-      borderWidth: 1,
-      borderColor: colorSet.grey3,
-      backgroundColor: colorSet.primaryBackground,
-      color: colorSet.primaryText,
+      // height: 48,
+      // borderWidth: 1,
+      // borderColor: colorSet.grey3,
+      // backgroundColor: colorSet.primaryBackground,
+      // color: colorSet.primaryText,
       width: '100%',
       alignSelf: 'center',
       alignItems: 'center',
