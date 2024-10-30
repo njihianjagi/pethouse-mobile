@@ -16,10 +16,18 @@ import {
   View,
   Separator,
   Tabs,
+  Accordion,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../../dopebase';
-import {CheckCircle, Heart, MapPin} from '@tamagui/lucide-icons';
-import useKennelData from '../../../api/firebase/kennels/useKennelData';
+import {
+  CheckCircle,
+  ChevronDown,
+  Heart,
+  MapPin,
+  Star,
+  StarHalf,
+  StarOff,
+} from '@tamagui/lucide-icons';
 import {
   DogBreed,
   useBreedData,
@@ -33,7 +41,6 @@ function BreedDetailScreen() {
   const {localized} = useTranslations();
 
   const [breed, setBreed] = useState({} as DogBreed);
-  const [relevantKennels, setRelevantKennels] = useState([] as any);
   const currentUser = useCurrentUser();
 
   const {breed_name} = useLocalSearchParams();
@@ -90,6 +97,41 @@ function BreedDetailScreen() {
     return false;
   };
 
+  const RatingStars = ({score}: {score: number}) => {
+    const totalStars = 5;
+    const fullStars = Math.floor(score);
+    const hasHalfStar = score % 1 >= 0.5;
+    const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+      <XStack gap='$0.5' alignItems='center'>
+        {/* Full stars */}
+        {[...Array(fullStars)].map((_, i) => (
+          <Star
+            key={`full-${i}`}
+            size={16}
+            color={colorSet.primaryForeground}
+          />
+        ))}
+
+        {/* Half star */}
+        {hasHalfStar && (
+          <StarHalf size={16} color={colorSet.primaryForeground} />
+        )}
+
+        {/* Empty stars */}
+        {[...Array(emptyStars)].map((_, i) => (
+          <StarOff
+            key={`empty-${i}`}
+            size={16}
+            color={colorSet.secondaryForeground}
+            opacity={0.5}
+          />
+        ))}
+      </XStack>
+    );
+  };
+
   if (breedLoading && !breedError && !breed?.id) {
     return (
       <View flex={1} justifyContent='center' alignItems='center'>
@@ -142,7 +184,7 @@ function BreedDetailScreen() {
                 <Text>{localized('Traits')}</Text>
               </Tabs.Tab>
               <Tabs.Tab value='tab3' flex={1}>
-                <Text>{localized('Kennels')}</Text>
+                <Text>{localized('Breeders')}</Text>
               </Tabs.Tab>
             </Tabs.List>
 
@@ -197,33 +239,60 @@ function BreedDetailScreen() {
 
             <Tabs.Content value='tab2'>
               <Card bordered>
-                <YGroup separator={<Separator />}>
-                  {breed.traits &&
-                    Object.entries(breed.traits).map(([key, value]) => (
-                      <YGroup.Item key={key}>
-                        <ListItem
-                          title={value.name}
-                          subTitle={`Score: ${
-                            (value as {score: number}).score
-                          }`}
-                          iconAfter={
-                            currentUser?.traitPreferences &&
-                            isTraitMatching(key, value as {score: number}) ? (
-                              <CheckCircle
-                                color={theme.colors[appearance].primary}
-                              />
-                            ) : undefined
-                          }
-                          backgroundColor={
-                            currentUser?.traitPreferences &&
-                            isTraitMatching(key, value as {score: number})
-                              ? theme.colors[appearance].secondaryBackground
-                              : undefined
-                          }
-                        />
-                      </YGroup.Item>
-                    ))}
-                </YGroup>
+                {breed.traits &&
+                  Object.entries(breed.traits).map(([groupKey, groupValue]) => (
+                    <Accordion key={groupKey} type='multiple'>
+                      <Accordion.Item value={groupKey}>
+                        <Accordion.Trigger>
+                          <XStack
+                            flex={1}
+                            justifyContent='space-between'
+                            alignItems='center'
+                          >
+                            <Text fontWeight='bold'>{groupKey}</Text>
+                            <XStack gap='$2' alignItems='center'>
+                              <RatingStars score={groupValue.score} />
+                              <ChevronDown />
+                            </XStack>
+                          </XStack>
+                        </Accordion.Trigger>
+
+                        <Accordion.Content padding={0}>
+                          <YGroup separator={<Separator />}>
+                            {Object.entries(groupValue.traits).map(
+                              ([traitKey, trait]) => (
+                                <YGroup.Item key={traitKey}>
+                                  <ListItem
+                                    title={trait.name}
+                                    iconAfter={
+                                      <XStack gap='$2' alignItems='center'>
+                                        <RatingStars score={trait.score} />
+                                        {currentUser?.traitPreferences &&
+                                          isTraitMatching(traitKey, trait) && (
+                                            <CheckCircle
+                                              color={
+                                                theme.colors[appearance].primary
+                                              }
+                                            />
+                                          )}
+                                      </XStack>
+                                    }
+                                    backgroundColor={
+                                      currentUser?.traitPreferences &&
+                                      isTraitMatching(traitKey, trait)
+                                        ? theme.colors[appearance]
+                                            .secondaryBackground
+                                        : undefined
+                                    }
+                                  />
+                                </YGroup.Item>
+                              )
+                            )}
+                          </YGroup>
+                        </Accordion.Content>
+                      </Accordion.Item>
+                    </Accordion>
+                  ))}
               </Card>
             </Tabs.Content>
 
@@ -232,7 +301,7 @@ function BreedDetailScreen() {
                 <YGroup gap='$4' padding='$4'>
                   <YGroup.Item>
                     <Text fontSize='$6' fontWeight='bold'>
-                      {localized('Owners and Kennels offering this breed')}
+                      {localized('Breeders offering this breed')}
                     </Text>
                   </YGroup.Item>
                   <Separator />
@@ -254,8 +323,8 @@ function BreedDetailScreen() {
                             'Unknown'
                           }
                           subTitle={
-                            userBreed.user?.location ||
-                            userBreed.kennel?.location ||
+                            userBreed.user?.location?.name ||
+                            userBreed.kennel?.location?.name ||
                             'Unknown location'
                           }
                           icon={userBreed.kennelId ? MapPin : Heart}

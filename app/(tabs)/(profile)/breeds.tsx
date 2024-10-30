@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {ScrollView, Alert} from 'react-native';
 import {
   View,
@@ -9,19 +9,13 @@ import {
   YGroup,
   ListItem,
   Spinner,
-  Card,
-  XStack,
 } from 'tamagui';
-import {useKennelData} from '../../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {Trash, Plus, ChevronRight} from '@tamagui/lucide-icons';
+import {Trash, Plus} from '@tamagui/lucide-icons';
 import {useTheme, useTranslations} from '../../../dopebase';
 import BreedSelector from '../../../components/BreedSelector';
-import {useListingData} from '../../../api/firebase/listings/useListingData';
-import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useRouter} from 'expo-router';
 import useBreedData from '../../../api/firebase/breeds/useBreedData';
-import {LinearGradient} from 'tamagui/linear-gradient';
 import {EmptyStateCard} from '../../../components/EmptyStateCard';
 import {updateUser} from '../../../api/firebase/users/userClient';
 

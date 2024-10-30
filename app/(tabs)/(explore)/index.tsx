@@ -1,25 +1,15 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {FlatList} from 'react-native';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {Href, useNavigation, useRouter} from 'expo-router';
-import {
-  Text,
-  View,
-  XStack,
-  Button,
-  YStack,
-  Input,
-  Card,
-  Spinner,
-  Image,
-} from 'tamagui';
-import {LinearGradient} from 'tamagui/linear-gradient';
+import {useRouter} from 'expo-router';
+import {Text, View, XStack, Button, YStack, Input, Spinner} from 'tamagui';
 
-import {ListFilter, ArrowRight} from '@tamagui/lucide-icons';
+import {ListFilter} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {SortPopover} from './sort';
 import {BreedFilterSheet} from './filter';
+import BreedCard from './breed-card';
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -42,56 +32,6 @@ export default function ExploreScreen() {
     hasMore,
     loadMoreBreeds,
   } = useBreedSearch();
-
-  const BreedCard = ({breed}) => (
-    <Card
-      bordered
-      flex={1}
-      margin={5}
-      onPress={() =>
-        router.push(
-          `(explore)/${breed.name.toLowerCase().replace(/\s+/g, '-')}` as Href
-        )
-      }
-      pressTheme
-      overflow='hidden'
-    >
-      <Card.Background>
-        <Image
-          source={{uri: breed.image || ''}}
-          width='100%'
-          height='100%'
-          objectFit='cover'
-        />
-        <LinearGradient
-          start={[0, 0]}
-          end={[0, 1]}
-          fullscreen
-          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']}
-          zIndex={1}
-        />
-      </Card.Background>
-
-      <Card.Header padded zIndex={2}>
-        <Text
-          color={colorSet.primaryBackground}
-          fontSize={24}
-          fontWeight='bold'
-        >
-          {breed.name}
-        </Text>
-      </Card.Header>
-
-      <Card.Footer zIndex={2}>
-        <XStack flex={1} />
-        <Button
-          borderRadius='$10'
-          icon={<ArrowRight size='$2' color={colorSet.primaryBackground} />}
-          chromeless
-        />
-      </Card.Footer>
-    </Card>
-  );
 
   return (
     <View backgroundColor={colorSet.primaryBackground} flex={1}>
@@ -135,7 +75,19 @@ export default function ExploreScreen() {
         </XStack>
 
         {breedsLoading ? (
-          <View flex={1} justifyContent='center' alignItems='center'>
+          <View
+            flex={1}
+            height='100vh'
+            width='100%'
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            alignItems='center'
+            justifyContent='center'
+            backgroundColor='rgba(0,0,0,0.3)'
+            zIndex={999}
+          >
             <Spinner size='large' color={colorSet.primaryForeground} />
           </View>
         ) : filteredBreeds.length === 0 ? (
@@ -154,8 +106,19 @@ export default function ExploreScreen() {
               onEndReached={loadMoreBreeds}
               onEndReachedThreshold={0.1}
               ListFooterComponent={() =>
-                hasMore ? (
-                  <Spinner size='large' color={colorSet.primaryForeground} />
+                hasMore && breedsLoading ? (
+                  <View
+                    position='absolute'
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    alignItems='center'
+                    justifyContent='center'
+                    backgroundColor='rgba(0,0,0,0.3)'
+                  >
+                    <Spinner size='large' color={colorSet.primaryForeground} />
+                  </View>
                 ) : null
               }
             />

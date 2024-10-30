@@ -12,14 +12,20 @@ export interface DogBreed {
   image: string;
   breedGroup: string;
   traits: {
-    [key: string]: {
-      name: string;
+    [groupName: string]: {
       score: number;
+      traits: {
+        [traitName: string]: {
+          name: string;
+          score: number;
+        };
+      };
     };
   };
   popularity: number;
   available: boolean;
 }
+
 export interface UserBreed {
   id?: string;
   userId: string;

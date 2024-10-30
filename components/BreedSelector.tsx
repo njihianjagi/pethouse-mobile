@@ -102,9 +102,9 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
         <Sheet.Frame>
           <Sheet.Handle />
           <YStack padding='$4' gap='$4'>
-            <Text fontSize='$6' fontWeight='bold' marginBottom='$4'>
+            {/* <Text fontSize='$6' fontWeight='bold' marginBottom='$4'>
               {localized('Select a Breed')}
-            </Text>
+            </Text> */}
             <Input
               ref={searchInputRef}
               placeholder={localized('Search breeds')}

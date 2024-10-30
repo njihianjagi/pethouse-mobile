@@ -1,5 +1,5 @@
 import React, {useMemo, useState} from 'react';
-import {Alert, StyleSheet} from 'react-native';
+import {Alert, Pressable, StyleSheet} from 'react-native';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 
 import {
@@ -24,7 +24,7 @@ import {useTheme, useTranslations} from '../../dopebase';
 import {updateUser} from '../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/reducers/auth';
-import {ChevronRight} from '@tamagui/lucide-icons';
+import {ChevronRight, Star, StarOff} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../hooks/useBreedSearch';
 
 const SeekerOnboardingScreen = () => {
@@ -43,63 +43,49 @@ const SeekerOnboardingScreen = () => {
   // @ts-ignore
   navigator.geolocation = require('@react-native-community/geolocation');
 
-  const {traitCategories, traitPreferences, filteredBreeds, updateFilter} =
+  const {allBreeds, traitPreferences, filteredBreeds, updateFilter} =
     useBreedSearch();
 
-  const renderTraitOption = (option) => {
-    if (option.type === 'switch') {
-      return (
-        <ListItem>
-          <ListItem.Text>{option.label}</ListItem.Text>
-          <Switch
-            backgroundColor={
-              !!traitPreferences[option.name] ? colorSet.grey3 : colorSet.grey0
-            }
-            checked={!!traitPreferences[option.name]}
-            onCheckedChange={(value) =>
-              updateFilter('traitPreferences', {[option.name]: value})
+  const traitGroups: any = allBreeds[0].traits;
+
+  const renderStarRating = (traitName: string, currentRating: number = 0) => {
+    return (
+      <XStack gap='$0.5' alignItems='center'>
+        {[1, 2, 3, 4, 5].map((score) => (
+          <Pressable
+            key={score}
+            onPress={() =>
+              updateFilter('traitPreferences', {[traitName]: score})
             }
           >
-            <Switch.Thumb
-              animation='quicker'
-              backgroundColor={colorSet.primaryForeground}
-            />
-          </Switch>
+            {score <= (currentRating || 0) ? (
+              <Star size={24} color={theme.colors[appearance].primary} />
+            ) : (
+              <StarOff
+                size={24}
+                color={theme.colors[appearance].primary}
+                opacity={0.5}
+              />
+            )}
+          </Pressable>
+        ))}
+      </XStack>
+    );
+  };
+
+  const renderTraitOption = (trait) => {
+    const traitKey = trait.name.toLowerCase().replace(/\s+/g, '_');
+    return (
+      <YStack key={traitKey}>
+        <ListItem pressStyle={{opacity: 0.8}} paddingVertical='$3'>
+          <XStack flex={1} justifyContent='space-between' alignItems='center'>
+            <Text>{trait.name}</Text>
+            {renderStarRating(traitKey, traitPreferences[traitKey] as number)}
+          </XStack>
         </ListItem>
-      );
-    } else if (option.type === 'toggle') {
-      return (
-        <ListItem key={option.name} width='100%'>
-          <YStack flex={1} gap='$4'>
-            <ListItem.Text>
-              {option.name
-                .replace(/_/g, ' ')
-                .replace(/\b\w/g, (l) => l.toUpperCase())}
-            </ListItem.Text>
-            <ToggleGroup
-              type='single'
-              value={traitPreferences[option.name]?.toString()}
-              onValueChange={(value) =>
-                updateFilter('traitPreferences', {
-                  [option.name]: parseInt(value),
-                })
-              }
-              flex={1}
-            >
-              {option.values.map((value, index) => (
-                <ToggleGroup.Item
-                  key={value}
-                  value={index?.toString()}
-                  flex={1}
-                >
-                  <Text>{value}</Text>
-                </ToggleGroup.Item>
-              ))}
-            </ToggleGroup>
-          </YStack>
-        </ListItem>
-      );
-    }
+        <Separator />
+      </YStack>
+    );
   };
 
   const handleSave = async () => {
@@ -134,7 +120,7 @@ const SeekerOnboardingScreen = () => {
   const [currentStep, setCurrentStep] = useState(0);
 
   const handleNext = () => {
-    if (currentStep < traitCategories.length - 1) {
+    if (currentStep < Object.keys(traitGroups).length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
       handleSave();
@@ -185,12 +171,13 @@ const SeekerOnboardingScreen = () => {
               <YGroup separator={<Separator />} gap='$2'>
                 <YGroup.Item>
                   <ListItem
-                    title={traitCategories[currentStep].name}
-                    subTitle={traitCategories[currentStep].caption} // You'll need to define icons for each category
+                    title={Object.keys(traitGroups[currentStep])[0]}
                     iconAfter={ChevronRight}
                   />
                 </YGroup.Item>
-                {traitCategories[currentStep].options.map(renderTraitOption)}
+                {Object.entries(traitGroups[currentStep].traits).map(
+                  ([_, trait]) => renderTraitOption(trait)
+                )}
               </YGroup>
             </YStack>
 
@@ -209,9 +196,9 @@ const SeekerOnboardingScreen = () => {
                 themeShallow
                 icon={loading ? <Spinner /> : undefined}
               >
-                {currentStep === traitCategories.length - 1
+                {currentStep === traitGroups.length - 1
                   ? 'Save'
-                  : traitCategories[currentStep + 1].name}
+                  : traitGroups[currentStep + 1].name}
               </Button>
             </XStack>
           </YStack>
