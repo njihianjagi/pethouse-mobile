@@ -25,14 +25,14 @@ export default function OnboardingModal() {
       } else if (currentUser.role === 'seeker') {
         console.log('seeker..');
         if (!currentUser.preferredBreeds) {
-          router.replace('/seeker');
+          router.replace('/(onboarding)/seeker');
         } else {
           router.replace('/(tabs)');
         }
       }
     } else {
       console.log('no role');
-      router.replace('/RoleSelectionScreen');
+      router.replace('/role');
     }
   };
 

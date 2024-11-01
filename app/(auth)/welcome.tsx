@@ -40,7 +40,7 @@ const WelcomeScreen = (props) => {
 
   useEffect(() => {
     tryToLoginFirst();
-  }, []);
+  }, [router]);
 
   const handleInitialNotification = async () => {
     const userID = currentUser?.id || currentUser?.userID;

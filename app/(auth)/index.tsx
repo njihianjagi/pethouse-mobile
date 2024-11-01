@@ -41,7 +41,6 @@ const LoadScreen = () => {
   const fetchPersistedUserIfNeeded = async () => {
     console.log('fetching..');
     if (!authManager?.retrievePersistedAuthUser) {
-      console.log('goign to welcome');
       return router.push('/welcome');
     }
     authManager

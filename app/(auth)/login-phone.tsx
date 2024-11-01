@@ -595,13 +595,6 @@ const SmsAuthenticationScreen = () => {
             value={phoneNumber}
             onChangeText={(text) => setPhoneNumber(text)}
             autoFocus
-            onLayout={() => {
-              phoneRef.current?.focus();
-              Keyboard.dismiss();
-              setTimeout(() => {
-                phoneRef.current?.focus();
-              }, 100);
-            }}
           />
 
           <Button
