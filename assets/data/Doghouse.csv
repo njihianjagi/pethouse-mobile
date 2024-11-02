@@ -1,0 +1,170 @@
+﻿TYPE,CONTENT,DESCRIPTION,PRIORITY,INDENT,AUTHOR,RESPONSIBLE,DATE,DATE_LANG,TIMEZONE,DURATION,DURATION_UNIT
+section,Landing Page,,,,,,,,,,
+task,[Overview | Authentication | Google for Developers](https://developers.google.com/identity/gsi/web/guides/overview),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+task,[How to add a background video in Next.js | Mux](https://www.mux.com/blog/how-to-add-a-background-video-in-next-js),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+,,,,,,,,,,,
+section,Client Onboarding,,,,,,,,,,
+task,**Screen 1: Welcome**,"```
+Welcome to Doghouse!
+Discover your ideal furry companion and start a journey of love and companionship.
+```
+
+_CTA:_ Get Started
+
+**Screen 2: Personal Preferences**
+
+```
+Tell us about your ideal pet. Your preferences will help us match you with the perfect companion.
+```
+
+_CTA:_ Set Preferences
+
+**Screen 3: Browse Breeds**
+
+```
+Explore a variety of breeds that match your preferences. Learn about their traits and personalities.
+```
+
+_CTA:_ Explore Breeds
+
+**Screen 4: Meet Breeders**
+
+```
+Connect with responsible breeders who are dedicated to creating meaningful pet-owner relationships.
+```
+
+_CTA:_ Connect with Breeders
+
+**Screen 5: Select Your Match**
+
+```
+Found a breed that resonates with you? Select your potential companion and proceed to the next step.
+```
+
+_CTA:_ Select Companion
+
+**Screen 6: Review Offers**
+
+```
+Breeders will send you personalized offers for your chosen breed. Compare and choose the one that feels right.
+```
+
+_CTA:_ Review Offers
+
+**Screen 7: Secure Your Match**
+
+```
+Ready to make a commitment? Secure your furry friend by accepting the breeder's offer and making a reservation.
+```
+
+_CTA:_ Secure Match
+
+**Screen 8: Almost There**
+
+```
+You're just a step away from welcoming your new companion! Verify your details and finalize the adoption.
+```
+
+_CTA:_ Verify Details
+
+**Screen 9: Congratulations!**
+
+```
+Congratulations on your responsible adoption! Get ready to create unforgettable memories with your new pet.
+```
+
+_CTA:_ Start Your Journey",4,1,Tim (3075274),,,,Africa/Nairobi,,
+task,[React.js Onboarding Using Intro.js](https://javascript.plainenglish.io/react-js-onboarding-using-intro-js-4b03aa2f584e),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+,,,,,,,,,,,
+section,Breeder Onboarding,,,,,,,,,,
+task,**Screen 1: Welcome**,"### Breeders Onboarding:
+
+**Screen 1: Welcome**
+
+```
+Welcome to Doghouse!
+Join our community of responsible breeders and connect with clients who value ethical practices.
+```
+
+_CTA:_ Get Started
+
+**Screen 2: Breeder Profile**
+
+```
+Create your breeder profile. Highlight your values, experience, and commitment to responsible breeding.
+```
+
+_CTA:_ Create Profile
+
+**Screen 3: Showcase Puppies**
+
+```
+Showcase your available puppies with photos and descriptions. Help potential clients discover their perfect companion.
+```
+
+_CTA:_ Add Puppies
+
+**Screen 4: Personalized Offers**
+
+```
+Craft personalized offers for clients who are interested in your breeds. Share your commitment to responsible pet ownership.
+```
+
+_CTA:_ Send Offers
+
+**Screen 5: Connect with Clients**
+
+```
+Engage with potential clients who are interested in your puppies. Build lasting connections with responsible pet owners.
+```
+
+_CTA:_ Connect with Clients
+
+**Screen 6: Secure Commitment**
+
+```
+Clients will secure their choice by accepting your offer and making a reservation. Confirm the adoption details.
+```
+
+_CTA:_ Confirm Adoption
+
+**Screen 7: Almost There**
+
+```
+Ensure all adoption details are accurate. You're on your way to creating a joyful pet-owner relationship.
+```
+
+_CTA:_ Verify Details
+
+**Screen 8: Congratulations!**
+
+```
+Congratulations on finding a loving home for your puppy! Get ready to bring happiness to a new family.
+```
+
+_CTA:_ Celebrate Success
+
+Feel free to customize these onboarding screens and CTAs to match your platform's branding and user experience. Let me know if you need further adjustments or if there's anything else I can assist you with!",4,1,Tim (3075274),,,,Africa/Nairobi,,
+task,[Uppy](https://uppy.io/),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+,,,,,,,,,,,
+section,Dashboard,,,,,,,,,,
+task,[Documentation - Berry React](https://codedthemes.gitbook.io/berry/),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+,,,,,,,,,,,
+section,Pethouse,,,,,,,,,,
+task,[Open source ecommerce platform for multi-vendor marketplaces](https://dev.to/medusajs/create-an-open-source-commerce-marketplace-part-1-3m5k),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+task,[Pet Care - Web-Design (Pupford)](https://dribbble.com/shots/15762607-Pet-Care-Web-Design-Pupford),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+task,[uploadthing docs](https://docs.uploadthing.com/getting-started/appdir),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+,,,,,,,,,,,
+section,Inbox,,,,,,,,,,
+task,"[GitHub - srikanta30/Chat-App: Chat App Created Using Next.js, Chakra UI & Firebase.](https://github.com/srikanta30/Chat-App/tree/main)",,4,1,Tim (3075274),,,,Africa/Nairobi,,
+,,,,,,,,,,,
+section,Uploads,,,,,,,,,,
+task,[Add high-performance video to your Next.js app](https://www.youtube.com/watch?v=8guP6F56TPk),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+,,,,,,,,,,,
+section,Explore Breeds,,,,,,,,,,
+task,https://gptstore.ai/gpts/HvFAyATtL-dog-breed-gpt,,4,1,Tim (3075274),,,,Africa/Nairobi,,
+task,https://gptstore.ai/gpts/51MSiBzC8Z-dog-breed-encyclopedia-gpt,,4,1,Tim (3075274),,,,Africa/Nairobi,,
+task,https://gptstore.ai/gpts/51MSiBzC8Z-dog-breed-encyclopedia-gpt,,4,1,Tim (3075274),,,,Africa/Nairobi,,
+task,[How to Add Custom GPTs to Any Website in Minutes (OpenAI GPTs Tutorial)](https://www.youtube.com/watch?v=Uk5f3ajkfSs),,4,1,Tim (3075274),,,,Africa/Nairobi,,
+,,,,,,,,,,,
+section,AI Chat,,,,,,,,,,

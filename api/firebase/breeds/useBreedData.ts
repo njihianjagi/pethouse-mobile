@@ -2,28 +2,24 @@ import {useEffect, useState} from 'react';
 import {db} from '../../../firebase/config'; // Adjust the path as necessary
 import breedsData from '../../../assets/data/breeds_with_group_and_traits.json';
 
-export interface DogBreed {
+// Breeds Collection (Reference data)
+export interface Breed {
   id: string;
   name: string;
   description: string;
-  height: string;
-  lifeSpan: string;
-  weight: string;
-  image: string;
   breedGroup: string;
+  size: string;
   traits: {
-    [groupName: string]: {
+    [traitName: string]: {
+      name: string;
+      description: string;
       score: number;
-      traits: {
-        [traitName: string]: {
-          name: string;
-          score: number;
-        };
-      };
     };
   };
-  popularity: number;
-  available: boolean;
+  careRequirements: string[];
+  images: string[];
+  // createdAt: timestamp;
+  // modifiedAt: timestamp;
 }
 
 export interface UserBreed {
@@ -52,7 +48,7 @@ export const useBreedData = (userId?: string) => {
     try {
       // const response = await db.collection('breeds').get();
       // const breedsData: any = response.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      return allBreeds as DogBreed[];
+      return allBreeds as Breed[];
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -61,7 +57,7 @@ export const useBreedData = (userId?: string) => {
     setLoading(false);
   };
 
-  const findBreedByName = (breedName: string): DogBreed | undefined => {
+  const findBreedByName = (breedName: string): Breed | undefined => {
     setLoading(true);
     const breed = allBreeds.find(
       (breed) => breed.name.toLowerCase() === breedName.toLowerCase()
@@ -76,9 +72,7 @@ export const useBreedData = (userId?: string) => {
     }
   }, [breedsData]);
 
-  const fetchBreedByName = async (
-    breedName: string
-  ): Promise<DogBreed | null> => {
+  const fetchBreedByName = async (breedName: string): Promise<Breed | null> => {
     setLoading(true);
     try {
       const breedRef = db.collection('breeds').where('name', '==', breedName);
@@ -91,7 +85,7 @@ export const useBreedData = (userId?: string) => {
       }
 
       const breedDoc = snapshot.docs[0];
-      const breed = {id: breedDoc.id, ...breedDoc.data()} as DogBreed;
+      const breed = {id: breedDoc.id, ...breedDoc.data()} as Breed;
       setLoading(false);
       return breed;
     } catch (err: any) {
@@ -102,11 +96,11 @@ export const useBreedData = (userId?: string) => {
     }
   };
 
-  const fetchBreedById = async (breedId: string): Promise<DogBreed | null> => {
+  const fetchBreedById = async (breedId: string): Promise<Breed | null> => {
     try {
       const breedDoc = await db.collection('breeds').doc(breedId).get();
       if (breedDoc.exists) {
-        return {id: breedDoc.id, ...breedDoc.data()} as DogBreed;
+        return {id: breedDoc.id, ...breedDoc.data()} as Breed;
       }
       return null;
     } catch (err: any) {

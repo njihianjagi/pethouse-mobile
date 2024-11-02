@@ -26,7 +26,7 @@ import useCurrentUser from '../../hooks/useCurrentUser';
 import BreedSelector from '../../components/BreedSelector';
 import ImageManager from '../../components/ImageManager';
 // import VideoManager from '../../components/VideoManager';
-import {DogBreed, useBreedData} from '../../api/firebase/breeds/useBreedData';
+import {Breed, useBreedData} from '../../api/firebase/breeds/useBreedData';
 
 const CreateListingScreen = () => {
   const router = useRouter();
@@ -43,7 +43,7 @@ const CreateListingScreen = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    selectedBreed: {} as DogBreed,
+    selectedBreed: {} as Breed,
     sex: '' as any,
     age: '',
     traits: [] as any,
@@ -91,7 +91,7 @@ const CreateListingScreen = () => {
     }
   };
 
-  const handleSelectBreed = (breed: DogBreed) => {
+  const handleSelectBreed = (breed: Breed) => {
     handleInputChange('selectedBreed', breed);
   };
 
@@ -115,14 +115,22 @@ const CreateListingScreen = () => {
     return userBreeds.find((ub) => ub.breedId === formData.selectedBreed.id)
       ?.id;
   };
-
   const createListingObject = (userBreedId: string): Omit<Listing, 'id'> => ({
     userId: currentUser.id,
-    kennelId: currentUser.kennelId,
     userBreedId,
-    ...formData,
-    breed: formData.selectedBreed.name,
+    breedName: formData.selectedBreed.name,
     breedId: formData.selectedBreed.id,
+    name: formData.name,
+    sex: formData.sex,
+    age: formData.age,
+    price: formData.price,
+    status: 'available',
+    traits: formData.traits,
+    media: {
+      images: formData.images,
+      videos: formData.videos,
+    },
+    location: formData.location,
   });
 
   const handleCreateListing = async () => {

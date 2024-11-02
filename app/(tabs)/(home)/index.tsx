@@ -16,9 +16,11 @@ import {
   Tabs,
   Separator,
 } from 'tamagui';
-import {ArrowRight, MapPin, Plus} from '@tamagui/lucide-icons';
+import {ArrowRight, Filter, MapPin, Plus, Search} from '@tamagui/lucide-icons';
 import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useListingData} from '../../../api/firebase/listings/useListingData';
+import {BreedRecommendations} from '../../../components/BreedRecommendations';
+import {useBreedSearch} from '../../../hooks/useBreedSearch';
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -29,6 +31,11 @@ const HomeScreen = () => {
 
   const [activeTab, setActiveTab] = useState('pets');
 
+  const {
+    filteredBreeds,
+    updateFilter,
+    loading: breedsLoading,
+  } = useBreedSearch();
   const {listings, loading: listingsLoading} = useListingData();
   const {litters, loading: littersLoading} = useLitterData();
 
@@ -147,6 +154,51 @@ const HomeScreen = () => {
     );
   };
 
+  const SeekerCTA2 = () => {
+    return (
+      <XStack gap='$4'>
+        <Card
+          bordered
+          flex={1}
+          pressTheme
+          onPress={() => router.push('/(tabs)/breeds')}
+        >
+          <Card.Header padded>
+            <Text fontSize='$5' fontWeight='bold'>
+              Discover Breeds
+            </Text>
+            <Text fontSize='$3' color={colorSet.secondaryText}>
+              Find your perfect match
+            </Text>
+          </Card.Header>
+          <Card.Footer padded>
+            <Button icon={ArrowRight} chromeless />
+          </Card.Footer>
+          <Card.Background backgroundColor={colorSet.secondaryBackground} />
+        </Card>
+
+        <Card
+          bordered
+          flex={1}
+          pressTheme
+          onPress={() => router.push('/(tabs)/breeders')}
+        >
+          <Card.Header padded>
+            <Text fontSize='$5' fontWeight='bold'>
+              Meet Breeders
+            </Text>
+            <Text fontSize='$3' color={colorSet.secondaryText}>
+              Connect with experts
+            </Text>
+          </Card.Header>
+          <Card.Footer padded>
+            <Button icon={ArrowRight} chromeless />
+          </Card.Footer>
+          <Card.Background backgroundColor={colorSet.secondaryBackground} />
+        </Card>
+      </XStack>
+    );
+  };
   const BreederCTA = () => {
     return (
       <XStack gap='$4'>
@@ -219,12 +271,60 @@ const HomeScreen = () => {
           </Text>
         </XStack>
 
+        <YStack gap='$2'>
+          <Text fontSize='$8' fontWeight='bold' color={colorSet.primaryText}>
+            Find Your Perfect Match
+          </Text>
+          <Text fontSize='$5' color={colorSet.secondaryText}>
+            Discover your ideal furry companion based on your lifestyle and
+            preferences
+          </Text>
+        </YStack>
+
+        {/* Search & Filter */}
+        <XStack gap='$2'>
+          <Button
+            flex={1}
+            icon={Search}
+            onPress={() => router.push('/(tabs)/search')}
+            backgroundColor={colorSet.background}
+            borderColor={colorSet.border}
+            borderWidth={1}
+          >
+            Search breeds, traits...
+          </Button>
+          <Button
+            icon={Filter}
+            onPress={() => router.push('/(tabs)/filters')}
+            backgroundColor={colorSet.background}
+            borderColor={colorSet.border}
+            borderWidth={1}
+          />
+        </XStack>
+
         {currentUser.role === 'breeder' ? <BreederCTA /> : <SeekerCTA />}
+
+        {/* Breed Recommendations */}
+        <YStack gap='$4'>
+          <Text fontSize='$6' fontWeight='bold'>
+            Recommended Breeds
+          </Text>
+
+          <BreedRecommendations
+            filteredBreeds={filteredBreeds}
+            onSelectBreed={(breed) =>
+              router.push({
+                pathname: '/(tabs)/(explore)/[breed_name]',
+                params: {breed_name: breed.name},
+              })
+            }
+          />
+        </YStack>
 
         <YStack gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <H3 fontWeight='bold'>{localized('Latest Pet Listings')}</H3>
-            <Button onPress={() => router.push('/all-pet-listings')}>
+            <Button onPress={() => router.push('/(listings)')}>
               {localized('See All')}
             </Button>
           </XStack>
@@ -244,7 +344,7 @@ const HomeScreen = () => {
         <YStack gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <H3 fontWeight='bold'>{localized('Upcoming Litters')}</H3>
-            <Button onPress={() => router.push('/all-litters')}>
+            <Button onPress={() => router.push('/(litters)')}>
               {localized('See All')}
             </Button>
           </XStack>

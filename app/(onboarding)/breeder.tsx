@@ -21,7 +21,7 @@ import {
 import {useTheme, useTranslations} from '../../dopebase';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import BreedSelector from '../../components/BreedSelector';
-import useBreedData, {DogBreed} from '../../api/firebase/breeds/useBreedData';
+import useBreedData, {Breed} from '../../api/firebase/breeds/useBreedData';
 import useKennelData from '../../api/firebase/kennels/useKennelData';
 import {ChevronLeft, ChevronRight, Minus, Trash} from '@tamagui/lucide-icons';
 import {updateUser} from '../../api/firebase/users/userClient';
@@ -42,7 +42,7 @@ const BreederOnboardingScreen = () => {
     kennelName: '',
     description: '',
     location: '',
-    selectedBreeds: [] as DogBreed[],
+    selectedBreeds: [] as Breed[],
     hasKennel: true,
   });
   const [loading, setLoading] = useState(false);
@@ -75,7 +75,7 @@ const BreederOnboardingScreen = () => {
     setFormData((prev) => ({...prev, [field]: value}));
   };
 
-  const handleSelectBreed = (breed: DogBreed) => {
+  const handleSelectBreed = (breed: Breed) => {
     setFormData((prev) => ({
       ...prev,
       selectedBreeds: [...prev.selectedBreeds, breed],

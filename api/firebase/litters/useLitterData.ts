@@ -1,19 +1,28 @@
 import {useState, useEffect} from 'react';
 import {db} from '../../../firebase/config';
 import useBreedData, {UserBreed} from '../breeds/useBreedData';
+import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 
 export interface Litter {
-  id?: string;
+  id: string;
   userId: string;
   userBreedId: string;
   breedId: string;
+  breedName: string; // Denormalized for filtering/display
   name: string;
   birthDate: string;
   availableDate: string;
   numberOfPuppies: number;
-  images: string[];
-  videos: string[];
-  userBreed: UserBreed;
+  availablePuppies: number;
+  price?: number;
+  status: 'upcoming' | 'available' | 'reserved' | 'sold';
+  media: {
+    images: string[];
+    videos: string[];
+  };
+  location: string;
+  createdAt: FirebaseFirestoreTypes.Timestamp;
+  modifiedAt: FirebaseFirestoreTypes.Timestamp;
 }
 
 export const useLitterData = () => {

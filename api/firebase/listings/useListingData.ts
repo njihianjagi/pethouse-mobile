@@ -1,5 +1,7 @@
 import {useState, useEffect} from 'react';
-import firestore from '@react-native-firebase/firestore';
+import firestore, {
+  FirebaseFirestoreTypes,
+} from '@react-native-firebase/firestore';
 import {db} from '../../../firebase/config';
 
 export interface Listing {
@@ -7,16 +9,25 @@ export interface Listing {
   userId: string;
   userBreedId: string;
   breedId: string;
-  kennelId: string;
+  breedName: string; // Denormalized for filtering/display
   name: string;
-  breed: string;
-  sex: 'male' | 'female';
+  sex: string;
   age: string;
+  price?: number;
+  status: 'available' | 'pending' | 'sold';
   traits: {
-    [key: string]: number;
+    [traitName: string]: {
+      score: number;
+      description: string;
+    };
   };
-  images: string[];
-  videos: string[];
+  media: {
+    images: string[];
+    videos: string[];
+  };
+  location: string;
+  createdAt?: FirebaseFirestoreTypes.Timestamp;
+  modifiedAt?: FirebaseFirestoreTypes.Timestamp;
 }
 
 export const useListingData = () => {

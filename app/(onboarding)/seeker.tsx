@@ -1,136 +1,94 @@
-import React, {useMemo, useState} from 'react';
-import {Alert, Pressable, StyleSheet} from 'react-native';
-import {localizedErrorMessage} from '../../utils/ErrorCode';
-
+import React, {useState} from 'react';
+import {useRouter} from 'expo-router';
+import {StyleSheet} from 'react-native';
 import {
-  Text,
-  View,
   YStack,
-  Image,
-  Spinner,
-  Separator,
   XStack,
   Button,
+  Text,
+  View,
+  Image,
   ScrollView,
-  ListItem,
+  Spinner,
+  Tabs,
+  Separator,
   YGroup,
-  ToggleGroup,
-  Switch,
+  ListItem,
 } from 'tamagui';
-import {useRouter} from 'expo-router';
-import useCurrentUser from '../../hooks/useCurrentUser';
-import {useConfig} from '../../config';
 import {useTheme, useTranslations} from '../../dopebase';
-import {updateUser} from '../../api/firebase/users/userClient';
-import {useDispatch} from 'react-redux';
-import {setUserData} from '../../redux/reducers/auth';
-import {ChevronRight, Star, StarOff} from '@tamagui/lucide-icons';
+import useCurrentUser from '../../hooks/useCurrentUser';
+import {ChevronRight} from '@tamagui/lucide-icons';
+import {TraitSelector} from '../../components/TraitSelector';
+import {BreedRecommendations} from '../../components/BreedRecommendations';
 import {useBreedSearch} from '../../hooks/useBreedSearch';
 
+const OnboardingSteps = {
+  tab1: {
+    title: 'Welcome to Doghouse!',
+    description:
+      'Discover your ideal furry companion and start a journey of love and companionship.',
+    cta: 'Get Started',
+  },
+  tab2: {
+    title: 'Personal Preferences',
+    description:
+      'Tell us about your ideal pet. Your preferences will help us match you with the perfect companion.',
+    cta: 'Set Preferences',
+  },
+  tab3: {
+    title: 'Browse Breeds',
+    description:
+      'Explore a variety of breeds that match your preferences. Learn about their traits and personalities.',
+    cta: 'Explore Breeds',
+  },
+};
+
 const SeekerOnboardingScreen = () => {
-  const currentUser = useCurrentUser();
   const router = useRouter();
-
-  const dispatch = useDispatch();
-  const {localized} = useTranslations();
-
+  const currentUser = useCurrentUser();
   const {theme, appearance} = useTheme();
-  const styles = dynamicStyles(theme, appearance);
+  const {localized} = useTranslations();
   const colorSet = theme?.colors[appearance];
+  const styles = dynamicStyles(theme, appearance);
 
+  const [activeTab, setActiveTab] = useState('tab1');
   const [loading, setLoading] = useState(false);
+  const [traitPreferences, setTraitPreferences] = useState({});
 
-  // @ts-ignore
-  navigator.geolocation = require('@react-native-community/geolocation');
-
-  const {allBreeds, traitPreferences, filteredBreeds, updateFilter} =
+  const {allBreeds, filteredBreeds, updateFilter, traitGroups} =
     useBreedSearch();
 
-  const traitGroups: any = allBreeds[0].traits;
-
-  const renderStarRating = (traitName: string, currentRating: number = 0) => {
-    return (
-      <XStack gap='$0.5' alignItems='center'>
-        {[1, 2, 3, 4, 5].map((score) => (
-          <Pressable
-            key={score}
-            onPress={() =>
-              updateFilter('traitPreferences', {[traitName]: score})
-            }
-          >
-            {score <= (currentRating || 0) ? (
-              <Star size={24} color={theme.colors[appearance].primary} />
-            ) : (
-              <StarOff
-                size={24}
-                color={theme.colors[appearance].primary}
-                opacity={0.5}
-              />
-            )}
-          </Pressable>
-        ))}
-      </XStack>
-    );
-  };
-
-  const renderTraitOption = (trait) => {
-    const traitKey = trait.name.toLowerCase().replace(/\s+/g, '_');
-    return (
-      <YStack key={traitKey}>
-        <ListItem pressStyle={{opacity: 0.8}} paddingVertical='$3'>
-          <XStack flex={1} justifyContent='space-between' alignItems='center'>
-            <Text>{trait.name}</Text>
-            {renderStarRating(traitKey, traitPreferences[traitKey] as number)}
-          </XStack>
-        </ListItem>
-        <Separator />
-      </YStack>
-    );
-  };
-
-  const handleSave = async () => {
-    try {
-      setLoading(true);
-
-      const response: any = await updateUser(currentUser.id, {
-        traitPreferences: traitPreferences,
-      });
-
-      await dispatch(
-        setUserData({
-          user: response.user,
-        })
-      );
-      router.replace('/(tabs)');
-    } catch (error: any) {
-      setLoading(false);
-      Alert.alert(
-        '',
-        localizedErrorMessage(error, localized),
-        [{text: localized('OK')}],
-        {
-          cancelable: false,
-        }
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const handleNext = () => {
-    if (currentStep < Object.keys(traitGroups).length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleSave();
-    }
-  };
+  const tabs = ['tab1', 'tab2', 'tab3'];
+  const currentIndex = tabs.indexOf(activeTab);
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+    if (currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
     }
+  };
+
+  const handleNext = async () => {
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
+    } else {
+      // Save preferences and proceed to home
+      try {
+        setLoading(true);
+        // Save preferences logic here
+        router.push('/(tabs)');
+      } catch (error) {
+        console.error('Error saving preferences:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const updateTraitPreference = (trait: string, value: any) => {
+    setTraitPreferences((prev) => ({
+      ...prev,
+      [trait]: value,
+    }));
   };
 
   return (
@@ -160,53 +118,111 @@ const SeekerOnboardingScreen = () => {
                 <Image style={styles.logoImage} source={theme.icons?.logo} />
               </View>
 
-              <Text style={styles.title}>Hey, {currentUser?.firstName}</Text>
+              <Text style={styles.title}>
+                Hey, {currentUser?.firstName || currentUser?.username}
+              </Text>
               <Text style={styles.caption}>
-                Select your preferred dog traits to help us match you with
-                compatible breeds and find your perfect canine companion.
+                {OnboardingSteps[activeTab].description}
               </Text>
             </YStack>
 
-            <YStack gap='$4'>
-              <YGroup separator={<Separator />} gap='$2'>
-                <YGroup.Item>
-                  <ListItem
-                    title={Object.keys(traitGroups[currentStep])[0]}
-                    iconAfter={ChevronRight}
-                  />
-                </YGroup.Item>
-                {Object.entries(traitGroups[currentStep].traits).map(
-                  ([_, trait]) => renderTraitOption(trait)
-                )}
-              </YGroup>
-            </YStack>
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              flexDirection='column'
+              gap='$4'
+            >
+              <Tabs.List>
+                {tabs.map((tab, index) => (
+                  <Tabs.Trigger
+                    key={tab}
+                    value={tab}
+                    flex={1}
+                    backgroundColor={
+                      activeTab === tab
+                        ? colorSet.primaryForeground
+                        : colorSet.grey0
+                    }
+                    borderRadius='$4'
+                  >
+                    <Text
+                      color={
+                        activeTab === tab
+                          ? colorSet.primaryBackground
+                          : colorSet.primaryForeground
+                      }
+                    >
+                      Step {index + 1}
+                    </Text>
+                  </Tabs.Trigger>
+                ))}
+              </Tabs.List>
 
-            <XStack justifyContent='space-between' padding='$2'>
-              <Button
-                onPress={handleBack}
-                disabled={currentStep === 0}
-                chromeless
-              >
-                Back
-              </Button>
+              <Tabs.Content value='tab1'>
+                <YStack gap='$4' alignItems='center'>
+                  <Text fontSize='$6' textAlign='center'>
+                    {OnboardingSteps.tab1.title}
+                  </Text>
+                </YStack>
+              </Tabs.Content>
 
+              <Tabs.Content value='tab2'>
+                <TraitSelector
+                  currentIndex={currentIndex}
+                  traitGroups={traitGroups}
+                  traitPreferences={traitPreferences}
+                  updateFilter={updateFilter}
+                />
+              </Tabs.Content>
+
+              <Tabs.Content value='tab3'>
+                {/* <YStack gap='$4' alignItems='center'>
+                  <Text fontSize='$6' textAlign='center'>
+                    Based on your preferences, here are some breeds that might
+                    be perfect for you:
+                  </Text>
+                  
+                </YStack> */}
+
+                <BreedRecommendations
+                  filteredBreeds={filteredBreeds}
+                  onSelectBreed={(breed) => {
+                    // Handle breed selection
+                    router.push({
+                      pathname: '/(explore)/[breed_name]',
+                      params: {breed_name: breed.name},
+                    });
+                  }}
+                />
+              </Tabs.Content>
+            </Tabs>
+
+            <YStack gap='$4' paddingTop='$4'>
               <Button
+                size='$5'
+                theme='active'
                 onPress={handleNext}
-                iconAfter={<ChevronRight />}
-                themeShallow
-                icon={loading ? <Spinner /> : undefined}
+                iconAfter={ChevronRight}
               >
-                {currentStep === traitGroups.length - 1
-                  ? 'Save'
-                  : traitGroups[currentStep + 1].name}
+                {currentIndex === tabs.length - 1
+                  ? 'Find Your Match'
+                  : OnboardingSteps[activeTab].cta}
               </Button>
-            </XStack>
+
+              {currentIndex > 0 && (
+                <Button size='$4' chromeless onPress={handleBack}>
+                  Back
+                </Button>
+              )}
+            </YStack>
           </YStack>
         </ScrollView>
       )}
     </View>
   );
 };
+
+export default SeekerOnboardingScreen;
 
 const dynamicStyles = (theme, colorScheme) => {
   const colorSet = theme.colors[colorScheme];
@@ -245,5 +261,3 @@ const dynamicStyles = (theme, colorScheme) => {
     },
   });
 };
-
-export default SeekerOnboardingScreen;
