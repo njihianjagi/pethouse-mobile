@@ -46,6 +46,8 @@ const CreateListingScreen = () => {
     selectedBreed: {} as Breed,
     sex: '' as any,
     age: '',
+    location: '',
+    price: 0,
     traits: [] as any,
     images: [] as any,
     videos: [] as any,
@@ -156,6 +158,7 @@ const CreateListingScreen = () => {
       setLoading(false);
     }
   };
+
   const renderTraitOption = (traitName, traitValue) => {
     if (typeof traitValue === 'boolean') {
       return (
