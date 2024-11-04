@@ -353,7 +353,18 @@ const OnboardingScreen = () => {
           }}
         >
           <YStack padding='$4' gap='$4'>
-            {/* ... existing header section ... */}
+            <YStack gap='$4' padding='$4'>
+              <View style={styles?.logo}>
+                <Image style={styles.logoImage} source={theme.icons?.logo} />
+              </View>
+
+              <Text style={styles.title}>
+                Hey, {currentUser?.firstName || currentUser?.username}
+              </Text>
+              <Text style={styles.caption}>
+                {OnboardingSteps[activeTab].description}
+              </Text>
+            </YStack>
 
             <Tabs
               value={activeTab}
@@ -401,7 +412,7 @@ const OnboardingScreen = () => {
                   opacity={currentIndex === tabs.length - 1 ? 0.5 : 1}
                   iconAfter={<ChevronRight />}
                 >
-                  Next
+                  {OnboardingSteps[activeTab].cta}
                 </Button>
               )}
 

@@ -29,8 +29,6 @@ const HomeScreen = () => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const [activeTab, setActiveTab] = useState('pets');
-
   const {
     filteredBreeds,
     updateFilter,
@@ -302,7 +300,7 @@ const HomeScreen = () => {
           />
         </XStack>
 
-        {currentUser.role === 'breeder' ? <BreederCTA /> : <SeekerCTA />}
+        {currentUser.role === 'breeder' ? <BreederCTA /> : <SeekerCTA2 />}
 
         {/* Breed Recommendations */}
         <YStack gap='$4'>

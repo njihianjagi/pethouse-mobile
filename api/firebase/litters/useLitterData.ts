@@ -3,7 +3,7 @@ import {db} from '../../../firebase/config';
 import useBreedData, {UserBreed} from '../breeds/useBreedData';
 import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 
-export interface Litter {
+interface Litter {
   id: string;
   userId: string;
   userBreedId: string;

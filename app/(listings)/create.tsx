@@ -221,10 +221,7 @@ const CreateListingScreen = () => {
               <Tabs.Tab value='tab1' flex={1}>
                 <Text>{localized('Basic Info')}</Text>
               </Tabs.Tab>
-              <Tabs.Tab value='tab2' flex={1}>
-                <Text>{localized('Traits')}</Text>
-              </Tabs.Tab>
-              <Tabs.Tab value='tab3' flex={1}>
+              <Tabs.Tab value='tab1' flex={1}>
                 <Text>{localized('Media')}</Text>
               </Tabs.Tab>
             </Tabs.List>
