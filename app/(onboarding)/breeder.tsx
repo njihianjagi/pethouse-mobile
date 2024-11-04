@@ -117,12 +117,6 @@ const BreederOnboardingScreen = () => {
         )
       );
 
-      await updateUser(currentUser.id, {
-        isBreeder: true,
-        kennelId: kennelId,
-        userBreeds,
-      });
-
       updateUser(currentUser.id, {
         isBreeder: true,
         ...(kennelId ? kennelId : {}),
