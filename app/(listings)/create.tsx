@@ -193,7 +193,11 @@ const CreateListingScreen = () => {
               }
             >
               {[1, 2, 3, 4, 5].map((value) => (
-                <ToggleGroup.Item key={value} value={value.toString()} flex={1}>
+                <ToggleGroup.Item
+                  key={value}
+                  value={value.toString() as string}
+                  flex={1}
+                >
                   <Text>{value}</Text>
                 </ToggleGroup.Item>
               ))}
