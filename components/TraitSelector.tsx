@@ -35,7 +35,7 @@ export const TraitSelector = ({
               <StarOff
                 size={24}
                 color={theme.colors[appearance].primary}
-                opacity={0.5}
+                // opacity={0.5}
               />
             )}
           </Pressable>

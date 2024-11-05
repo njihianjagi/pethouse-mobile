@@ -17,7 +17,7 @@ export interface Breed {
     };
   };
   careRequirements: string[];
-  images: string[];
+  image: string;
   // createdAt: timestamp;
   // modifiedAt: timestamp;
 }

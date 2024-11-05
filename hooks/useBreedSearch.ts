@@ -147,7 +147,6 @@ const traitCategories = [
     ],
   },
 ];
-const traitGroups: any = Object.keys(allBreeds[0].traits as {});
 
 export const useBreedSearch = () => {
   const [searchText, setSearchText] = useState('');
@@ -159,6 +158,10 @@ export const useBreedSearch = () => {
   const [lifeSpan, setLifeSpan] = useState([]);
   const [weight, setWeight] = useState([]);
   const [sortOption, setSortOption] = useState('');
+
+  const [traitGroups, setTraitGroups] = useState(
+    Object.keys(allBreeds[0].traits as {})
+  );
 
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);

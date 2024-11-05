@@ -229,10 +229,10 @@ const loginOrSignUpWithGoogle = (appConfig) => {
               newResponse.user,
               response.accountCreated
             ).then((response: any) => {
-              // resolve(response);
-              resolve({
-                ...response,
-              });
+              resolve(response);
+              // resolve({
+              //   ...response,
+              // });
             });
           } else {
             resolve({error: ErrorCode.googleSigninFailed});

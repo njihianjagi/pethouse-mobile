@@ -14,7 +14,7 @@ import {useTheme, useTranslations} from '../dopebase';
 
 import {useBreedSearch} from '../hooks/useBreedSearch';
 import useBreedData, {
-  DogBreed,
+  Breed,
   UserBreed,
 } from '../api/firebase/breeds/useBreedData';
 import {ChevronRight, Star} from '@tamagui/lucide-icons';
@@ -22,7 +22,7 @@ import {Alert, FlatList, Keyboard} from 'react-native';
 import useCurrentUser from '../hooks/useCurrentUser';
 
 interface BreedSelectorProps {
-  onSelectBreed: (breed: DogBreed) => void;
+  onSelectBreed: (breed: Breed) => void;
   userBreeds?: UserBreed[];
   buttonText?: string;
   maxHeight?: number | string;
@@ -62,7 +62,7 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
     updateFilter('searchText', text);
   };
 
-  const handleSelectBreed = async (breed: DogBreed | UserBreed) => {
+  const handleSelectBreed = async (breed: Breed | UserBreed) => {
     const breedName = 'name' in breed ? breed.name : breed.breedName;
     const breedDoc = await fetchBreedByName(breedName);
 

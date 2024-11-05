@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useRouter} from 'expo-router';
 import {Alert, StyleSheet} from 'react-native';
 import {
@@ -20,7 +20,17 @@ import {
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../dopebase';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import {ChevronLeft, ChevronRight, Trash} from '@tamagui/lucide-icons';
+import {
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Trash,
+  Circle,
+  Heart,
+  Home,
+  Plus,
+  Scissors,
+} from '@tamagui/lucide-icons';
 import {TraitSelector} from '../../components/TraitSelector';
 import {BreedRecommendations} from '../../components/BreedRecommendations';
 import {useBreedSearch} from '../../hooks/useBreedSearch';
@@ -33,18 +43,19 @@ import useBreedData, {
 import useKennelData from '../../api/firebase/kennels/useKennelData';
 import {setUserData} from '../../redux/reducers/auth';
 import {useDispatch} from 'react-redux';
+import LocationSelector from '../../components/LocationSelector';
 
 const OnboardingSteps = {
   tab1: {
     title: 'Welcome to Doghouse!',
-    description: 'Tell us a bit about yourself to get started.',
-    cta: 'Continue',
+    description: () => 'Tell us a bit about yourself to get started',
+    cta: () => 'Continue',
   },
   tab2: {
     title: 'Your Preferences',
     description: (isBreeder) =>
       isBreeder
-        ? 'Tell us about your kennel and the breeds you work with.'
+        ? 'Tell us about your kennel and where you are located.'
         : 'Tell us about your ideal pet companion.',
     cta: (isBreeder) => (isBreeder ? 'Set Kennel Info' : 'Set Preferences'),
   },
@@ -63,15 +74,16 @@ const OnboardingScreen = () => {
   const currentUser = useCurrentUser();
   const [loading, setLoading] = useState(false);
 
-  const [role, setRole] = useState<'breeder' | 'seeker' | null>(null);
-
   const [formData, setFormData] = useState({
+    role: '',
     kennelName: '',
     description: '',
     location: '',
     selectedBreeds: [] as any[],
     hasKennel: true,
   });
+
+  const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
 
   const {addUserBreed} = useBreedData(currentUser?.id);
   const {addKennel} = useKennelData();
@@ -92,6 +104,16 @@ const OnboardingScreen = () => {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData((prev) => ({...prev, [field]: value}));
+
+    if (field === 'hasKennel') {
+      setFormData((prev) => ({
+        ...prev,
+        kennelName: value
+          ? ''
+          : currentUser.username ||
+            currentUser.firstName + ' ' + currentUser.lastName,
+      }));
+    }
   };
 
   const handleSelectBreed = (breed: Breed) => {
@@ -118,20 +140,63 @@ const OnboardingScreen = () => {
 
   const handleNext = () => {
     if (currentIndex < tabs.length - 1) {
-      if (formData.hasKennel && (!formData.kennelName || !formData.location)) {
-        Alert.alert('Error', 'Please fill in all kennel information');
+      // Step 1: Check role selection
+      if (activeTab === 'tab1' && !formData.role) {
+        Alert.alert('Error', 'Please select your role');
         return;
       }
+
+      // Step 2: Check kennel info for breeders
+      if (
+        activeTab === 'tab2' &&
+        formData.role === 'breeder' &&
+        formData.hasKennel
+      ) {
+        if (!formData.kennelName) {
+          Alert.alert('Error', 'Please enter your kennel name');
+          return;
+        }
+      }
+
+      if (activeTab === 'tab2' && formData.role === 'breeder') {
+        if (!formData.location) {
+          Alert.alert('Error', 'Please enter your location');
+          return;
+        }
+      }
+      // Step 3: Check breed selection for breeders
+      if (
+        activeTab === 'tab3' &&
+        formData.role === 'breeder' &&
+        formData.selectedBreeds.length === 0
+      ) {
+        Alert.alert('Error', 'Please select at least one breed');
+        return;
+      }
+
       setActiveTab(tabs[currentIndex + 1]);
     } else {
       handleSave();
     }
   };
 
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const hasCompletedOnboarding =
+      currentUser.role &&
+      ((currentUser.role === 'seeker' && currentUser.traitPreferences) ||
+        (currentUser.role === 'breeder' && currentUser.userBreeds?.length > 0));
+
+    if (hasCompletedOnboarding) {
+      router.replace('/(tabs)');
+    }
+  }, [currentUser, router]);
+
   const handleSave = async () => {
     setLoading(true);
     try {
-      if (role === 'breeder') {
+      if (formData.role === 'breeder') {
         let kennelId;
         if (formData.hasKennel) {
           const kennel: any = await addKennel({
@@ -156,7 +221,7 @@ const OnboardingScreen = () => {
         );
 
         const response: any = updateUser(currentUser.id, {
-          role,
+          role: formData.role,
           ...(kennelId ? kennelId : {}),
           userBreeds,
         });
@@ -186,7 +251,7 @@ const OnboardingScreen = () => {
         );
 
         await updateUser(currentUser?.id, {
-          role,
+          role: formData.role,
           userBreeds,
           traitPreferences,
         });
@@ -210,97 +275,151 @@ const OnboardingScreen = () => {
     switch (activeTab) {
       case 'tab1':
         return (
-          <YStack gap='$4'>
-            <Button
-              theme='active'
-              onPress={() => setRole('seeker')}
-              backgroundColor={
-                role === 'seeker'
-                  ? colorSet.secondaryForeground
-                  : colorSet.grey0
-              }
-            >
-              {localized('I am looking for a new dog')}
-            </Button>
-            <Button
-              theme='active'
-              onPress={() => setRole('breeder')}
-              backgroundColor={
-                role === 'breeder' ? colorSet.primaryForeground : colorSet.grey0
-              }
-            >
-              {localized('I want to rehome my dog(s)')}
-            </Button>
-          </YStack>
+          <YGroup bordered>
+            <YGroup.Item>
+              <ListItem
+                pressTheme
+                padding='$4'
+                theme='active'
+                onPress={() => handleInputChange('role', 'seeker')}
+                borderColor={
+                  formData.role === 'seeker' ? '$gray3' : colorSet.grey0
+                }
+                title={
+                  <Text
+                    color={
+                      formData.role === 'seeker'
+                        ? colorSet.primaryForeground
+                        : colorSet.primaryText
+                    }
+                  >
+                    {localized('Dog Seeker')}
+                  </Text>
+                }
+                subTitle={
+                  <Text
+                    fontSize='$3'
+                    color={
+                      formData.role === 'seeker'
+                        ? colorSet.primaryForeground
+                        : 'gray'
+                    }
+                  >
+                    {localized('I am looking for a new dog')}
+                  </Text>
+                }
+                iconAfter={
+                  formData.role && formData.role === 'seeker' ? (
+                    <CheckCircle color={colorSet.primaryForeground} />
+                  ) : (
+                    <Circle color='$gray9' />
+                  )
+                }
+              />
+            </YGroup.Item>
+            <Separator />
+            <YGroup.Item>
+              <ListItem
+                pressTheme
+                padding='$4'
+                theme='active'
+                onPress={() => handleInputChange('role', 'breeder')}
+                borderColor={
+                  formData.role === 'breeder' ? '$gray4' : colorSet.grey0
+                }
+                title={
+                  <Text
+                    color={
+                      formData.role === 'breeder'
+                        ? colorSet.primaryForeground
+                        : colorSet.primaryText
+                    }
+                  >
+                    {localized('Dog Breeder')}
+                  </Text>
+                }
+                subTitle={
+                  <Text
+                    fontSize='$3'
+                    color={
+                      formData.role === 'breeder'
+                        ? colorSet.primaryForeground
+                        : 'gray'
+                    }
+                  >
+                    {localized('I want to rehome my dog(s)')}
+                  </Text>
+                }
+                iconAfter={
+                  formData.role && formData.role === 'breeder' ? (
+                    <CheckCircle color={colorSet.primaryForeground} />
+                  ) : (
+                    <Circle color='$gray9' />
+                  )
+                }
+              />
+            </YGroup.Item>
+          </YGroup>
         );
 
       case 'tab2':
-        return role === 'breeder' ? (
+        return formData.role === 'breeder' ? (
           // Breeder kennel info form
-          <YStack gap='$4'>
-            <YGroup gap='$4'>
-              <YGroup.Item>
-                <Input
-                  placeholder={localized('Kennel Name')}
-                  value={formData.kennelName}
-                  onChangeText={(value) =>
-                    handleInputChange('kennelName', value)
-                  }
-                  disabled={!formData.hasKennel}
-                />
-              </YGroup.Item>
-
-              <YGroup.Item>
-                <Input
-                  placeholder={localized('Location')}
-                  value={formData.location}
-                  onChangeText={(value) => handleInputChange('location', value)}
-                  disabled={!formData.hasKennel}
-                />
-              </YGroup.Item>
-            </YGroup>
-
-            <Card>
-              <Card.Header>
-                <XStack
-                  justifyContent='space-between'
-                  alignItems='center'
-                  gap='$2'
-                >
-                  <Text>I don't have a kennel</Text>
-                  <Switch
-                    checked={!formData.hasKennel}
-                    onCheckedChange={(checked) =>
-                      handleInputChange('hasKennel', !checked)
+          <YGroup bordered gap='$4'>
+            <YGroup.Item>
+              <YStack gap='$4'>
+                <YStack>
+                  <Input
+                    placeholder={localized('Kennel Name')}
+                    value={formData.kennelName}
+                    onChangeText={(value) =>
+                      handleInputChange('kennelName', value)
                     }
-                    backgroundColor={
-                      !formData.hasKennel
-                        ? colorSet.secondaryForeground
-                        : colorSet.grey6
-                    }
-                  >
-                    <Switch.Thumb
-                      animation='quicker'
-                      backgroundColor={colorSet.primaryForeground}
-                    />
-                  </Switch>
-                </XStack>
-              </Card.Header>
-            </Card>
-          </YStack>
+                  />
+                  <XStack justifyContent='space-between' alignItems='center'>
+                    <Text>I don't have a kennel. Use my username instead</Text>
+                    <Switch
+                      checked={!formData.hasKennel}
+                      onCheckedChange={(checked) =>
+                        handleInputChange('hasKennel', !checked)
+                      }
+                      backgroundColor={
+                        !formData.hasKennel
+                          ? colorSet.secondaryForeground
+                          : colorSet.grey6
+                      }
+                    >
+                      <Switch.Thumb
+                        animation='quicker'
+                        backgroundColor={colorSet.primaryForeground}
+                      />
+                    </Switch>
+                  </XStack>
+                </YStack>
+              </YStack>
+            </YGroup.Item>
+
+            <YGroup.Item>
+              <Input
+                placeholder={localized('Location')}
+                value={formData.location}
+                onPressIn={() => setIsLocationSheetOpen(true)}
+              />
+            </YGroup.Item>
+          </YGroup>
         ) : (
           // Seeker preferences
           <TraitSelector
             currentIndex={currentIndex}
-            traitGroups={traitGroups}
+            traitGroups={traitGroups || {}}
             traitPreferences={traitPreferences}
             updateFilter={updateFilter}
           />
         );
 
       case 'tab3':
-        return role === 'breeder' ? (
-          <>
+        return formData.role === 'breeder' ? (
+          <YStack gap='$4'>
             <YGroup>
               {formData.selectedBreeds.map((breed) => (
                 <YGroup.Item key={breed.name}>
@@ -324,7 +443,7 @@ const OnboardingScreen = () => {
                   : localized('Add Breed')
               }
             />
-          </>
+          </YStack>
         ) : (
           <BreedRecommendations
             filteredBreeds={filteredBreeds}
@@ -336,7 +455,6 @@ const OnboardingScreen = () => {
 
   return (
     <View
-      flex={1}
       alignItems='center'
       justifyContent='center'
       backgroundColor={colorSet.primaryBackground}
@@ -362,7 +480,7 @@ const OnboardingScreen = () => {
                 Hey, {currentUser?.firstName || currentUser?.username}
               </Text>
               <Text style={styles.caption}>
-                {OnboardingSteps[activeTab].description}
+                {OnboardingSteps[activeTab].description(formData.role)}
               </Text>
             </YStack>
 
@@ -380,7 +498,7 @@ const OnboardingScreen = () => {
                     flex={1}
                     backgroundColor={
                       activeTab === tab
-                        ? colorSet.primaryForeground
+                        ? colorSet.secondaryForeground
                         : colorSet.grey0
                     }
                   >
@@ -394,7 +512,7 @@ const OnboardingScreen = () => {
               </Tabs.Content>
             </Tabs>
 
-            <YStack gap='$4' paddingTop='$4'>
+            <XStack justifyContent='space-between'>
               <Button
                 onPress={handleBack}
                 chromeless
@@ -412,7 +530,7 @@ const OnboardingScreen = () => {
                   opacity={currentIndex === tabs.length - 1 ? 0.5 : 1}
                   iconAfter={<ChevronRight />}
                 >
-                  {OnboardingSteps[activeTab].cta}
+                  {OnboardingSteps[activeTab].cta(formData.role)}
                 </Button>
               )}
 
@@ -425,10 +543,16 @@ const OnboardingScreen = () => {
                   {loading ? '' : 'Save'}
                 </Button>
               )}
-            </YStack>
+            </XStack>
           </YStack>
         </ScrollView>
       )}
+
+      <LocationSelector
+        isLocationSheetOpen={isLocationSheetOpen}
+        setIsLocationSheetOpen={setIsLocationSheetOpen}
+        handleInputChange={handleInputChange}
+      />
     </View>
   );
 };
