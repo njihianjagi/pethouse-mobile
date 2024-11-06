@@ -73,7 +73,6 @@ const WelcomeScreen = (props) => {
     authManager
       ?.retrievePersistedAuthUser(config)
       .then(async (response) => {
-        console.log('stored user: ', response.user);
         if (response?.user) {
           await dispatch(
             setUserData({

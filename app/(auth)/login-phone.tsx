@@ -141,7 +141,6 @@ const SmsAuthenticationScreen = () => {
   const onGoogleButtonPress = () => {
     setLoading(true);
     authManager.loginOrSignUpWithGoogle(config).then((response) => {
-      console.log(response);
       if (response?.user) {
         const user = response.user;
         dispatch(setUserData({user}));
@@ -233,6 +232,7 @@ const SmsAuthenticationScreen = () => {
   const signUpWithPhoneNumber = (smsCode) => {
     const userDetails = {
       ...trimFields(inputFields),
+      phoneNumber: phoneNumber,
       photoFile: profilePictureFile,
     };
     authManager

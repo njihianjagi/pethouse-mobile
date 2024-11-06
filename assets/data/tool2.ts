@@ -1,6 +1,7 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import fs from 'fs/promises';
+import {TraitGroup} from '../../hooks/useBreedSearch';
 
 async function scrapeData(dogName: string, notFoundBreeds) {
   try {
@@ -36,7 +37,7 @@ async function scrapeData(dogName: string, notFoundBreeds) {
 }
 
 function extractTraits($) {
-  const traitGroups = {};
+  const traitGroups = [] as any;
 
   // Process each main accordion group
   $('.xe-breed-accordion').each((_, groupElement) => {
@@ -54,10 +55,11 @@ function extractTraits($) {
     ).length;
 
     // Initialize group object
-    traitGroups[groupName] = {
+    traitGroups.push({
+      name: groupName,
       score: groupScore,
-      traits: {},
-    };
+      traits: [], // Change to array instead of object
+    });
 
     // Process individual traits within the group
     $group
@@ -72,10 +74,14 @@ function extractTraits($) {
           '.xe-breed-accordion__item-summary .xe-breed-star.xe-breed-star--selected'
         ).length;
 
-        traitGroups[groupName].traits[traitName] = {
-          name: traitName,
-          score: traitScore,
-        };
+        traitGroups.map((group) => {
+          if (group.name === groupName) {
+            group.traits.push({
+              name: traitName,
+              score: traitScore,
+            });
+          }
+        });
       });
   });
 

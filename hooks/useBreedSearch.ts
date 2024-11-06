@@ -7,6 +7,15 @@ interface TraitPreferences {
   [key: string]: boolean | number;
 }
 
+export interface TraitGroup {
+  name: string;
+  score: number;
+  traits: Array<{
+    name: string;
+    score: number;
+  }>;
+}
+
 const traitMapping = {
   apartment_friendly: 'adapts_well_to_apartment_living',
   novice_friendly: 'good_for_novice_dog_owners',
@@ -160,7 +169,7 @@ export const useBreedSearch = () => {
   const [sortOption, setSortOption] = useState('');
 
   const [traitGroups, setTraitGroups] = useState(
-    Object.keys(allBreeds[0].traits as {})
+    allBreeds[3].traits as TraitGroup[]
   );
 
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);

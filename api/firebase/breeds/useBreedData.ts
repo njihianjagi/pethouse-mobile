@@ -8,14 +8,18 @@ export interface Breed {
   name: string;
   description: string;
   breedGroup: string;
+  weight: string;
+  height: string;
+  lifeSpan: string;
   size: string;
-  traits: {
-    [traitName: string]: {
+  traits: Array<{
+    name: string;
+    score: number;
+    traits: Array<{
       name: string;
-      description: string;
       score: number;
-    };
-  };
+    }>;
+  }>;
   careRequirements: string[];
   image: string;
   // createdAt: timestamp;
@@ -210,25 +214,14 @@ export const useBreedData = (userId?: string) => {
         userBreedsSnapshot.docs.map(async (doc) => {
           const data = doc.data() as UserBreed;
           let ownerDetails;
-          if (data.isOwner) {
-            if (data.kennelId) {
-              const kennelDoc = await db
-                .collection('kennels')
-                .doc(data.kennelId)
-                .get();
-              ownerDetails = kennelDoc.data();
-            } else {
-              const userDoc = await db
-                .collection('users')
-                .doc(data.userId)
-                .get();
-              ownerDetails = userDoc.data();
-            }
-          }
+
+          const userDoc = await db.collection('users').doc(data.userId).get();
+          ownerDetails = userDoc.data();
+
           return {
             ...data,
             id: doc.id,
-            [data.kennelId ? 'kennel' : 'user']: ownerDetails,
+            user: ownerDetails,
           };
         })
       );

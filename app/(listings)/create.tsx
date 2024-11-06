@@ -9,13 +9,9 @@ import {
   Text,
   Spinner,
   Tabs,
-  Separator,
-  Select,
-  Switch,
   ToggleGroup,
-  ListItem,
-  YGroup,
-  View,
+  XGroup,
+  Image,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../dopebase';
 import {
@@ -26,7 +22,12 @@ import useCurrentUser from '../../hooks/useCurrentUser';
 import BreedSelector from '../../components/BreedSelector';
 import ImageManager from '../../components/ImageManager';
 // import VideoManager from '../../components/VideoManager';
-import {Breed, useBreedData} from '../../api/firebase/breeds/useBreedData';
+import {
+  Breed,
+  UserBreed,
+  useBreedData,
+} from '../../api/firebase/breeds/useBreedData';
+import ParallaxScrollView from '../../components/ParallaxScrollView';
 
 const CreateListingScreen = () => {
   const router = useRouter();
@@ -43,9 +44,11 @@ const CreateListingScreen = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    selectedBreed: {} as Breed,
+    selectedBreed: {} as UserBreed,
     sex: '' as any,
     age: '',
+    ageYears: 0,
+    ageMonths: 0,
     location: '',
     price: 0,
     traits: [] as any,
@@ -69,13 +72,13 @@ const CreateListingScreen = () => {
   const currentIndex = tabs.indexOf(activeTab);
 
   useEffect(() => {
-    if (formData.selectedBreed.name) {
+    if (formData.selectedBreed.breedName) {
       fetchBreedTraits();
     }
   }, [formData.selectedBreed]);
 
   const fetchBreedTraits = async () => {
-    const breedData = await fetchBreedByName(formData.selectedBreed.name);
+    const breedData = await fetchBreedByName(formData.selectedBreed.breedName);
     if (breedData && breedData.traits) {
       handleInputChange('traits', breedData.traits);
     }
@@ -94,39 +97,46 @@ const CreateListingScreen = () => {
   };
 
   const handleSelectBreed = (breed: Breed) => {
-    handleInputChange('selectedBreed', breed);
+    const userBreed = {
+      breedName: breed.name,
+      breedId: breed.id,
+      breedGroup: breed.breedGroup,
+      userId: currentUser.id,
+      isOwner: currentUser.role === 'breeder',
+    } as UserBreed;
+
+    handleInputChange('selectedBreed', userBreed);
   };
 
   const isNewUserBreed = () => {
     return !userBreeds.some(
-      (breed) => breed.breedId === formData.selectedBreed.id
+      (breed) => breed.breedId === formData.selectedBreed.breedId
     );
   };
 
   const handleUserBreed = async () => {
     if (isNewUserBreed()) {
-      const newUserBreed: any = await addUserBreed({
-        userId: currentUser.id,
-        breedId: formData.selectedBreed.id!,
-        breedName: formData.selectedBreed.name,
-        breedGroup: formData.selectedBreed.breedGroup,
-        isOwner: currentUser.isBreeder,
-      });
+      const newUserBreed: any = await addUserBreed(formData.selectedBreed);
       return newUserBreed.id;
     }
+
     return userBreeds.find((ub) => ub.breedId === formData.selectedBreed.id)
       ?.id;
   };
+
   const createListingObject = (userBreedId: string): Omit<Listing, 'id'> => ({
     userId: currentUser.id,
     userBreedId,
-    breedName: formData.selectedBreed.name,
-    breedId: formData.selectedBreed.id,
+    breedName: formData.selectedBreed.breedName,
+    breedId: formData.selectedBreed.breedId,
     name: formData.name,
     sex: formData.sex,
+    ageYears: formData.ageYears,
+    ageMonths: formData.ageMonths,
     age: formData.age,
     price: formData.price,
     status: 'available',
+    type: currentUser.role === 'breeder' ? 'adoption' : 'wanted',
     traits: formData.traits,
     media: {
       images: formData.images,
@@ -159,146 +169,190 @@ const CreateListingScreen = () => {
     }
   };
 
-  const renderTraitOption = (traitName, traitValue) => {
-    if (typeof traitValue === 'boolean') {
-      return (
-        <ListItem key={traitName}>
-          <ListItem.Text>{traitName.replace(/_/g, ' ')}</ListItem.Text>
-          <Switch
-            checked={traitValue}
-            onCheckedChange={(value) =>
-              handleInputChange('traits', (prev) => ({
-                ...prev,
-                [traitName]: value,
-              }))
-            }
-          >
-            <Switch.Thumb />
-          </Switch>
-        </ListItem>
-      );
-    } else if (typeof traitValue === 'number') {
-      return (
-        <ListItem key={traitName}>
-          <YStack flex={1} gap='$2'>
-            <ListItem.Text>{traitName.replace(/_/g, ' ')}</ListItem.Text>
-            <ToggleGroup
-              type='single'
-              value={traitValue.toString() as string}
-              onValueChange={(value) =>
-                handleInputChange('traits', (prev) => ({
-                  ...prev,
-                  [traitName]: parseInt(value),
-                }))
-              }
-            >
-              {[1, 2, 3, 4, 5].map((value) => (
-                <ToggleGroup.Item
-                  key={value}
-                  value={value.toString() as string}
-                  flex={1}
-                >
-                  <Text>{value}</Text>
-                </ToggleGroup.Item>
-              ))}
-            </ToggleGroup>
-          </YStack>
-        </ListItem>
-      );
-    }
-  };
+  // const renderTraitOption = (traitName, traitValue) => {
+  //   if (typeof traitValue === 'boolean') {
+  //     return (
+  //       <ListItem key={traitName}>
+  //         <ListItem.Text>{traitName.replace(/_/g, ' ')}</ListItem.Text>
+  //         <Switch
+  //           checked={traitValue}
+  //           onCheckedChange={(value) =>
+  //             handleInputChange('traits', (prev) => ({
+  //               ...prev,
+  //               [traitName]: value,
+  //             }))
+  //           }
+  //         >
+  //           <Switch.Thumb />
+  //         </Switch>
+  //       </ListItem>
+  //     );
+  //   } else if (typeof traitValue === 'number') {
+  //     return (
+  //       <ListItem key={traitName}>
+  //         <YStack flex={1} gap='$2'>
+  //           <ListItem.Text>{traitName.replace(/_/g, ' ')}</ListItem.Text>
+  //           <ToggleGroup
+  //             type='single'
+  //             value={traitValue.toString() as string}
+  //             onValueChange={(value) =>
+  //               handleInputChange('traits', (prev) => ({
+  //                 ...prev,
+  //                 [traitName]: parseInt(value),
+  //               }))
+  //             }
+  //           >
+  //             {[1, 2, 3, 4, 5].map((value) => (
+  //               <ToggleGroup.Item
+  //                 key={value}
+  //                 value={value.toString() as string}
+  //                 flex={1}
+  //               >
+  //                 <Text>{value}</Text>
+  //               </ToggleGroup.Item>
+  //             ))}
+  //           </ToggleGroup>
+  //         </YStack>
+  //       </ListItem>
+  //     );
+  //   }
+  // };
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{flex: 1}}
     >
-      <ScrollView>
+      <ParallaxScrollView
+        headerImage={
+          <Image
+            objectFit='cover'
+            src={require('../../assets/images/doggo_2.png')}
+          />
+        }
+        headerBackgroundColor={colorSet.secondaryForeground}
+      >
         <YStack padding='$4' gap='$4'>
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            flexDirection='column'
-            width='100%'
-          >
-            <Tabs.List paddingBottom='$4'>
-              <Tabs.Tab value='tab1' flex={1}>
-                <Text>{localized('Basic Info')}</Text>
-              </Tabs.Tab>
-              <Tabs.Tab value='tab1' flex={1}>
-                <Text>{localized('Media')}</Text>
-              </Tabs.Tab>
-            </Tabs.List>
+          <YStack gap='$4'>
+            {/* <YStack gap='$2'>
+              <Text>{localized('Pet Name')}</Text>
+              <Input
+                value={formData.name}
+                onChangeText={(value) => handleInputChange('name', value)}
+                placeholder={localized('Enter pet name')}
+              />
+            </YStack> */}
 
-            <Tabs.Content value='tab1'>
-              <YStack gap='$4'>
-                <YStack gap='$2'>
-                  <Text>{localized('Pet Name')}</Text>
-                  <Input
-                    value={formData.name}
-                    onChangeText={(value) => handleInputChange('name', value)}
-                    placeholder={localized('Enter pet name')}
-                  />
-                </YStack>
-
-                <YStack gap='$2'>
-                  <Text>{localized('Breed')}</Text>
-                  <BreedSelector
-                    onSelectBreed={handleSelectBreed}
-                    userBreeds={userBreeds}
-                    buttonText={
-                      formData.selectedBreed.name || localized('Select Breed')
-                    }
-                  />
-                  {formData.selectedBreed?.id && isNewUserBreed() && (
-                    <Text color='$green10'>
-                      {localized(
-                        'This breed will be added to your kennel when the listing is created.'
-                      )}
-                    </Text>
+            <YStack gap='$2'>
+              <Text>{localized('Breed')}</Text>
+              <BreedSelector
+                onSelectBreed={handleSelectBreed}
+                userBreeds={userBreeds}
+                buttonText={
+                  formData.selectedBreed.breedName || localized('Select Breed')
+                }
+              />
+              {formData.selectedBreed?.id && isNewUserBreed() && (
+                <Text color='$green10'>
+                  {localized(
+                    'This breed will be added to your kennel when the listing is created.'
                   )}
-                </YStack>
+                </Text>
+              )}
+            </YStack>
 
-                <YStack gap='$2'>
-                  <Text>{localized('Sex')}</Text>
-                  <ToggleGroup
-                    type='single'
-                    value={formData.sex}
-                    onValueChange={(value) => handleInputChange('sex', value)}
-                  >
-                    <ToggleGroup.Item value='male'>
-                      <Text>{localized('Male')}</Text>
-                    </ToggleGroup.Item>
-                    <ToggleGroup.Item value='female'>
-                      <Text>{localized('Female')}</Text>
-                    </ToggleGroup.Item>
-                  </ToggleGroup>
-                </YStack>
+            <YStack gap='$2'>
+              <Text>
+                {currentUser.role === 'seeker'
+                  ? localized('Preferred Sex')
+                  : localized('Sex')}
+              </Text>
 
-                <YStack gap='$2'>
-                  <Text>{localized('Age')}</Text>
-                  <Input
-                    value={formData.age}
-                    onChangeText={(value) => handleInputChange('age', value)}
-                    placeholder={localized('Enter age')}
-                  />
-                </YStack>
-              </YStack>
-            </Tabs.Content>
+              <ToggleGroup
+                type='single'
+                value={formData.sex}
+                onValueChange={(value) => handleInputChange('sex', value)}
+              >
+                <ToggleGroup.Item value='male' flex={1}>
+                  <Text>{localized('Male')}</Text>
+                </ToggleGroup.Item>
+                <ToggleGroup.Item value='female' flex={1}>
+                  <Text>{localized('Female')}</Text>
+                </ToggleGroup.Item>
 
-            <Tabs.Content value='tab2'>
-              <YStack gap='$4'>
-                {formData.selectedBreed &&
-                  formData.selectedBreed.traits &&
-                  Object.entries(formData.selectedBreed.traits).map(
-                    ([traitName, traitValue]) =>
-                      renderTraitOption(traitName, traitValue)
-                  )}
-              </YStack>
-            </Tabs.Content>
+                {currentUser.role === 'seeker' && (
+                  <ToggleGroup.Item value='no-preference' flex={1}>
+                    <Text>{localized('Any')}</Text>
+                  </ToggleGroup.Item>
+                )}
+              </ToggleGroup>
+            </YStack>
 
-            <Tabs.Content value='tab3'>
-              <YStack gap='$4'>
+            <YStack gap='$2'>
+              <Text>
+                {currentUser.role === 'breeder'
+                  ? localized('Age')
+                  : localized('Preferred Age')}
+              </Text>
+
+              {currentUser.role === 'breeder' ? (
+                <XStack alignItems='center'>
+                  <XGroup flex={1}>
+                    <XGroup.Item>
+                      <Input
+                        keyboardType='numeric'
+                        value={formData.ageYears.toString()}
+                        onChangeText={(value) =>
+                          handleInputChange('ageYears', value)
+                        }
+                        placeholder={localized('Years')}
+                      />
+                    </XGroup.Item>
+
+                    <XGroup.Item>
+                      <Button theme='active'>{localized('Years')}</Button>
+                    </XGroup.Item>
+                  </XGroup>
+
+                  <XGroup flex={1}>
+                    <XGroup.Item>
+                      <Input
+                        keyboardType='numeric'
+                        value={formData.ageMonths.toString()}
+                        onChangeText={(value) =>
+                          handleInputChange('ageMonths', value)
+                        }
+                        placeholder={localized('Months')}
+                      />
+                    </XGroup.Item>
+                    <XGroup.Item>
+                      <Button theme='active'>{localized('Months')}</Button>
+                    </XGroup.Item>
+                  </XGroup>
+                </XStack>
+              ) : (
+                <ToggleGroup
+                  type='single'
+                  value={formData.age}
+                  onValueChange={(value) => handleInputChange('age', value)}
+                >
+                  <ToggleGroup.Item value='puppy' flex={1}>
+                    <Text>{localized('Puppy')}</Text>
+                  </ToggleGroup.Item>
+                  <ToggleGroup.Item value='young' flex={1}>
+                    <Text>{localized('Young')}</Text>
+                  </ToggleGroup.Item>
+                  <ToggleGroup.Item value='adult' flex={1}>
+                    <Text>{localized('Adult')}</Text>
+                  </ToggleGroup.Item>
+                </ToggleGroup>
+              )}
+            </YStack>
+
+            {currentUser.role === 'breeder' && (
+              <YStack gap='$2'>
+                <Text>{localized('Photos')}</Text>
+
                 <ImageManager
                   images={formData.images}
                   onAddImage={(newImage) =>
@@ -311,46 +365,20 @@ const CreateListingScreen = () => {
                     )
                   }
                 />
-                {/* <VideoManager
-                  videos={videos}
-                  onAddVideo={(newVideo) => setVideos([...videos, newVideo])}
-                  onRemoveVideo={(index) => setVideos(videos.filter((_, i) => i !== index))}
-                /> */}
               </YStack>
-            </Tabs.Content>
-          </Tabs>
+            )}
 
-          <XStack justifyContent='space-between' padding='$2'>
             <Button
-              onPress={handleBack}
-              disabled={currentIndex === 0}
-              opacity={currentIndex === 0 ? 0.5 : 1}
+              theme='active'
+              onPress={handleCreateListing}
+              disabled={loading}
+              iconAfter={loading ? <Spinner /> : null}
             >
-              Back
+              {loading ? '' : 'Create Listing'}
             </Button>
-
-            {currentIndex !== tabs.length - 1 && (
-              <Button
-                onPress={handleNext}
-                disabled={currentIndex === tabs.length - 1}
-                opacity={currentIndex === tabs.length - 1 ? 0.5 : 1}
-              >
-                Next
-              </Button>
-            )}
-
-            {currentIndex === tabs.length - 1 && (
-              <Button
-                onPress={handleCreateListing}
-                disabled={loading}
-                iconAfter={loading ? <Spinner /> : null}
-              >
-                {loading ? '' : 'Create Listing'}
-              </Button>
-            )}
-          </XStack>
+          </YStack>
         </YStack>
-      </ScrollView>
+      </ParallaxScrollView>
     </KeyboardAvoidingView>
   );
 };

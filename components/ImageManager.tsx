@@ -35,7 +35,11 @@ const ImageManager: React.FC<ImageManagerProps> = ({
   };
 
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{flex: 1}}
+    >
       <XStack gap='$2' p='$2'>
         {images.map((image, index) => (
           <XStack key={index}>

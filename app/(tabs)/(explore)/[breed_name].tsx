@@ -28,10 +28,7 @@ import {
   StarHalf,
   StarOff,
 } from '@tamagui/lucide-icons';
-import {
-  DogBreed,
-  useBreedData,
-} from '../../../api/firebase/breeds/useBreedData';
+import {Breed, useBreedData} from '../../../api/firebase/breeds/useBreedData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 
 function BreedDetailScreen() {
@@ -40,7 +37,7 @@ function BreedDetailScreen() {
 
   const {localized} = useTranslations();
 
-  const [breed, setBreed] = useState({} as DogBreed);
+  const [breed, setBreed] = useState({} as Breed);
   const currentUser = useCurrentUser();
 
   const {breed_name} = useLocalSearchParams();
@@ -73,7 +70,7 @@ function BreedDetailScreen() {
         unslugifyBreedName(breed_name as string)
       );
 
-      setBreed({...breedData, ...localBreedData} as DogBreed);
+      setBreed({...breedData, ...localBreedData} as Breed);
     };
     fetchBreed();
   }, [breed_name]);
@@ -160,13 +157,7 @@ function BreedDetailScreen() {
           <XStack justifyContent='space-between' alignItems='center'>
             <YStack>
               <H2>{breed.name}</H2>
-              <Text>
-                {`${breed.breedGroup} group${
-                  currentUser?.traitPreferences
-                    ? ` • ${breed.popularity}% match`
-                    : ''
-                }`}
-              </Text>
+              <Text>{`${breed.breedGroup} group`}</Text>
             </YStack>
             <Button icon={Heart} circular size='$5' themeShallow />
           </XStack>
@@ -240,18 +231,18 @@ function BreedDetailScreen() {
             <Tabs.Content value='tab2'>
               <Card bordered>
                 {breed.traits &&
-                  Object.entries(breed.traits).map(([groupKey, groupValue]) => (
-                    <Accordion key={groupKey} type='multiple'>
-                      <Accordion.Item value={groupKey}>
+                  breed.traits.map((group) => (
+                    <Accordion key={group.name} type='multiple'>
+                      <Accordion.Item value={group.name}>
                         <Accordion.Trigger>
                           <XStack
                             flex={1}
                             justifyContent='space-between'
                             alignItems='center'
                           >
-                            <Text fontWeight='bold'>{groupKey}</Text>
+                            <Text fontWeight='bold'>{group.name}</Text>
                             <XStack gap='$2' alignItems='center'>
-                              <RatingStars score={groupValue.score} />
+                              <RatingStars score={group.score} />
                               <ChevronDown />
                             </XStack>
                           </XStack>
@@ -259,35 +250,33 @@ function BreedDetailScreen() {
 
                         <Accordion.Content padding={0}>
                           <YGroup separator={<Separator />}>
-                            {Object.entries(groupValue.traits).map(
-                              ([traitKey, trait]) => (
-                                <YGroup.Item key={traitKey}>
-                                  <ListItem
-                                    title={trait.name}
-                                    iconAfter={
-                                      <XStack gap='$2' alignItems='center'>
-                                        <RatingStars score={trait.score} />
-                                        {currentUser?.traitPreferences &&
+                            {group.traits.map((trait) => (
+                              <YGroup.Item key={trait.name}>
+                                <ListItem
+                                  title={trait.name}
+                                  iconAfter={
+                                    <XStack gap='$2' alignItems='center'>
+                                      <RatingStars score={trait.score} />
+                                      {/* {currentUser?.traitPreferences &&
                                           isTraitMatching(traitKey, trait) && (
                                             <CheckCircle
                                               color={
                                                 theme.colors[appearance].primary
                                               }
                                             />
-                                          )}
-                                      </XStack>
-                                    }
-                                    backgroundColor={
-                                      currentUser?.traitPreferences &&
-                                      isTraitMatching(traitKey, trait)
-                                        ? theme.colors[appearance]
-                                            .secondaryBackground
-                                        : undefined
-                                    }
-                                  />
-                                </YGroup.Item>
-                              )
-                            )}
+                                          )} */}
+                                    </XStack>
+                                  }
+                                  // backgroundColor={
+                                  //   currentUser?.traitPreferences &&
+                                  //   isTraitMatching(traitKey, trait)
+                                  //     ? theme.colors[appearance]
+                                  //         .secondaryBackground
+                                  //     : undefined
+                                  // }
+                                />
+                              </YGroup.Item>
+                            ))}
                           </YGroup>
                         </Accordion.Content>
                       </Accordion.Item>
@@ -318,8 +307,10 @@ function BreedDetailScreen() {
                       <YGroup.Item key={userBreed.id}>
                         <ListItem
                           title={
-                            userBreed.user?.name ||
-                            userBreed.kennel?.name ||
+                            userBreed.user?.username ||
+                            userBreed.user?.firstName +
+                              ' ' +
+                              userBreed.user?.lastName ||
                             'Unknown'
                           }
                           subTitle={

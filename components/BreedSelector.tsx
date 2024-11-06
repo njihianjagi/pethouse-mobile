@@ -81,8 +81,8 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
       <Button
         onPress={() => setOpen(true)}
         disabled={loading}
-        backgroundColor={colorSet.secondaryForeground}
-        color={colorSet.primaryForeground}
+        themeShallow
+        theme='active'
       >
         {loading ? (
           <Spinner color={colorSet.primaryForeground} />

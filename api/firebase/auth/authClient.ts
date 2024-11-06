@@ -324,7 +324,6 @@ export const loginWithSMSCode = (smsCode, verificationID) => {
       .then((result) => {
         const {user} = result;
 
-        console.log('user: ', user);
         usersRef
           .doc(user.uid)
           .get()

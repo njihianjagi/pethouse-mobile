@@ -87,7 +87,7 @@ const HomeScreen = () => {
     </Card>
   );
 
-  const SeekerCTA = () => {
+  const BreederCTA = () => {
     return (
       <XStack gap='$4'>
         <Card bordered flex={1}>
@@ -152,7 +152,7 @@ const HomeScreen = () => {
     );
   };
 
-  const SeekerCTA2 = () => {
+  const SeekerCTA = () => {
     return (
       <XStack gap='$4'>
         <Card
@@ -197,7 +197,7 @@ const HomeScreen = () => {
       </XStack>
     );
   };
-  const BreederCTA = () => {
+  const BreederCTA2 = () => {
     return (
       <XStack gap='$4'>
         <Card
@@ -269,7 +269,7 @@ const HomeScreen = () => {
           </Text>
         </XStack>
 
-        <YStack gap='$2'>
+        {/* <YStack gap='$2'>
           <Text fontSize='$8' fontWeight='bold' color={colorSet.primaryText}>
             Find Your Perfect Match
           </Text>
@@ -277,47 +277,39 @@ const HomeScreen = () => {
             Discover your ideal furry companion based on your lifestyle and
             preferences
           </Text>
-        </YStack>
+        </YStack> */}
 
         {/* Search & Filter */}
-        <XStack gap='$2'>
-          <Button
-            flex={1}
-            icon={Search}
-            onPress={() => router.push('/(tabs)/search')}
-            backgroundColor={colorSet.background}
-            borderColor={colorSet.border}
-            borderWidth={1}
-          >
-            Search breeds, traits...
-          </Button>
-          <Button
-            icon={Filter}
-            onPress={() => router.push('/(tabs)/filters')}
-            backgroundColor={colorSet.background}
-            borderColor={colorSet.border}
-            borderWidth={1}
-          />
-        </XStack>
+        {/* <Button
+          flex={1}
+          icon={Search}
+          onPress={() => router.push('/(tabs)/(explore)')}
+          backgroundColor={colorSet.primaryBackground}
+          borderColor={colorSet.gray3}
+          borderWidth={1}
+        >
+          Search breeds, traits...
+        </Button> */}
 
-        {currentUser.role === 'breeder' ? <BreederCTA /> : <SeekerCTA2 />}
+        {currentUser.role === 'breeder' ? <BreederCTA /> : <SeekerCTA />}
 
-        {/* Breed Recommendations */}
-        <YStack gap='$4'>
-          <Text fontSize='$6' fontWeight='bold'>
-            Recommended Breeds
-          </Text>
+        {currentUser.role === 'seeker' && (
+          <YStack gap='$4'>
+            <Text fontSize='$6' fontWeight='bold'>
+              Recommended Breeds
+            </Text>
 
-          <BreedRecommendations
-            filteredBreeds={filteredBreeds}
-            onSelectBreed={(breed) =>
-              router.push({
-                pathname: '/(tabs)/(explore)/[breed_name]',
-                params: {breed_name: breed.name},
-              })
-            }
-          />
-        </YStack>
+            <BreedRecommendations
+              filteredBreeds={filteredBreeds}
+              onSelectBreed={(breed) =>
+                router.push({
+                  pathname: '/(tabs)/(explore)/[breed_name]',
+                  params: {breed_name: breed.name},
+                })
+              }
+            />
+          </YStack>
+        )}
 
         <YStack gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>

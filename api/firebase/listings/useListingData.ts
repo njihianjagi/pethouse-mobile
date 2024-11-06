@@ -13,7 +13,10 @@ export interface Listing {
   name: string;
   sex: string;
   age: string;
+  ageYears: number;
+  ageMonths: number;
   price?: number;
+  type: 'adoption' | 'wanted';
   status: 'available' | 'pending' | 'sold';
   traits: {
     [traitName: string]: {
@@ -64,6 +67,7 @@ export const useListingData = () => {
       );
       setListings(fetchedListings);
       setError(null);
+      setLoading(false);
     } catch (err: any) {
       setError(err.message);
       console.error('Error fetching listings:', err);

@@ -168,7 +168,8 @@ const SeekerOnboardingScreen = () => {
 
               <Tabs.Content value='tab2'>
                 <TraitSelector
-                  currentIndex={currentIndex}
+                  isOpen={false}
+                  onClose={() => {}}
                   traitGroups={traitGroups}
                   traitPreferences={traitPreferences}
                   updateFilter={updateFilter}

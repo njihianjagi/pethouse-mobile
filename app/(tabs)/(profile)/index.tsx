@@ -72,7 +72,7 @@ const ProfileScreen = () => {
             <Avatar circular size='$12'>
               <Avatar.Image
                 accessibilityLabel='Cam'
-                src={currentUser.profilePictureURL}
+                src={currentUser?.profilePictureURL}
               />
               <Avatar.Fallback backgroundColor='$blue10' />
             </Avatar>
