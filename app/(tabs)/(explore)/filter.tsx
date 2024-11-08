@@ -75,7 +75,6 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
           traitPreferences: tempPreferences,
         });
 
-        console.log(response.user);
         if (response && response.user) {
           dispatch(
             setUserData({
@@ -83,8 +82,6 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
             })
           );
         }
-      } else {
-        console.log('no user id');
       }
     } catch (error) {
       console.error('Error applying filters:', error);
