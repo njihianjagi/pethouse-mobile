@@ -218,8 +218,6 @@ const loginOrSignUpWithGoogle = (appConfig) => {
       authAPI
         .loginWithGoogle(idToken, appConfig.appIdentifier)
         .then(async (response: any) => {
-          console.log(response);
-
           if (response?.user) {
             const newResponse = {
               user: {...response.user},

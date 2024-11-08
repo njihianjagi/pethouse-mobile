@@ -142,7 +142,6 @@ export default function ExploreScreen() {
         traitGroups={traitGroups}
         traitPreferences={traitPreferences}
         updateFilter={updateFilter}
-        currentUser={currentUser}
       />
     </View>
   );
