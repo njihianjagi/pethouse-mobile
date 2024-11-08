@@ -16,147 +16,6 @@ export interface TraitGroup {
   }>;
 }
 
-const traitMapping = {
-  apartment_friendly: 'adapts_well_to_apartment_living',
-  novice_friendly: 'good_for_novice_dog_owners',
-  independent: 'tolerates_being_alone',
-  sensitivity_level: 'sensitivity_level',
-  low_shedding: 'shedding',
-  low_drooling: 'drooling_potential',
-  easy_grooming: 'easy_to_groom',
-  general_health: 'general_health',
-  weight_gain_prone: 'potential_for_weight_gain',
-  affectionate: 'best_family_dogs',
-  kid_friendly: 'kid-friendly',
-  dog_friendly: 'dog_friendly',
-  stranger_friendly: 'friendly_toward_strangers',
-  energy_level: 'high_energy_level',
-  intensity: 'intensity',
-  playfulness: 'potential_for_playfulness',
-  easy_to_train: 'easy_to_train',
-  intelligence: 'intelligence',
-  mouthiness: 'potential_for_mouthiness',
-  size: 'size',
-  adaptable_to_weather: ['tolerates_cold_weather', 'tolerates_hot_weather'],
-  high_prey_drive: 'prey_drive',
-  barks_a_lot: 'tendency_to_bark_or_howl',
-  wanderlust: 'wanderlust_potential',
-};
-
-const traitCategories = [
-  {
-    name: 'Lifestyle Fit',
-    caption: 'Find a dog that suits your daily life',
-    options: [
-      {
-        name: 'apartment_friendly',
-        type: 'switch',
-        label: 'Apartment Friendly',
-        defaultValue: true,
-      },
-      {
-        name: 'novice_friendly',
-        type: 'switch',
-        label: 'Good for Novice Owners',
-        defaultValue: true,
-      },
-      {
-        name: 'independent',
-        type: 'switch',
-        label: 'Can Be Left Alone',
-        // defaultValue: false,
-      },
-    ],
-  },
-  {
-    name: 'Care Requirements',
-    caption: 'Consider the grooming and health needs',
-    options: [
-      {
-        name: 'low_shedding',
-        type: 'switch',
-        label: 'Low Shedding',
-        defaultValue: true,
-      },
-      {
-        name: 'low_drooling',
-        type: 'switch',
-        label: 'Low Drooling',
-        defaultValue: true,
-      },
-      {
-        name: 'easy_grooming',
-        type: 'switch',
-        label: 'Easy to Groom',
-        defaultValue: true,
-      },
-    ],
-  },
-  {
-    name: 'Temperament',
-    caption: 'Choose your preferred temperament traits',
-    options: [
-      {
-        name: 'playfulness',
-        type: 'switch',
-        label: 'Playful',
-      },
-      {
-        name: 'kid_friendly',
-        type: 'switch',
-        label: 'Kid Friendly',
-        // defaultValue: true,
-      },
-      {
-        name: 'stranger_friendly',
-        type: 'switch',
-        label: 'Stranger Friendly',
-        // defaultValue: false,
-      },
-    ],
-  },
-  {
-    name: 'Training & Obedience',
-    caption: 'Pick your preferred learning style',
-    options: [
-      {
-        name: 'easy_to_train',
-        type: 'switch',
-        label: 'Easy to Train',
-      },
-      {
-        name: 'intelligent',
-        type: 'switch',
-        label: 'Highly Intelligent',
-      },
-      {
-        name: 'high_prey_drive',
-        type: 'switch',
-        label: 'High Prey Drive',
-        // defaultValue: false,
-      },
-    ],
-  },
-  {
-    name: 'Physical Characteristics',
-    caption: "The dog's size and adaptability to different environments",
-    options: [
-      {
-        name: 'size',
-        type: 'toggle',
-        values: ['Small', 'Medium', 'Large'],
-        defaultValue: 1, // Medium
-      },
-      {
-        name: 'energy_level',
-        type: 'toggle',
-        values: ['Low', 'Moderate', 'High'],
-        defaultValue: 1, // Moderate
-      },
-    ],
-  },
-];
-
 export const useBreedSearch = () => {
   const [searchText, setSearchText] = useState('');
   const [traitPreferences, setTraitPreferences] = useState<TraitPreferences>(
@@ -175,49 +34,80 @@ export const useBreedSearch = () => {
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [breeds, setBreeds] = useState(
-    allBreeds.filter((breed) => breed.breedGroup !== 'hybrid')
+    allBreeds.filter((breed) => breed.breedGroup !== 'hybrid') as Breed[]
   );
   const [filteredBreeds, setFilteredBreeds] = useState([] as any);
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [totalMatches, setTotalMatches] = useState(0);
+
   const breedsPerPage = 8;
 
-  const evaluateTrait = useCallback((breedTrait, preference, traitName) => {
-    if (typeof preference === 'boolean') {
-      const reverseLogic = [
-        'shedding',
-        'drooling_potential',
-        'potential_for_weight_gain',
-        'potential_for_mouthiness',
-      ];
-      const desiredValue = reverseLogic.includes(traitName)
-        ? breedTrait.score <= 3
-        : breedTrait.score > 3;
-      return preference === desiredValue;
-    } else {
-      switch (preference) {
-        case 0:
-          return breedTrait.score <= 2;
-        case 1:
-          return breedTrait.score === 3;
-        case 2:
-          return breedTrait.score >= 4;
-        default:
-          return true;
+  const evaluateTrait = useCallback(
+    (breed: Breed, traitName: string, preference: boolean | number) => {
+      // Find the trait in the breed's traits array
+      let trait: any = null;
+      if (breed.traits) {
+        for (const traitGroup of breed.traits) {
+          const foundTrait = traitGroup.traits.find(
+            (t) => t.name === traitName
+          );
+          if (foundTrait) {
+            trait = foundTrait;
+            break;
+          }
+        }
       }
-    }
-  }, []);
+      if (!trait) return true;
+
+      // Helper function to normalize scores for comparison
+      const normalizeScore = (score: number) => {
+        // Convert 1-5 scale to 0-1 scale for easier comparison
+        return (score - 1) / 4;
+      };
+
+      if (typeof preference === 'boolean') {
+        // For boolean preferences, we're more lenient - any score above midpoint (3) is considered "true"
+        const normalizedScore = normalizeScore(trait.score);
+        const threshold = 0.5; // Represents score of 3 on 1-5 scale
+
+        // For some traits, lower scores are better
+        const reverseLogic = ['Shedding', 'Drooling', 'Barking', 'Prey Drive'];
+
+        if (reverseLogic.includes(trait.name)) {
+          return preference === normalizedScore <= threshold;
+        }
+        return preference === normalizedScore >= threshold;
+      } else {
+        // For numeric preferences (size, energy level)
+        const score = trait.score;
+
+        switch (preference) {
+          case 0: // Low
+            return score <= 2.5;
+          case 1: // Medium
+            return score > 2 && score < 4;
+          case 2: // High
+            return score >= 3.5;
+          default:
+            return true;
+        }
+      }
+    },
+    []
+  );
 
   const filterBreeds = useMemo(
     () =>
       debounce(
         (
-          preferences: typeof traitPreferences,
+          preferences: TraitPreferences,
           searchQuery: string,
           currentPage: number
         ) => {
           const filtered = breeds.filter((breed) => {
+            // Search filter
             if (
               searchQuery &&
               !breed.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -225,31 +115,35 @@ export const useBreedSearch = () => {
               return false;
             }
 
+            // If no preferences are set, include all breeds
+            if (Object.keys(preferences).length === 0) {
+              return true;
+            }
+
+            // Trait preferences filter - match ANY preference (OR condition)
             return Object.entries(preferences).every(([trait, preference]) => {
-              const mappedTrait = traitMapping[trait] || trait;
-              if (Array.isArray(mappedTrait)) {
-                return mappedTrait.every((subTrait) => {
-                  const breedTrait = breed.traits && breed.traits[subTrait];
-                  if (!breedTrait) return true;
-                  return evaluateTrait(breedTrait, preference, subTrait);
-                });
-              } else {
-                const breedTrait = breed.traits && breed.traits[mappedTrait];
-                if (!breedTrait) return true;
-                return evaluateTrait(breedTrait, preference, mappedTrait);
+              if (preference === undefined || preference === null) {
+                return false;
               }
+              return evaluateTrait(breed, trait, preference);
             });
           });
 
+          console.log('filtered breeds: ', filtered.length);
+          // Pagination logic
           const start = (currentPage - 1) * breedsPerPage;
           const end = start + breedsPerPage;
           const paginatedBreeds = filtered.slice(0, end);
+          const totalMatches = filtered.length;
+
           setFilteredBreeds(paginatedBreeds);
+          setHasMore(filtered.length > end);
+          setTotalMatches(totalMatches); // New state to track total matches
           setLoading(false);
         },
         300
-      ), // 300ms debounce time, adjust as needed
-    [breeds, searchText, evaluateTrait]
+      ),
+    [breeds, evaluateTrait]
   );
 
   const loadMoreBreeds = useCallback(() => {
@@ -306,7 +200,6 @@ export const useBreedSearch = () => {
     searchText,
     updateFilter,
     traitPreferences,
-    traitCategories,
     traitGroups,
     filteredBreeds,
     loading,
@@ -319,5 +212,6 @@ export const useBreedSearch = () => {
     page,
     hasMore,
     loadMoreBreeds,
+    totalMatches,
   };
 };

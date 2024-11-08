@@ -179,7 +179,7 @@ const OnboardingScreen = () => {
       const response: any = updateUser(currentUser.id, {
         role: formData.role,
         userBreeds,
-        location: formData.location,
+        location: {...currentUser.location, address: formData.location},
       });
 
       await dispatch(

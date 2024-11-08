@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList} from 'react-native';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
@@ -24,6 +24,7 @@ export default function ExploreScreen() {
   const {
     searchText,
     filteredBreeds,
+    traitGroups,
     traitPreferences,
     updateFilter,
     loading: breedsLoading,
@@ -31,7 +32,16 @@ export default function ExploreScreen() {
     page,
     hasMore,
     loadMoreBreeds,
+    totalMatches,
   } = useBreedSearch();
+
+  useEffect(() => {
+    console.log('usrr', currentUser);
+    if (currentUser?.traitPreferences) {
+      console.log('traitprefs', currentUser.traitPreferences);
+      updateFilter('traitPreferences', currentUser.traitPreferences);
+    }
+  }, [currentUser?.id]);
 
   return (
     <View backgroundColor={colorSet.primaryBackground} flex={1}>
@@ -70,7 +80,7 @@ export default function ExploreScreen() {
         <XStack justifyContent='space-between' alignItems='center'>
           <SortPopover sortOption={sortOption} />
           <Text fontSize='$4' color={colorSet.primaryForeground}>
-            {filteredBreeds.length} Breeds
+            {filteredBreeds.length} of {totalMatches} Breeds
           </Text>
         </XStack>
 
@@ -129,6 +139,10 @@ export default function ExploreScreen() {
       <BreedFilterSheet
         open={filterSheetOpen}
         onOpenChange={setFilterSheetOpen}
+        traitGroups={traitGroups}
+        traitPreferences={traitPreferences}
+        updateFilter={updateFilter}
+        currentUser={currentUser}
       />
     </View>
   );

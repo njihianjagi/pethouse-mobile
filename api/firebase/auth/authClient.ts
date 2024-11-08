@@ -176,6 +176,7 @@ const signInWithCredential = (credential, appIdentifier, socialAuthType) => {
     auth()
       .signInWithCredential(credential)
       .then((response: any) => {
+        console.log(JSON.stringify(response));
         const isNewUser = response.additionalUserInfo.isNewUser;
         const {first_name, last_name, family_name, given_name} =
           response.additionalUserInfo.profile;
@@ -206,17 +207,18 @@ const signInWithCredential = (credential, appIdentifier, socialAuthType) => {
                 accountCreated: true,
               });
             });
-        }
-        usersRef
-          .doc(uid)
-          .get()
-          .then((document) => {
-            const userData = document.data();
-            resolve({
-              user: {...userData, id: uid, userID: uid},
-              accountCreated: false,
+        } else {
+          usersRef
+            .doc(uid)
+            .get()
+            .then((document) => {
+              const userData = document.data();
+              resolve({
+                user: {...userData, id: uid, userID: uid},
+                accountCreated: false,
+              });
             });
-          });
+        }
       })
       .catch((_error) => {
         console.log(_error);

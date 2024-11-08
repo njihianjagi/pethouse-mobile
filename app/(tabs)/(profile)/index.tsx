@@ -1,8 +1,7 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {
   View,
   Text,
-  Spinner,
   YStack,
   ListItem,
   Separator,
@@ -10,7 +9,6 @@ import {
   Avatar,
   ScrollView,
 } from 'tamagui';
-import useKennelData from '../../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {useTheme} from '../../../dopebase';
 import {
@@ -18,11 +16,10 @@ import {
   Dog,
   HelpCircle,
   LogOut,
-  Settings,
   User,
 } from '@tamagui/lucide-icons';
 import {logout} from '../../../redux/reducers/auth';
-import {Href, useRouter} from 'expo-router';
+import {useRouter} from 'expo-router';
 import {useAuth} from '../../../hooks/useAuth';
 
 const ProfileScreen = () => {
@@ -37,7 +34,7 @@ const ProfileScreen = () => {
   // const handleUpdateProfile = async () => {
   //   setIsUpdating(true);
   //   try {
-  //     await updateUser(currentUser.id, {
+  //     await updateUser(currentUser?.id, {
   //       /* updated user data */
   //     });
   //     // Optionally, update local state or show a success message
@@ -83,15 +80,15 @@ const ProfileScreen = () => {
                 fontWeight='bold'
                 color={colorSet.primaryForeground}
               >
-                {currentUser.username ||
-                  `${currentUser.firstName} ${currentUser.lastName}` ||
-                  currentUser.displayName}
+                {currentUser?.username ||
+                  `${currentUser?.firstName} ${currentUser?.lastName}` ||
+                  currentUser?.displayName}
               </Text>
 
-              <Text>{currentUser.phoneNumber || currentUser.email}</Text>
+              <Text>{currentUser?.phoneNumber || currentUser?.email}</Text>
 
               <Text>
-                Joined {new Date(currentUser.createdAt).toLocaleDateString()}
+                Joined {new Date(currentUser?.createdAt).toLocaleDateString()}
               </Text>
             </YStack>
           </YStack>
@@ -106,9 +103,9 @@ const ProfileScreen = () => {
               onPress={() => router.push('/(profile)/edit')}
             />
             <Separator />
-            {currentUser.role === 'breeder' ? (
+            {currentUser?.role === 'breeder' ? (
               <>
-                {currentUser.isKennelOwner && (
+                {currentUser?.isKennelOwner && (
                   <>
                     <ListItem
                       icon={Dog}
@@ -155,7 +152,7 @@ const ProfileScreen = () => {
                 subTitle='Manage your preferred breeds'
                 iconAfter={ChevronRight}
                 pressTheme
-                onPress={() => router.push('/(profile)/preferences')}
+                onPress={() => router.push('/(profile)/breeds')}
               />
             )}
           </YGroup>

@@ -515,7 +515,7 @@ const SmsAuthenticationScreen = () => {
                     color={colorSet.primaryForeground}
                   />
                 }
-                themeShallow
+                theme='active'
                 color={colorSet.primaryForeground}
                 onPress={onGoogleButtonPress}
                 iconAfter={loading ? <Spinner /> : <></>}
@@ -627,7 +627,7 @@ const SmsAuthenticationScreen = () => {
                     color={colorSet.primaryForeground}
                   />
                 }
-                themeShallow
+                theme='active'
                 color={colorSet.primaryForeground}
                 onPress={onGoogleButtonPress}
               >

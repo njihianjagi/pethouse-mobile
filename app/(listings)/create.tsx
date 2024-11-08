@@ -234,15 +234,6 @@ const CreateListingScreen = () => {
       >
         <YStack padding='$4' gap='$4'>
           <YStack gap='$4'>
-            {/* <YStack gap='$2'>
-              <Text>{localized('Pet Name')}</Text>
-              <Input
-                value={formData.name}
-                onChangeText={(value) => handleInputChange('name', value)}
-                placeholder={localized('Enter pet name')}
-              />
-            </YStack> */}
-
             <YStack gap='$2'>
               <Text>{localized('Breed')}</Text>
               <BreedSelector
