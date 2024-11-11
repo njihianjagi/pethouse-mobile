@@ -3,6 +3,7 @@ import {Stack} from 'expo-router';
 import {Button} from 'tamagui';
 import {Bell} from '@tamagui/lucide-icons';
 import {useTheme} from '../../../dopebase';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 export default function ExploreLayout() {
   const {theme, appearance} = useTheme();

@@ -2,7 +2,7 @@ import React from 'react';
 import {ArrowRight} from '@tamagui/lucide-icons';
 import {router, Href} from 'expo-router';
 import {LinearGradient} from 'tamagui/linear-gradient';
-import {View, Text, Button, Card, XStack, Image} from 'tamagui';
+import {View, Text, Button, Card, XStack, Image, YStack} from 'tamagui';
 import {useTheme} from '../../../dopebase';
 
 const BreedCard = ({breed}) => {
@@ -14,9 +14,10 @@ const BreedCard = ({breed}) => {
       flex={1}
       margin={5}
       onPress={() =>
-        router.push(
-          `(explore)/${breed.name.toLowerCase().replace(/\s+/g, '-')}` as Href
-        )
+        router.push({
+          pathname: '/(explore)/[breed_name]',
+          params: {breed_name: breed.name.toLowerCase().replace(/\s+/g, '-')},
+        })
       }
       pressTheme
       overflow='hidden'
@@ -38,13 +39,18 @@ const BreedCard = ({breed}) => {
       </Card.Background>
 
       <Card.Header padded zIndex={2}>
-        <Text
-          color={colorSet.primaryBackground}
-          fontSize={24}
-          fontWeight='bold'
-        >
-          {breed.name}
-        </Text>
+        <YStack>
+          <Text
+            color={colorSet.primaryBackground}
+            fontSize={24}
+            fontWeight='bold'
+          >
+            {breed.name}
+          </Text>
+          <Text color={colorSet.primaryBackground}>
+            {breed.breedGroup} group
+          </Text>
+        </YStack>
       </Card.Header>
 
       <Card.Footer zIndex={2}>

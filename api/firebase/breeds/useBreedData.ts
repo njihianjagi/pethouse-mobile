@@ -210,7 +210,7 @@ export const useBreedData = (userId?: string) => {
         .where('breedId', '==', breedId)
         .get();
 
-      const userBreedsData = await Promise.all(
+      const userBreedsData: any = await Promise.all(
         userBreedsSnapshot.docs.map(async (doc) => {
           const data = doc.data() as UserBreed;
           let ownerDetails;
@@ -227,6 +227,7 @@ export const useBreedData = (userId?: string) => {
       );
 
       setUserBreeds(userBreedsData);
+      return userBreedsData;
       setError(null);
     } catch (err: any) {
       setError(err.message);

@@ -3,9 +3,18 @@ import {FlatList} from 'react-native';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {useRouter} from 'expo-router';
-import {Text, View, XStack, Button, YStack, Input, Spinner} from 'tamagui';
+import {
+  Text,
+  View,
+  XStack,
+  Button,
+  YStack,
+  Input,
+  Spinner,
+  XGroup,
+} from 'tamagui';
 
-import {ListFilter} from '@tamagui/lucide-icons';
+import {ListFilter, Search} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {SortPopover} from './sort';
 import {BreedFilterSheet} from './filter';
@@ -54,12 +63,12 @@ export default function ExploreScreen() {
             onChangeText={(text) => updateFilter('searchText', text)}
             placeholder={localized('Search by breed')}
           />
-
           <Button
-            size='$4'
+            theme='active'
             icon={<ListFilter size='$1' />}
             onPress={() => setFilterSheetOpen(true)}
           ></Button>
+
           {Object.keys(traitPreferences).some(
             (key) => traitPreferences[key] !== null
           ) && (
@@ -72,7 +81,7 @@ export default function ExploreScreen() {
               width={8}
               height={8}
               borderRadius={4}
-              backgroundColor={colorSet.secondaryForeground}
+              backgroundColor={colorSet.primaryForeground}
             />
           )}
         </XStack>
@@ -103,7 +112,7 @@ export default function ExploreScreen() {
         ) : filteredBreeds.length === 0 ? (
           <Text>No breeds match your current filters.</Text>
         ) : (
-          <View paddingBottom='$12'>
+          <View>
             <FlatList
               data={filteredBreeds}
               renderItem={({item, index}) => (
@@ -118,7 +127,6 @@ export default function ExploreScreen() {
               ListFooterComponent={() =>
                 hasMore && breedsLoading ? (
                   <View
-                    position='absolute'
                     top={0}
                     left={0}
                     right={0}

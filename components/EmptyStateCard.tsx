@@ -1,32 +1,26 @@
 // ... existing imports ...
-import {Button, Card, XStack, Text} from 'tamagui';
+import {Button, Card, XStack, Text, ListItem} from 'tamagui';
 import {LinearGradient} from 'tamagui/linear-gradient';
 import {useTheme} from '../dopebase';
 import {ImageBackground} from 'react-native';
+import {ArrowRight} from '@tamagui/lucide-icons';
 
 // New component for the empty state card
 export const EmptyStateCard = ({
   title,
+  description,
   buttonText,
   onPress,
   icon,
   backgroundImage,
   backgroundColor,
+  color,
 }): any => {
   const {theme, appearance} = useTheme();
   const colorSet = theme?.colors[appearance];
 
   return (
-    <Card
-      elevate
-      size='$4'
-      bordered
-      flex={1}
-      margin={5}
-      overflow='hidden'
-      onPress={onPress}
-      pressTheme
-    >
+    <Card size='$6' flex={1} overflow='hidden' onPress={onPress} pressTheme>
       <Card.Background>
         {backgroundImage ? (
           <ImageBackground
@@ -38,36 +32,36 @@ export const EmptyStateCard = ({
               start={[0, 0]}
               end={[0, 1]}
               fullscreen
-              colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']}
+              colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0)']}
               zIndex={1}
             />
           </ImageBackground>
         ) : (
-          <LinearGradient
-            start={[0, 0]}
-            end={[0, 1]}
-            fullscreen
-            colors={[backgroundColor || 'rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']}
-            zIndex={1}
-          />
+          <Card.Background backgroundColor={backgroundColor} />
         )}
       </Card.Background>
 
-      <Card.Header padded zIndex={2}>
-        <Text
-          color={colorSet.primaryBackground}
-          fontSize={24}
-          fontWeight='bold'
-        >
+      {/* <Card.Background
+        backgroundColor={colorSet.primaryForeground}
+        borderRadius={16}
+      /> */}
+
+      <Card.Header zIndex={2}>
+        <Text color={color} fontSize={24} fontWeight='bold'>
           {title}
+        </Text>
+        <Text color={color} fontSize={16}>
+          {description}
         </Text>
       </Card.Header>
 
-      <Card.Footer zIndex={2}>
+      <Card.Footer zIndex={2} padded>
         <XStack flex={1} />
-        <Button borderRadius='$10' iconAfter={icon} chromeless>
-          <Text color={colorSet.primaryText}>{buttonText}</Text>
-        </Button>
+        <Button
+          borderRadius='$10'
+          icon={<ArrowRight size='$2' color={color} />}
+          chromeless
+        />
       </Card.Footer>
     </Card>
   );

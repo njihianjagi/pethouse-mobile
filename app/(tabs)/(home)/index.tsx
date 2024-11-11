@@ -15,14 +15,21 @@ import {
   Spinner,
   Tabs,
   Separator,
+  Input,
+  XGroup,
 } from 'tamagui';
 import {ArrowRight, Filter, MapPin, Plus, Search} from '@tamagui/lucide-icons';
 import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useListingData} from '../../../api/firebase/listings/useListingData';
-import {BreedRecommendations} from '../../../components/BreedRecommendations';
+import {RecommendedBreeds} from '../../../components/RecommendedBreeds';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
+import {MatchingBreeders} from '../../../components/MatchingBreeders';
+import {EmptyStateCard} from '../../../components/EmptyStateCard';
+import {TraitSelector} from '../../../components/TraitSelector';
+import {ImageBackground} from 'react-native';
+import {LinearGradient} from 'tamagui/linear-gradient';
 
-const HomeScreen = () => {
+export default function HomeScreen() {
   const router = useRouter();
   const currentUser = useCurrentUser();
   const {localized} = useTranslations();
@@ -33,9 +40,13 @@ const HomeScreen = () => {
     filteredBreeds,
     updateFilter,
     loading: breedsLoading,
+    traitGroups,
+    traitPreferences,
   } = useBreedSearch();
+
   const {listings, loading: listingsLoading} = useListingData();
   const {litters, loading: littersLoading} = useLitterData();
+  const [isTraitSelectorOpen, setIsTraitSelectorOpen] = useState(false);
 
   const PetCard = ({listing}) => (
     <Card
@@ -86,6 +97,14 @@ const HomeScreen = () => {
       </Card.Footer>
     </Card>
   );
+
+  useEffect(() => {
+    console.log('usrr', currentUser);
+    if (currentUser?.traitPreferences) {
+      console.log('traitprefs', currentUser.traitPreferences);
+      updateFilter('traitPreferences', currentUser.traitPreferences);
+    }
+  }, [currentUser?.id]);
 
   const BreederCTA = () => {
     return (
@@ -260,58 +279,113 @@ const HomeScreen = () => {
   };
 
   return (
-    <ScrollView style={{flex: 1, backgroundColor: colorSet.primaryBackground}}>
-      <YStack padding='$4' gap='$4'>
-        <XStack gap='$2' alignItems='center'>
-          <MapPin color={colorSet.primaryForeground} />
-          <Text>
-            {currentUser.location?.latitude}, {currentUser.location?.longitude}
-          </Text>
-        </XStack>
-
-        {/* <YStack gap='$2'>
-          <Text fontSize='$8' fontWeight='bold' color={colorSet.primaryText}>
-            Find Your Perfect Match
-          </Text>
-          <Text fontSize='$5' color={colorSet.secondaryText}>
-            Discover your ideal furry companion based on your lifestyle and
-            preferences
-          </Text>
-        </YStack> */}
-
-        {/* Search & Filter */}
-        {/* <Button
-          flex={1}
-          icon={Search}
-          onPress={() => router.push('/(tabs)/(explore)')}
-          backgroundColor={colorSet.primaryBackground}
-          borderColor={colorSet.gray3}
-          borderWidth={1}
-        >
-          Search breeds, traits...
-        </Button> */}
-
-        {currentUser.role === 'breeder' ? <BreederCTA /> : <SeekerCTA />}
-
-        {currentUser.role === 'seeker' && (
-          <YStack gap='$4'>
-            <Text fontSize='$6' fontWeight='bold'>
-              Recommended Breeds
+    <View backgroundColor={colorSet.primaryBackground} flex={1}>
+      <ScrollView
+        style={{flex: 1, backgroundColor: colorSet.primaryBackground}}
+      >
+        <YStack padding='$4' gap='$4'>
+          <XStack gap='$2' alignItems='center'>
+            <MapPin color={colorSet.primaryForeground} />
+            <Text>
+              {currentUser.location?.latitude},{' '}
+              {currentUser.location?.longitude}
             </Text>
+          </XStack>
 
-            <BreedRecommendations
-              filteredBreeds={filteredBreeds}
-              onSelectBreed={(breed) =>
-                router.push({
-                  pathname: '/(tabs)/(explore)/[breed_name]',
-                  params: {breed_name: breed.name},
-                })
-              }
-            />
-          </YStack>
-        )}
+          <Card bordered>
+            <Card.Header>
+              <YStack gap='$2'>
+                <Text
+                  fontSize={24}
+                  fontWeight='bold'
+                  color={colorSet.primaryBackground}
+                >
+                  Find Your Perfect Match
+                </Text>
+                <Text fontSize='$5' color={colorSet.primaryBackground}>
+                  Discover your ideal furry companion based on your lifestyle
+                  and preferences
+                </Text>
+              </YStack>
+            </Card.Header>
 
-        <YStack gap='$4'>
+            <Card.Footer padded>
+              <XGroup flex={1}>
+                <XGroup.Item>
+                  <Input
+                    flex={1}
+                    borderColor={colorSet.gray3}
+                    borderWidth={1}
+                    placeholder='Search breeds, traits...'
+                  />
+                </XGroup.Item>
+                <XGroup.Item>
+                  <Button
+                    icon={<ArrowRight color='$gray9' size='$1' />}
+                    onPress={() => router.push('/(tabs)/(explore)')}
+                    borderWidth={1}
+                    borderColor='$gray6'
+                  />
+                </XGroup.Item>
+              </XGroup>
+            </Card.Footer>
+
+            <Card.Background
+              backgroundColor={colorSet.secondaryForeground}
+              borderRadius={16}
+            >
+              <ImageBackground
+                source={require('../../../assets/images/hero.jpg')}
+                style={{width: '100%', height: '100%'}}
+                resizeMode='cover'
+              >
+                <LinearGradient
+                  start={[0, 0]}
+                  end={[0, 1]}
+                  fullscreen
+                  colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0)']}
+                  zIndex={1}
+                />
+              </ImageBackground>
+            </Card.Background>
+          </Card>
+
+          {currentUser.role === 'seeker' && (
+            <YStack gap='$4'>
+              {traitPreferences && Object.keys(traitPreferences).length > 0 ? (
+                <RecommendedBreeds
+                  loading={breedsLoading}
+                  filteredBreeds={filteredBreeds}
+                  traitPreferences={traitPreferences}
+                  updateFilter={updateFilter}
+                  traitGroups={traitGroups}
+                  onSelectBreed={(breed) =>
+                    router.push({
+                      pathname: '/(tabs)/(explore)/[breed_name]',
+                      params: {breed_name: breed.name},
+                    })
+                  }
+                />
+              ) : (
+                <EmptyStateCard
+                  title='find your perfect match'
+                  backgroundImage={require('../../../assets/images/doggos.jpeg')}
+                  description=''
+                  buttonText='Set Preferences'
+                  onPress={() => setIsTraitSelectorOpen(true)}
+                  icon={
+                    <ArrowRight size='$1' color={colorSet.primaryBackground} />
+                  }
+                  backgroundColor={colorSet.secondaryForeground}
+                  color={colorSet.primaryBackground}
+                />
+              )}
+            </YStack>
+          )}
+
+          <MatchingBreeders userBreeds={currentUser.userBreeds} />
+
+          {/* <YStack gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <H3 fontWeight='bold'>{localized('Latest Pet Listings')}</H3>
             <Button onPress={() => router.push('/(listings)')}>
@@ -349,10 +423,17 @@ const HomeScreen = () => {
               </XStack>
             </ScrollView>
           )}
+        </YStack> */}
         </YStack>
-      </YStack>
-    </ScrollView>
-  );
-};
+      </ScrollView>
 
-export default HomeScreen;
+      <TraitSelector
+        isOpen={isTraitSelectorOpen}
+        onClose={() => setIsTraitSelectorOpen(false)}
+        traitGroups={traitGroups}
+        traitPreferences={traitPreferences}
+        updateFilter={updateFilter}
+      />
+    </View>
+  );
+}

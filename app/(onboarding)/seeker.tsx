@@ -19,7 +19,7 @@ import {useTheme, useTranslations} from '../../dopebase';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import {ChevronRight} from '@tamagui/lucide-icons';
 import {TraitSelector} from '../../components/TraitSelector';
-import {BreedRecommendations} from '../../components/BreedRecommendations';
+import {RecommendedBreeds} from '../../components/RecommendedBreeds';
 import {useBreedSearch} from '../../hooks/useBreedSearch';
 
 const OnboardingSteps = {
@@ -167,13 +167,13 @@ const SeekerOnboardingScreen = () => {
               </Tabs.Content>
 
               <Tabs.Content value='tab2'>
-                <TraitSelector
+                {/* <TraitSelector
                   isOpen={false}
                   onClose={() => {}}
                   traitGroups={traitGroups}
                   traitPreferences={traitPreferences}
                   updateFilter={updateFilter}
-                />
+                /> */}
               </Tabs.Content>
 
               <Tabs.Content value='tab3'>
@@ -185,8 +185,12 @@ const SeekerOnboardingScreen = () => {
                   
                 </YStack> */}
 
-                <BreedRecommendations
+                <RecommendedBreeds
+                  loading={loading}
                   filteredBreeds={filteredBreeds}
+                  traitPreferences={traitPreferences}
+                  updateFilter={updateFilter}
+                  traitGroups={traitGroups}
                   onSelectBreed={(breed) => {
                     // Handle breed selection
                     router.push({

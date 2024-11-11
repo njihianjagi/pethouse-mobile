@@ -26,6 +26,8 @@ interface BreedFilterSheetProps {
   traitGroups: any;
   traitPreferences: any;
   updateFilter: any;
+  mode?: 'list' | 'steps'; // New prop to control display mode
+  title?: string;
 }
 
 export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
@@ -34,6 +36,8 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
   traitGroups,
   traitPreferences,
   updateFilter,
+  mode = 'steps', // Default to steps mode
+  title = 'Select traits',
 }) => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
@@ -45,9 +49,6 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
 
   useEffect(() => {
     if (open) {
-      console.log('temp prefs', traitPreferences);
-      console.log('current user', currentUser.id);
-
       setTempPreferences({...traitPreferences});
     }
   }, [open, traitPreferences]);

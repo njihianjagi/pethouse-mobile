@@ -163,7 +163,7 @@ const OnboardingScreen = () => {
       currentUser.role && currentUser.userBreeds?.length > 0;
 
     if (hasCompletedOnboarding) {
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/(home)');
     }
   }, [currentUser, router]);
 
@@ -188,7 +188,7 @@ const OnboardingScreen = () => {
         })
       );
 
-      return router.replace('/(tabs)');
+      return router.replace('/(tabs)/(home)');
     } catch (error) {
       console.error('Error saving preferences:', error);
     } finally {
