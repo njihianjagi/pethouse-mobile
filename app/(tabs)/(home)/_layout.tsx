@@ -10,15 +10,6 @@ export default function HomeLayout() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const currentUser = useCurrentUser();
-  const authManager = useAuth();
-
-  const router = useRouter();
-  const onLogout = useCallback(() => {
-    authManager?.logout(currentUser);
-    router.push('/');
-  }, [currentUser]);
-
   return (
     <Stack>
       <Stack.Screen

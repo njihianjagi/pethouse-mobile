@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {
   View,
   Text,
@@ -45,10 +45,16 @@ const ProfileScreen = () => {
   //   }
   // };
 
+  useEffect(() => {
+    if (!currentUser.id) {
+      router.replace('/(auth)/welcome');
+    }
+  }, [currentUser]);
+
   const onLogout = useCallback(() => {
     logout();
     authManager.logout(currentUser);
-    router.replace('/');
+    router.replace('/(auth)/welcome');
   }, []);
 
   return (
@@ -146,14 +152,25 @@ const ProfileScreen = () => {
                 />
               </>
             ) : (
-              <ListItem
-                icon={Dog}
-                title='Breed preferences'
-                subTitle='Manage your preferred breeds'
-                iconAfter={ChevronRight}
-                pressTheme
-                onPress={() => router.push('/(profile)/breeds')}
-              />
+              <>
+                <ListItem
+                  icon={Dog}
+                  title='Your Breeds'
+                  subTitle='View and manage your breeds'
+                  iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('/(profile)/breeds')}
+                />
+                <Separator />
+                <ListItem
+                  icon={Dog}
+                  title='Breed preferences'
+                  subTitle='Manage your breed preferences'
+                  iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('/(profile)/preferences')}
+                />
+              </>
             )}
           </YGroup>
           <YGroup bordered>

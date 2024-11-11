@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {ScrollView, Image} from 'react-native';
-import {XStack, YStack, Text, Card, Button, H3, View} from 'tamagui';
+import {XStack, YStack, Text, Card, Button, H3, View, Spinner} from 'tamagui';
 import {MapPin, Star, ChevronRight} from '@tamagui/lucide-icons';
 import {useTheme} from '../dopebase';
 import {useRouter} from 'expo-router';
@@ -15,7 +15,7 @@ export const MatchingBreeders = ({userBreeds}: MatchingBreedersProps) => {
   const {theme, appearance} = useTheme();
   const colorSet = theme?.colors[appearance];
 
-  const {fetchUserBreedsByBreedId} = useBreedData();
+  const {loading, error, fetchUserBreedsByBreedId} = useBreedData();
   const [breedersMap, setBreedersMap] = useState<{[key: string]: any[]}>({});
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export const MatchingBreeders = ({userBreeds}: MatchingBreedersProps) => {
 
   return (
     <YStack gap='$4'>
-      {userBreeds.map((breed) => {
+      {userBreeds?.map((breed) => {
         const breeders = breedersMap[breed.breedId] || [];
         if (breeders.length === 0) return null;
 
@@ -125,13 +125,35 @@ export const MatchingBreeders = ({userBreeds}: MatchingBreedersProps) => {
               </Button>
             </XStack>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <XStack gap='$2'>
-                {breeders.map((breeder) => (
-                  <BreederCard key={breeder.id} breeder={breeder} />
-                ))}
-              </XStack>
-            </ScrollView>
+            {loading ? (
+              <View
+                flex={1}
+                minHeight={128}
+                justifyContent='center'
+                alignItems='center'
+              >
+                <Spinner size='large' color={colorSet.primaryForeground} />
+              </View>
+            ) : error ? (
+              <YStack
+                flex={1}
+                justifyContent='center'
+                alignItems='center'
+                padding='$4'
+              >
+                <Text color={colorSet.error}>
+                  Unable to load breeders. Please try again later.
+                </Text>
+              </YStack>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <XStack gap='$2'>
+                  {breeders.map((breeder) => (
+                    <BreederCard key={breeder.id} breeder={breeder} />
+                  ))}
+                </XStack>
+              </ScrollView>
+            )}
           </YStack>
         );
       })}

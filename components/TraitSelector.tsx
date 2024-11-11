@@ -61,7 +61,7 @@ export const TraitSelector = ({
     }
   }, [isOpen, traitPreferences]);
 
-  const handleUpdatePreference = (traitName: string, value: number) => {
+  const handleUpdatePreference = (traitName: string, value: boolean) => {
     setTempPreferences((prev) => ({
       ...prev,
       [traitName]: value,
@@ -164,9 +164,7 @@ export const TraitSelector = ({
             : '$gray3'
         }
         checked={!!tempPreferences[trait.name]}
-        onCheckedChange={(value) =>
-          handleUpdatePreference(trait.name, trait.score)
-        }
+        onCheckedChange={(value) => handleUpdatePreference(trait.name, value)}
       >
         <Switch.Thumb
           animation='quicker'

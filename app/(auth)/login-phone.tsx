@@ -60,6 +60,8 @@ const SmsAuthenticationScreen = () => {
 
   const [inputFields, setInputFields] = useState({});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null as any);
+
   const [isCodeInputVisible, setIsCodeInputVisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countriesPickerData, setCountriesPickerData] = useState(null);
@@ -148,6 +150,7 @@ const SmsAuthenticationScreen = () => {
         router.replace('/(onboarding)');
       } else {
         setLoading(false);
+        setError(true);
         Alert.alert(
           '',
           localizedErrorMessage(response.error, localized),
@@ -301,7 +304,11 @@ const SmsAuthenticationScreen = () => {
         }
       }
 
-      signInWithPhoneNumber(phoneNumber);
+      try {
+        signInWithPhoneNumber(phoneNumber);
+      } catch (error) {
+        setError(error);
+      }
     } else {
       Alert.alert(
         '',
@@ -490,10 +497,9 @@ const SmsAuthenticationScreen = () => {
             backgroundColor={colorSet.secondaryForeground}
             color={colorSet.primaryForeground}
             onPress={onPressSend}
-            iconAfter={loading ? <Spinner /> : <></>}
             disabled={loading}
           >
-            {!loading && localized('Continue with phone')}
+            {localized('Continue with phone')}
           </Button>
 
           {isCodeInputVisible && renderCodeInput()}
@@ -518,7 +524,6 @@ const SmsAuthenticationScreen = () => {
                 theme='active'
                 color={colorSet.primaryForeground}
                 onPress={onGoogleButtonPress}
-                iconAfter={loading ? <Spinner /> : <></>}
                 disabled={loading}
               >
                 Sign up with Google
@@ -536,10 +541,10 @@ const SmsAuthenticationScreen = () => {
                 />
               }
               color={colorSet.primaryForeground}
-              themeInverse
+              theme='active'
               onPress={onFBButtonPress}
             >
-              Login with Facebook
+              Sign up with Facebook
             </Button>
           )}
 
@@ -602,7 +607,6 @@ const SmsAuthenticationScreen = () => {
             backgroundColor={colorSet.secondaryForeground}
             color={colorSet.primaryForeground}
             onPress={onPressSend}
-            iconAfter={loading ? <Spinner /> : <></>}
             disabled={loading}
           >
             {!loading && localized('Continue with phone')}
@@ -646,7 +650,7 @@ const SmsAuthenticationScreen = () => {
                 />
               }
               color={colorSet.primaryForeground}
-              themeInverse
+              theme='active'
               onPress={onFBButtonPress}
             >
               Login with Facebook
@@ -664,6 +668,14 @@ const SmsAuthenticationScreen = () => {
     setAlertMessage(message);
     setAlertVisible(true);
   };
+
+  if (loading && !error) {
+    return (
+      <View flex={1} justifyContent='center' alignItems='center'>
+        <Spinner size='large' color={colorSet.primaryForeground} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView

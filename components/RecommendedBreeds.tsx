@@ -15,6 +15,7 @@ import {EmptyStateCard} from './EmptyStateCard';
 import {Filter} from '@tamagui/lucide-icons';
 import {useRouter} from 'expo-router';
 import BreedCard from '../app/(tabs)/(explore)/breed-card';
+import {useBreedMatch} from '../hooks/useBreedMatch';
 
 interface RecommendedBreedsProps {
   filteredBreeds: any[];
@@ -35,6 +36,7 @@ export const RecommendedBreeds = ({
 }: RecommendedBreedsProps) => {
   const {theme, appearance} = useTheme();
   const limitedBreeds = filteredBreeds.slice(0, 4);
+  const {calculateBreedMatch} = useBreedMatch();
 
   const router = useRouter();
 
@@ -52,9 +54,19 @@ export const RecommendedBreeds = ({
           <Spinner />
         ) : (
           <FlatList
-            data={limitedBreeds}
+            data={limitedBreeds.sort((a, b) => {
+              const matchA = calculateBreedMatch(a, traitPreferences);
+              const matchB = calculateBreedMatch(b, traitPreferences);
+              return matchB - matchA;
+            })}
             renderItem={({item, index}) => (
-              <BreedCard key={index} breed={item} />
+              <XStack flex={1} key={index}>
+                <BreedCard
+                  index={index}
+                  breed={item}
+                  traitPreferences={traitPreferences}
+                />
+              </XStack>
             )}
             keyExtractor={(item) => item.id}
             numColumns={2}

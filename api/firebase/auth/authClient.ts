@@ -176,7 +176,7 @@ const signInWithCredential = (credential, appIdentifier, socialAuthType) => {
     auth()
       .signInWithCredential(credential)
       .then((response: any) => {
-        console.log(JSON.stringify(response));
+        // console.log(JSON.stringify(response));
         const isNewUser = response.additionalUserInfo.isNewUser;
         const {first_name, last_name, family_name, given_name} =
           response.additionalUserInfo.profile;
@@ -184,6 +184,7 @@ const signInWithCredential = (credential, appIdentifier, socialAuthType) => {
         const defaultProfilePhotoURL =
           'https://www.iosapptemplates.com/wp-content/uploads/2019/06/empty-avatar.jpg';
 
+        console.log('is new user: ', isNewUser);
         if (isNewUser) {
           const timestamp = getUnixTimeStamp();
           const userData = {
@@ -470,6 +471,6 @@ export const removeUser = (userID) => {
   });
 };
 
-export const logout = () => {
-  auth().signOut();
+export const logout = async () => {
+  await auth().signOut();
 };

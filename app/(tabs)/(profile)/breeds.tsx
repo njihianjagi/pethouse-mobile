@@ -77,6 +77,7 @@ const BreedsScreen = () => {
           ) : userBreeds.length === 0 ? (
             <EmptyStateCard
               title={localized('No breeds added yet.')}
+              description={''}
               buttonText={localized('Add a Breed')}
               onPress={() => {
                 /* Add breed action */
@@ -84,6 +85,7 @@ const BreedsScreen = () => {
               icon={<Plus size='$2' color={colorSet.primaryBackground} />}
               backgroundImage={require('../../../assets/images/doggos_3.png')}
               backgroundColor={colorSet.secondaryForeground}
+              color={''}
             />
           ) : (
             userBreeds.map((breed) => (

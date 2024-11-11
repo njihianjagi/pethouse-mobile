@@ -4,12 +4,20 @@ import {router, Href} from 'expo-router';
 import {LinearGradient} from 'tamagui/linear-gradient';
 import {View, Text, Button, Card, XStack, Image, YStack} from 'tamagui';
 import {useTheme} from '../../../dopebase';
+import {useBreedMatch} from '../../../hooks/useBreedMatch';
 
-const BreedCard = ({breed}) => {
+const BreedCard = ({breed, traitPreferences, index}) => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
+
+  const {calculateBreedMatch} = useBreedMatch();
+  const matchPercentage = Math.round(
+    calculateBreedMatch(breed, traitPreferences)
+  );
+
   return (
     <Card
+      key={index}
       bordered
       flex={1}
       margin={5}
@@ -41,26 +49,52 @@ const BreedCard = ({breed}) => {
       <Card.Header padded zIndex={2}>
         <YStack>
           <Text
-            color={colorSet.primaryBackground}
+            color={colorSet.foregroundContrast}
             fontSize={24}
             fontWeight='bold'
           >
             {breed.name}
           </Text>
-          <Text color={colorSet.primaryBackground}>
+          <Text color={colorSet.foregroundContrast}>
             {breed.breedGroup} group
           </Text>
         </YStack>
       </Card.Header>
 
       <Card.Footer zIndex={2}>
-        <XStack flex={1} />
-        <Button
-          borderRadius='$10'
-          icon={<ArrowRight size='$2' color={colorSet.primaryBackground} />}
-          chromeless
-        />
+        <XStack flex={1} alignItems='center' justifyContent='flex-end'>
+          {/* <XStack borderRadius='$4' padding='$2'>
+            <Text
+              fontWeight='bold'
+              color={matchPercentage > 70 ? '$green10' : '$gray10'}
+            >
+              {matchPercentage}% Match
+            </Text>
+          </XStack> */}
+
+          <Button
+            borderRadius='$10'
+            icon={<ArrowRight size='$2' color={colorSet.foregroundContrast} />}
+            chromeless
+          />
+        </XStack>
       </Card.Footer>
+
+      {/* <XStack
+        position='absolute'
+        top={8}
+        right={8}
+        backgroundColor='$background'
+        borderRadius='$4'
+        padding='$2'
+      >
+        <Text
+          fontWeight='bold'
+          color={matchPercentage > 70 ? '$green10' : '$gray10'}
+        >
+          {matchPercentage}% Match
+        </Text>
+      </XStack> */}
     </Card>
   );
 };

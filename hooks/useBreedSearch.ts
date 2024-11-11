@@ -3,7 +3,7 @@ import allBreeds from '../assets/data/breeds_with_group_and_traits.json';
 import {Breed} from '../api/firebase/breeds/useBreedData';
 import {debounce} from 'tamagui';
 
-interface TraitPreferences {
+export interface TraitPreferences {
   [key: string]: boolean | number;
 }
 

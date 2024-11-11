@@ -20,7 +20,7 @@ export default function ExploreLayout() {
   const onLogout = useCallback(() => {
     logout();
     authManager.logout(currentUser);
-    router.push('/');
+    router.push('/(auth)/welcome');
   }, [currentUser]);
 
   return (

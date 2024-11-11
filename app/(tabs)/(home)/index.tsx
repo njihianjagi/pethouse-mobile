@@ -99,7 +99,6 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
-    console.log('usrr', currentUser);
     if (currentUser?.traitPreferences) {
       console.log('traitprefs', currentUser.traitPreferences);
       updateFilter('traitPreferences', currentUser.traitPreferences);
@@ -292,64 +291,6 @@ export default function HomeScreen() {
             </Text>
           </XStack>
 
-          <Card bordered>
-            <Card.Header>
-              <YStack gap='$2'>
-                <Text
-                  fontSize={24}
-                  fontWeight='bold'
-                  color={colorSet.primaryBackground}
-                >
-                  Find Your Perfect Match
-                </Text>
-                <Text fontSize='$5' color={colorSet.primaryBackground}>
-                  Discover your ideal furry companion based on your lifestyle
-                  and preferences
-                </Text>
-              </YStack>
-            </Card.Header>
-
-            <Card.Footer padded>
-              <XGroup flex={1}>
-                <XGroup.Item>
-                  <Input
-                    flex={1}
-                    borderColor={colorSet.gray3}
-                    borderWidth={1}
-                    placeholder='Search breeds, traits...'
-                  />
-                </XGroup.Item>
-                <XGroup.Item>
-                  <Button
-                    icon={<ArrowRight color='$gray9' size='$1' />}
-                    onPress={() => router.push('/(tabs)/(explore)')}
-                    borderWidth={1}
-                    borderColor='$gray6'
-                  />
-                </XGroup.Item>
-              </XGroup>
-            </Card.Footer>
-
-            <Card.Background
-              backgroundColor={colorSet.secondaryForeground}
-              borderRadius={16}
-            >
-              <ImageBackground
-                source={require('../../../assets/images/hero.jpg')}
-                style={{width: '100%', height: '100%'}}
-                resizeMode='cover'
-              >
-                <LinearGradient
-                  start={[0, 0]}
-                  end={[0, 1]}
-                  fullscreen
-                  colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0)']}
-                  zIndex={1}
-                />
-              </ImageBackground>
-            </Card.Background>
-          </Card>
-
           {currentUser.role === 'seeker' && (
             <YStack gap='$4'>
               {traitPreferences && Object.keys(traitPreferences).length > 0 ? (
@@ -367,18 +308,53 @@ export default function HomeScreen() {
                   }
                 />
               ) : (
-                <EmptyStateCard
-                  title='find your perfect match'
-                  backgroundImage={require('../../../assets/images/doggos.jpeg')}
-                  description=''
-                  buttonText='Set Preferences'
-                  onPress={() => setIsTraitSelectorOpen(true)}
-                  icon={
-                    <ArrowRight size='$1' color={colorSet.primaryBackground} />
-                  }
-                  backgroundColor={colorSet.secondaryForeground}
-                  color={colorSet.primaryBackground}
-                />
+                <Card bordered>
+                  <Card.Header>
+                    <YStack gap='$2'>
+                      <Text
+                        fontSize={24}
+                        fontWeight='bold'
+                        color={colorSet.foregroundContrast}
+                      >
+                        Find Your Perfect Match
+                      </Text>
+                      <Text fontSize='$5' color={colorSet.foregroundContrast}>
+                        Discover your ideal furry companion based on your
+                        lifestyle and preferences
+                      </Text>
+                    </YStack>
+                  </Card.Header>
+
+                  <Card.Footer padded>
+                    <Button
+                      iconAfter={<ArrowRight color='$gray9' size='$1' />}
+                      onPress={() => setIsTraitSelectorOpen(true)}
+                      borderWidth={1}
+                      borderColor='$gray6'
+                    >
+                      Get Started
+                    </Button>
+                  </Card.Footer>
+
+                  <Card.Background
+                    backgroundColor={colorSet.secondaryForeground}
+                    borderRadius={16}
+                  >
+                    <ImageBackground
+                      source={require('../../../assets/images/hero.jpg')}
+                      style={{width: '100%', height: '100%'}}
+                      resizeMode='cover'
+                    >
+                      <LinearGradient
+                        start={[0, 0]}
+                        end={[0, 1]}
+                        fullscreen
+                        colors={['rgba(0,0,0,0.4)', 'rgba(0,0,0,0)']}
+                        zIndex={1}
+                      />
+                    </ImageBackground>
+                  </Card.Background>
+                </Card>
               )}
             </YStack>
           )}

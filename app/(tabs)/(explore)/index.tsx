@@ -19,6 +19,7 @@ import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {SortPopover} from './sort';
 import {BreedFilterSheet} from './filter';
 import BreedCard from './breed-card';
+import {useBreedMatch} from '../../../hooks/useBreedMatch';
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -45,12 +46,13 @@ export default function ExploreScreen() {
   } = useBreedSearch();
 
   useEffect(() => {
-    console.log('usrr', currentUser);
     if (currentUser?.traitPreferences) {
       console.log('traitprefs', currentUser.traitPreferences);
       updateFilter('traitPreferences', currentUser.traitPreferences);
     }
-  }, [currentUser?.id]);
+  }, [currentUser]);
+
+  const {calculateBreedMatch} = useBreedMatch();
 
   return (
     <View backgroundColor={colorSet.primaryBackground} flex={1}>
@@ -114,10 +116,18 @@ export default function ExploreScreen() {
         ) : (
           <View>
             <FlatList
-              data={filteredBreeds}
+              data={filteredBreeds.sort((a, b) => {
+                const matchA = calculateBreedMatch(a, traitPreferences);
+                const matchB = calculateBreedMatch(b, traitPreferences);
+                return matchB - matchA;
+              })}
               renderItem={({item, index}) => (
                 <XStack flex={1} key={index}>
-                  <BreedCard breed={item} />
+                  <BreedCard
+                    breed={item}
+                    traitPreferences={traitPreferences}
+                    index={index}
+                  />
                 </XStack>
               )}
               keyExtractor={(item) => item.name}

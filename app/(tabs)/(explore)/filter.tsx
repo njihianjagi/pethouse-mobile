@@ -14,7 +14,6 @@ import {
 } from 'tamagui';
 import {useTheme} from '../../../dopebase';
 import {X} from '@tamagui/lucide-icons';
-import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
@@ -76,6 +75,7 @@ export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
           traitPreferences: tempPreferences,
         });
 
+        console.log('response: ', response.user);
         if (response && response.user) {
           dispatch(
             setUserData({
