@@ -1,18 +1,20 @@
-import React, {useCallback, useLayoutEffect} from 'react';
+import React, {useCallback} from 'react';
 import {Keyboard} from 'react-native';
-import {Href, useFocusEffect, useNavigation, useRouter} from 'expo-router';
+import {useFocusEffect, useRouter} from 'expo-router';
 import deviceStorage from '../../utils/AuthDeviceStorage';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/reducers/auth';
 import {useAuth} from '../../hooks/useAuth';
-import {ThemedView} from '../../components/ThemedView';
 import {useConfig} from '../../config';
-import {checkUserOnboardingStage} from '../../utils/onboardingUtils';
+import {observer} from '@legendapp/state/react';
+import {Spinner, View} from 'tamagui';
+import {useTheme} from '../../dopebase';
 
-const LoadScreen = () => {
+const LoadScreen = observer(() => {
   // const navigation = useNavigation()
   const router = useRouter();
-
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
   const dispatch = useDispatch();
   const authManager = useAuth();
 
@@ -25,8 +27,10 @@ const LoadScreen = () => {
   );
 
   const setAppState = async () => {
+    // Add timeout to prevent infinite waiting
     const shouldShowOnboardingFlow =
       await deviceStorage.getShouldShowOnboardingFlow();
+
     if (!shouldShowOnboardingFlow) {
       if (config?.isDelayedLoginEnabled) {
         fetchPersistedUserIfNeeded();
@@ -39,10 +43,8 @@ const LoadScreen = () => {
   };
 
   const fetchPersistedUserIfNeeded = async () => {
-    console.log('fetching..');
     if (!authManager?.retrievePersistedAuthUser) {
-      console.log('goign to welcome');
-      return router.push('/welcome');
+      return router.replace('/welcome');
     }
     authManager
       ?.retrievePersistedAuthUser(config)
@@ -65,7 +67,11 @@ const LoadScreen = () => {
       });
   };
 
-  return <ThemedView />;
-};
+  return (
+    <View flex={1} justifyContent='center' alignItems='center'>
+      <Spinner size='large' color={colorSet.primaryForeground} />
+    </View>
+  );
+});
 
 export default LoadScreen;

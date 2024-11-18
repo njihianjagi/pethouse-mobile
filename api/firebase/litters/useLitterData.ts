@@ -1,117 +1,109 @@
 import {useState, useEffect} from 'react';
-import firestore from '@react-native-firebase/firestore';
 import {db} from '../../../firebase/config';
+import useBreedData, {UserBreed} from '../breeds/useBreedData';
+import {FirebaseFirestoreTypes} from '@react-native-firebase/firestore';
 
 export interface Litter {
   id: string;
-  kennelBreedId: string;
+  userId: string;
+  userBreedId: string;
   breedId: string;
-  breed: string;
-  expectedDate: string;
+  breedName: string; // Denormalized for filtering/display
+  name: string;
   birthDate: string;
-  puppyCount: number;
+  availableDate: string;
+  numberOfPuppies: number;
   availablePuppies: number;
-  images: string[];
-  description: string;
+  price?: number;
+  status: 'upcoming' | 'available' | 'reserved' | 'sold';
+  media: {
+    images: string[];
+    videos: string[];
+  };
+  location: string;
+  createdAt: FirebaseFirestoreTypes.Timestamp;
+  modifiedAt: FirebaseFirestoreTypes.Timestamp;
 }
 
 export const useLitterData = () => {
   const [litters, setLitters] = useState<Litter[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {fetchUserBreedById} = useBreedData();
 
-  const fetchLitters = async () => {
+  const fetchLitters = async (params: {
+    userId?: string;
+    userBreedId?: string;
+    breedId?: string;
+  }) => {
     setLoading(true);
     try {
-      const snapshot = await db
-        .collection('litters')
-        .orderBy('expectedDate', 'asc')
-        .limit(10)
-        .get();
+      let query: any = db.collection('litters');
 
-      const fetchedLitters = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Litter[];
+      if (params.userId) {
+        query = query.where('userId', '==', params.userId);
+      }
+      if (params.userBreedId) {
+        query = query.where('userBreedId', '==', params.userBreedId);
+      }
+      if (params.breedId) {
+        query = query.where('breedId', '==', params.breedId);
+      }
+
+      const snapshot = await query.get();
+      const fetchedLitters = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const litterData = doc.data() as Litter;
+          const userBreed = await fetchUserBreedById(litterData.userBreedId);
+          return {...litterData, id: doc.id, userBreed};
+        })
+      );
 
       setLitters(fetchedLitters);
       setError(null);
-    } catch (err) {
+    } catch (err: any) {
+      setError(err.message);
       console.error('Error fetching litters:', err);
-      setError('Failed to fetch litters');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
-  const addLitter = async (
-    litterData: Omit<Litter, 'id' | 'createdAt' | 'updatedAt'>
-  ) => {
+  const addLitter = async (litter: Omit<Litter, 'id'>) => {
     try {
-      const timestamp = firestore.FieldValue.serverTimestamp();
-      const docRef = await db.collection('litters').add({
-        ...litterData,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-      });
-      return docRef.id;
-    } catch (err) {
+      const docRef = await db.collection('litters').add(litter);
+      const newLitter = {id: docRef.id, ...litter};
+      setLitters((prev) => [...prev, newLitter]);
+      return newLitter;
+    } catch (err: any) {
+      setError(err.message);
       console.error('Error adding litter:', err);
-      throw new Error('Failed to add litter');
+      throw err;
     }
   };
 
-  const updateLitter = async (id: string, updateData: Partial<Litter>) => {
+  const updateLitter = async (id: string, updatedData: Partial<Litter>) => {
     try {
-      await db
-        .collection('litters')
-        .doc(id)
-        .update({
-          ...updateData,
-          updatedAt: firestore.FieldValue.serverTimestamp(),
-        });
-    } catch (err) {
+      await db.collection('litters').doc(id).update(updatedData);
+      setLitters((prev) =>
+        prev.map((litter) =>
+          litter.id === id ? {...litter, ...updatedData} : litter
+        )
+      );
+    } catch (err: any) {
+      setError(err.message);
       console.error('Error updating litter:', err);
-      throw new Error('Failed to update litter');
+      throw err;
     }
   };
 
   const deleteLitter = async (id: string) => {
     try {
       await db.collection('litters').doc(id).delete();
-    } catch (err) {
+      setLitters((prev) => prev.filter((litter) => litter.id !== id));
+    } catch (err: any) {
+      setError(err.message);
       console.error('Error deleting litter:', err);
-      throw new Error('Failed to delete litter');
-    }
-  };
-
-  useEffect(() => {
-    fetchLitters();
-  }, []);
-
-  const fetchLittersByKennelId = async (kennelId: string) => {
-    setLoading(true);
-    try {
-      const snapshot = await db
-        .collection('litters')
-        .where('kennelId', '==', kennelId)
-        .orderBy('expectedDate', 'asc')
-        .get();
-
-      const fetchedLitters = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Litter[];
-
-      setLitters(fetchedLitters);
-      setError(null);
-      return fetchedLitters;
-    } catch (err) {
-      console.error('Error fetching litters by kennel ID:', err);
-      setError('Failed to fetch litters');
-      return [];
-    } finally {
-      setLoading(false);
+      throw err;
     }
   };
 
@@ -123,6 +115,5 @@ export const useLitterData = () => {
     addLitter,
     updateLitter,
     deleteLitter,
-    fetchLittersByKennelId,
   };
 };

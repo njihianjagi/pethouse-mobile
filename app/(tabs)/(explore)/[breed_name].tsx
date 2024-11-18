@@ -16,15 +16,21 @@ import {
   View,
   Separator,
   Tabs,
+  Accordion,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../../dopebase';
-import {CheckCircle, Heart, MapPin} from '@tamagui/lucide-icons';
-import useKennelData from '../../../api/firebase/kennels/useKennelData';
 import {
-  DogBreed,
-  useBreedData,
-} from '../../../api/firebase/breeds/useBreedData';
+  CheckCircle,
+  ChevronDown,
+  Heart,
+  MapPin,
+  Star,
+  StarHalf,
+  StarOff,
+} from '@tamagui/lucide-icons';
+import {Breed, useBreedData} from '../../../api/firebase/breeds/useBreedData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
+import {useBreedMatch} from '../../../hooks/useBreedMatch';
 
 function BreedDetailScreen() {
   const {theme, appearance} = useTheme();
@@ -32,13 +38,14 @@ function BreedDetailScreen() {
 
   const {localized} = useTranslations();
 
-  const [breed, setBreed] = useState({} as DogBreed);
-  const [relevantKennels, setRelevantKennels] = useState([] as any);
+  const [breed, setBreed] = useState({} as Breed);
   const currentUser = useCurrentUser();
 
   const {breed_name} = useLocalSearchParams();
 
   const [expanded, setExpanded] = useState(false);
+  const {calculateBreedMatch} = useBreedMatch();
+  const [matchPercentage, setMatchPercentage] = useState(null as any);
 
   const unslugifyBreedName = (sluggedName: string): string => {
     return sluggedName
@@ -49,17 +56,12 @@ function BreedDetailScreen() {
   };
 
   const {
-    fetchKennelsByBreed,
-    kennels,
-    loading: kennelsLoading,
-    error: kennelsError,
-  } = useKennelData();
-
-  const {
     loading: breedLoading,
     error: breedError,
+    userBreeds,
     fetchBreedByName,
     findBreedByName,
+    fetchUserBreedsByBreedId,
   } = useBreedData();
 
   useEffect(() => {
@@ -71,34 +73,73 @@ function BreedDetailScreen() {
         unslugifyBreedName(breed_name as string)
       );
 
-      setBreed({...breedData, ...localBreedData} as DogBreed);
+      setBreed({...breedData, ...localBreedData} as Breed);
     };
     fetchBreed();
   }, [breed_name]);
 
   useEffect(() => {
     if (breed?.id) {
-      fetchKennelsByBreed(breed.id);
+      fetchUserBreedsByBreedId(breed.id);
     }
   }, [breed]);
 
   useEffect(() => {
-    if (kennels?.length) {
-      setRelevantKennels(kennels);
+    if (currentUser?.traitPreferences) {
+      const matchPercentage = Math.round(
+        calculateBreedMatch(breed, currentUser.traitPreferences)
+      );
+
+      setMatchPercentage(matchPercentage);
     }
-  }, [kennels]);
+  }, [breed, currentUser]);
 
   // Function to determine if a trait matches user preferences
-  const isTraitMatching = (traitName: string, traitValue: {score: number}) => {
-    const preference = currentUser.traitPreferences[traitName];
+  const isTraitMatching = (trait: {name: string; score: number}) => {
+    const preference = currentUser.traitPreferences[trait.name];
     if (preference === null || preference === undefined) return false;
 
     if (typeof preference === 'boolean') {
       return preference === true;
     } else if (typeof preference === 'number') {
-      return traitValue.score >= preference;
+      return trait.score >= preference;
     }
     return false;
+  };
+
+  const RatingStars = ({score}: {score: number}) => {
+    const totalStars = 5;
+    const fullStars = Math.floor(score);
+    const hasHalfStar = score % 1 >= 0.5;
+    const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+      <XStack gap='$0.5' alignItems='center'>
+        {/* Full stars */}
+        {[...Array(fullStars)].map((_, i) => (
+          <Star
+            key={`full-${i}`}
+            size={16}
+            color={colorSet.primaryForeground}
+          />
+        ))}
+
+        {/* Half star */}
+        {hasHalfStar && (
+          <StarHalf size={16} color={colorSet.primaryForeground} />
+        )}
+
+        {/* Empty stars */}
+        {[...Array(emptyStars)].map((_, i) => (
+          <StarOff
+            key={`empty-${i}`}
+            size={16}
+            color={colorSet.secondaryForeground}
+            opacity={0.5}
+          />
+        ))}
+      </XStack>
+    );
   };
 
   if (breedLoading && !breedError && !breed?.id) {
@@ -124,18 +165,21 @@ function BreedDetailScreen() {
       }}
     >
       <YStack>
-        <Image source={{uri: breed.image}} aspectRatio={3 / 2} />
+        {breed && (
+          <Image
+            source={{uri: breed.image ? breed.image : ''}}
+            aspectRatio={3 / 2}
+          />
+        )}
         <YStack padding='$4' gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <YStack>
               <H2>{breed.name}</H2>
-              <Text>
-                {`${breed.breedGroup} group${
-                  currentUser?.traitPreferences
-                    ? ` • ${breed.popularity}% match`
-                    : ''
-                }`}
-              </Text>
+
+              <XStack>
+                <Text>{`${breed.breedGroup} group`}</Text>
+                <Text>{` | ${matchPercentage}% match`}</Text>
+              </XStack>
             </YStack>
             <Button icon={Heart} circular size='$5' themeShallow />
           </XStack>
@@ -153,7 +197,7 @@ function BreedDetailScreen() {
                 <Text>{localized('Traits')}</Text>
               </Tabs.Tab>
               <Tabs.Tab value='tab3' flex={1}>
-                <Text>{localized('Kennels')}</Text>
+                <Text>{localized('Breeders')}</Text>
               </Tabs.Tab>
             </Tabs.List>
 
@@ -208,33 +252,58 @@ function BreedDetailScreen() {
 
             <Tabs.Content value='tab2'>
               <Card bordered>
-                <YGroup separator={<Separator />}>
-                  {breed.traits &&
-                    Object.entries(breed.traits).map(([key, value]) => (
-                      <YGroup.Item key={key}>
-                        <ListItem
-                          title={value.name}
-                          subTitle={`Score: ${
-                            (value as {score: number}).score
-                          }`}
-                          iconAfter={
-                            currentUser?.traitPreferences &&
-                            isTraitMatching(key, value as {score: number}) ? (
-                              <CheckCircle
-                                color={theme.colors[appearance].primary}
-                              />
-                            ) : undefined
-                          }
-                          backgroundColor={
-                            currentUser?.traitPreferences &&
-                            isTraitMatching(key, value as {score: number})
-                              ? theme.colors[appearance].secondaryBackground
-                              : undefined
-                          }
-                        />
-                      </YGroup.Item>
-                    ))}
-                </YGroup>
+                {breed.traits &&
+                  breed.traits.map((group) => (
+                    <Accordion key={group.name} type='multiple'>
+                      <Accordion.Item value={group.name}>
+                        <Accordion.Trigger>
+                          <XStack
+                            flex={1}
+                            justifyContent='space-between'
+                            alignItems='center'
+                          >
+                            <Text fontWeight='bold'>{group.name}</Text>
+                            <XStack gap='$2' alignItems='center'>
+                              <RatingStars score={group.score} />
+                              <ChevronDown />
+                            </XStack>
+                          </XStack>
+                        </Accordion.Trigger>
+
+                        <Accordion.Content padding={0}>
+                          <YGroup separator={<Separator />}>
+                            {group.traits.map((trait) => (
+                              <YGroup.Item key={trait.name}>
+                                <ListItem
+                                  title={trait.name}
+                                  iconAfter={
+                                    <XStack gap='$2' alignItems='center'>
+                                      <RatingStars score={trait.score} />
+                                      {currentUser?.traitPreferences &&
+                                        isTraitMatching(trait) && (
+                                          <CheckCircle
+                                            color={
+                                              theme.colors[appearance].primary
+                                            }
+                                          />
+                                        )}
+                                    </XStack>
+                                  }
+                                  backgroundColor={
+                                    currentUser?.traitPreferences &&
+                                    isTraitMatching(trait)
+                                      ? theme.colors[appearance]
+                                          .secondaryBackground
+                                      : undefined
+                                  }
+                                />
+                              </YGroup.Item>
+                            ))}
+                          </YGroup>
+                        </Accordion.Content>
+                      </Accordion.Item>
+                    </Accordion>
+                  ))}
               </Card>
             </Tabs.Content>
 
@@ -243,29 +312,41 @@ function BreedDetailScreen() {
                 <YGroup gap='$4' padding='$4'>
                   <YGroup.Item>
                     <Text fontSize='$6' fontWeight='bold'>
-                      {localized('Kennels offering this breed')}
+                      {localized('Breeders offering this breed')}
                     </Text>
                   </YGroup.Item>
                   <Separator />
-                  {kennelsLoading ? (
+                  {breedLoading ? (
                     <Spinner size='small' color={colorSet.primaryForeground} />
-                  ) : kennelsError ? (
-                    <Text color={colorSet.error}>{kennelsError}</Text>
-                  ) : relevantKennels.length === 0 ? (
-                    <Text>{localized('No kennels found for this breed')}</Text>
+                  ) : breedError ? (
+                    <Text color={colorSet.error}>{breedError}</Text>
+                  ) : userBreeds.length === 0 ? (
+                    <Text>
+                      {localized('No owners or kennels found for this breed')}
+                    </Text>
                   ) : (
-                    relevantKennels.map((kennel) => (
-                      <YGroup.Item key={kennel.id}>
+                    userBreeds.map((userBreed) => (
+                      <YGroup.Item key={userBreed.id}>
                         <ListItem
-                          title={kennel.name}
-                          subTitle={kennel.location}
-                          icon={MapPin}
+                          title={
+                            userBreed.user?.username ||
+                            userBreed.user?.firstName +
+                              ' ' +
+                              userBreed.user?.lastName ||
+                            'Unknown'
+                          }
+                          subTitle={
+                            userBreed.user?.location?.name ||
+                            userBreed.kennel?.location?.name ||
+                            'Unknown location'
+                          }
+                          icon={userBreed.kennelId ? MapPin : Heart}
                           iconAfter={
                             <Button
                               size='$2'
                               variant='outlined'
                               onPress={() => {
-                                // Navigate to kennel detail page
+                                // Navigate to kennel or user detail page
                                 // You'll need to implement this navigation
                               }}
                             >

@@ -60,6 +60,8 @@ const SmsAuthenticationScreen = () => {
 
   const [inputFields, setInputFields] = useState({});
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null as any);
+
   const [isCodeInputVisible, setIsCodeInputVisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countriesPickerData, setCountriesPickerData] = useState(null);
@@ -72,7 +74,7 @@ const SmsAuthenticationScreen = () => {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [countryCode, setCountryCode] = useState('KE' as any); // Default country code
 
-  const phoneRef = useRef(null); // Create a ref for the phone input
+  const phoneRef = useRef(null as any); // Create a ref for the phone input
 
   const codeInputCellCount = 6;
 
@@ -141,7 +143,6 @@ const SmsAuthenticationScreen = () => {
   const onGoogleButtonPress = () => {
     setLoading(true);
     authManager.loginOrSignUpWithGoogle(config).then((response) => {
-      console.log(response);
       if (response?.user) {
         const user = response.user;
         dispatch(setUserData({user}));
@@ -149,6 +150,7 @@ const SmsAuthenticationScreen = () => {
         router.replace('/(onboarding)');
       } else {
         setLoading(false);
+        setError(true);
         Alert.alert(
           '',
           localizedErrorMessage(response.error, localized),
@@ -233,6 +235,7 @@ const SmsAuthenticationScreen = () => {
   const signUpWithPhoneNumber = (smsCode) => {
     const userDetails = {
       ...trimFields(inputFields),
+      phoneNumber: phoneNumber,
       photoFile: profilePictureFile,
     };
     authManager
@@ -301,7 +304,11 @@ const SmsAuthenticationScreen = () => {
         }
       }
 
-      signInWithPhoneNumber(phoneNumber);
+      try {
+        signInWithPhoneNumber(phoneNumber);
+      } catch (error) {
+        setError(error);
+      }
     } else {
       Alert.alert(
         '',
@@ -421,6 +428,7 @@ const SmsAuthenticationScreen = () => {
             keyboardType='number-pad'
             textContentType='oneTimeCode'
             renderCell={renderCodeInputCell}
+            autoFocus
           />
 
           <TouchableOpacity onPress={onPressSend}>
@@ -489,10 +497,9 @@ const SmsAuthenticationScreen = () => {
             backgroundColor={colorSet.secondaryForeground}
             color={colorSet.primaryForeground}
             onPress={onPressSend}
-            iconAfter={loading ? <Spinner /> : <></>}
             disabled={loading}
           >
-            {!loading && localized('Continue with phone')}
+            {localized('Continue with phone')}
           </Button>
 
           {isCodeInputVisible && renderCodeInput()}
@@ -514,10 +521,9 @@ const SmsAuthenticationScreen = () => {
                     color={colorSet.primaryForeground}
                   />
                 }
-                themeShallow
+                theme='active'
                 color={colorSet.primaryForeground}
                 onPress={onGoogleButtonPress}
-                iconAfter={loading ? <Spinner /> : <></>}
                 disabled={loading}
               >
                 Sign up with Google
@@ -535,10 +541,10 @@ const SmsAuthenticationScreen = () => {
                 />
               }
               color={colorSet.primaryForeground}
-              themeInverse
+              theme='active'
               onPress={onFBButtonPress}
             >
-              Login with Facebook
+              Sign up with Facebook
             </Button>
           )}
 
@@ -554,18 +560,33 @@ const SmsAuthenticationScreen = () => {
 
   const renderAsLoginState = () => {
     return (
-      <YStack gap='$6'>
+      <YStack gap='$8'>
         {isConfirmResetPasswordCode ? (
           <Text style={styles.title}>{localized('Reset Password')}</Text>
         ) : (
           <YStack gap='$2' marginBottom='$4'>
-            <Text style={styles.title}>
-              {localized('Log in to your account')}
-            </Text>
+            <Text style={styles.title}>{localized(' Login to continue')}</Text>
             {/* 
-            <Text style={styles.caption}>
-              {localized('Login to your account')}
-            </Text> */}
+            // <Text style={styles.caption}>
+            //   {localized('Login to your account')}
+            // </Text> */}
+
+            <TouchableOpacity
+              style={styles.alreadyHaveAnAccountContainer}
+              onPress={() =>
+                config.isSMSAuthEnabled
+                  ? router.push({
+                      pathname: '/login-phone',
+                      params: {isSigningUp: 'true'},
+                    })
+                  : router.push('/signup-email')
+              }
+            >
+              <Text style={styles.alreadyHaveAnAccountText}>
+                {localized("Don't have an account? ")}
+                <Text color={colorSet.primaryForeground}>Sign Up</Text>
+              </Text>
+            </TouchableOpacity>
           </YStack>
         )}
 
@@ -578,6 +599,7 @@ const SmsAuthenticationScreen = () => {
             keyboardType='numeric'
             value={phoneNumber}
             onChangeText={(text) => setPhoneNumber(text)}
+            autoFocus
           />
 
           <Button
@@ -585,7 +607,6 @@ const SmsAuthenticationScreen = () => {
             backgroundColor={colorSet.secondaryForeground}
             color={colorSet.primaryForeground}
             onPress={onPressSend}
-            iconAfter={loading ? <Spinner /> : <></>}
             disabled={loading}
           >
             {!loading && localized('Continue with phone')}
@@ -610,7 +631,7 @@ const SmsAuthenticationScreen = () => {
                     color={colorSet.primaryForeground}
                   />
                 }
-                themeShallow
+                theme='active'
                 color={colorSet.primaryForeground}
                 onPress={onGoogleButtonPress}
               >
@@ -629,30 +650,13 @@ const SmsAuthenticationScreen = () => {
                 />
               }
               color={colorSet.primaryForeground}
-              themeInverse
+              theme='active'
               onPress={onFBButtonPress}
             >
               Login with Facebook
             </Button>
           )}
         </YStack>
-
-        <TouchableOpacity
-          style={styles.alreadyHaveAnAccountContainer}
-          onPress={() =>
-            config.isSMSAuthEnabled
-              ? router.push({
-                  pathname: '/login-phone',
-                  params: {isSigningUp: 'true'},
-                })
-              : router.push('/signup-email')
-          }
-        >
-          <Text style={styles.alreadyHaveAnAccountText}>
-            {localized("Don't have an account? ")}
-            <Text color={colorSet.primaryForeground}>Sign Up</Text>
-          </Text>
-        </TouchableOpacity>
       </YStack>
     );
   };
@@ -665,6 +669,14 @@ const SmsAuthenticationScreen = () => {
     setAlertVisible(true);
   };
 
+  if (loading && !error) {
+    return (
+      <View flex={1} justifyContent='center' alignItems='center'>
+        <Spinner size='large' color={colorSet.primaryForeground} />
+      </View>
+    );
+  }
+
   return (
     <ScrollView
       contentContainerStyle={{
@@ -674,7 +686,7 @@ const SmsAuthenticationScreen = () => {
         backgroundColor: colorSet.primaryBackground,
       }}
     >
-      <YStack gap='$2' alignItems='center' paddingHorizontal='$8'>
+      <YStack gap='$2' alignItems='center' paddingHorizontal='$4'>
         <YStack gap='$2'>
           <View style={styles?.logo}>
             <Image style={styles.logoImage} source={theme.icons?.logo} />
@@ -759,11 +771,11 @@ const dynamicStyles = (theme, colorScheme) => {
       color: '#ffffff',
     },
     InputContainer: {
-      height: 48,
-      borderWidth: 1,
-      borderColor: colorSet.grey3,
-      backgroundColor: colorSet.primaryBackground,
-      color: colorSet.primaryText,
+      // height: 48,
+      // borderWidth: 1,
+      // borderColor: colorSet.grey3,
+      // backgroundColor: colorSet.primaryBackground,
+      // color: colorSet.primaryText,
       width: '100%',
       alignSelf: 'center',
       alignItems: 'center',

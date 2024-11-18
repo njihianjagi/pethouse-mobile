@@ -2,8 +2,19 @@ import {ErrorCode} from '../../../utils/ErrorCode';
 import {getUnixTimeStamp} from '../../../helpers/timeFormat';
 import {updateUser} from '../users/userClient';
 import {auth, db, messaging} from '../../../firebase/config';
+import {UserBreed} from '../breeds/useBreedData';
 
 const usersRef = db.collection('users');
+
+export interface User {
+  id: string;
+  firstName?: string;
+  username?: string;
+  role?: 'breeder' | 'seeker';
+  traitPreferences?: Record<string, any>;
+  location?: string;
+  userBreeds?: UserBreed[];
+}
 
 const handleUserFromAuthStateChanged = (user, resolve) => {
   if (user) {
@@ -176,6 +187,7 @@ const signInWithCredential = (credential, appIdentifier, socialAuthType) => {
     auth()
       .signInWithCredential(credential)
       .then((response: any) => {
+        // console.log(JSON.stringify(response));
         const isNewUser = response.additionalUserInfo.isNewUser;
         const {first_name, last_name, family_name, given_name} =
           response.additionalUserInfo.profile;
@@ -183,6 +195,7 @@ const signInWithCredential = (credential, appIdentifier, socialAuthType) => {
         const defaultProfilePhotoURL =
           'https://www.iosapptemplates.com/wp-content/uploads/2019/06/empty-avatar.jpg';
 
+        console.log('is new user: ', isNewUser);
         if (isNewUser) {
           const timestamp = getUnixTimeStamp();
           const userData = {
@@ -206,17 +219,18 @@ const signInWithCredential = (credential, appIdentifier, socialAuthType) => {
                 accountCreated: true,
               });
             });
-        }
-        usersRef
-          .doc(uid)
-          .get()
-          .then((document) => {
-            const userData = document.data();
-            resolve({
-              user: {...userData, id: uid, userID: uid},
-              accountCreated: false,
+        } else {
+          usersRef
+            .doc(uid)
+            .get()
+            .then((document) => {
+              const userData = document.data();
+              resolve({
+                user: {...userData, id: uid, userID: uid},
+                accountCreated: false,
+              });
             });
-          });
+        }
       })
       .catch((_error) => {
         console.log(_error);
@@ -324,7 +338,6 @@ export const loginWithSMSCode = (smsCode, verificationID) => {
       .then((result) => {
         const {user} = result;
 
-        console.log('user: ', user);
         usersRef
           .doc(user.uid)
           .get()
@@ -469,6 +482,6 @@ export const removeUser = (userID) => {
   });
 };
 
-export const logout = () => {
-  auth().signOut();
+export const logout = async () => {
+  await auth().signOut();
 };

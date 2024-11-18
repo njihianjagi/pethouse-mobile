@@ -40,7 +40,7 @@ const WelcomeScreen = (props) => {
 
   useEffect(() => {
     tryToLoginFirst();
-  }, []);
+  }, [router]);
 
   const handleInitialNotification = async () => {
     const userID = currentUser?.id || currentUser?.userID;
@@ -73,7 +73,6 @@ const WelcomeScreen = (props) => {
     authManager
       ?.retrievePersistedAuthUser(config)
       .then(async (response) => {
-        console.log('stored user: ', response.user);
         if (response?.user) {
           await dispatch(
             setUserData({

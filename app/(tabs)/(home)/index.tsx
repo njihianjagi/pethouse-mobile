@@ -3,7 +3,6 @@ import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {Href, useRouter} from 'expo-router';
 import {
-  Button,
   Card,
   H3,
   ListItem,
@@ -12,25 +11,34 @@ import {
   View,
   XStack,
   YStack,
-  Spinner,
-  Tabs,
-  Separator,
 } from 'tamagui';
-import {ArrowRight, MapPin, Plus} from '@tamagui/lucide-icons';
+import {ArrowRight, MapPin} from '@tamagui/lucide-icons';
 import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useListingData} from '../../../api/firebase/listings/useListingData';
+import {RecommendedBreeds} from '../../../components/RecommendedBreeds';
+import {useBreedSearch} from '../../../hooks/useBreedSearch';
+import {EmptyStateCard} from '../../../components/EmptyStateCard';
+import {TraitSelector} from '../../../components/TraitSelector';
 
-const HomeScreen = () => {
+export default function HomeScreen() {
   const router = useRouter();
   const currentUser = useCurrentUser();
   const {localized} = useTranslations();
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const [activeTab, setActiveTab] = useState('pets');
+  const {
+    filteredBreeds,
+    updateFilter,
+    loading: breedsLoading,
+    traitGroups,
+    traitPreferences,
+  } = useBreedSearch();
 
   const {listings, loading: listingsLoading} = useListingData();
   const {litters, loading: littersLoading} = useLitterData();
+  const [isTraitSelectorOpen, setIsTraitSelectorOpen] = useState(false);
+  const [userPreferencesSet, setUserPreferencesSet] = useState(false);
 
   const PetCard = ({listing}) => (
     <Card
@@ -82,149 +90,82 @@ const HomeScreen = () => {
     </Card>
   );
 
-  const SeekerCTA = () => {
-    return (
-      <XStack gap='$4'>
-        <Card bordered flex={1}>
-          <Card.Header padded>
-            <Text
-              color={colorSet.primaryForeground}
-              fontSize={24}
-              fontWeight='bold'
-            >
-              Discover your new pet
-            </Text>
-          </Card.Header>
+  useEffect(() => {
+    if (currentUser?.traitPreferences) {
+      const userPreferencesSet =
+        currentUser.traitPreferences &&
+        Object.keys(currentUser.traitPreferences).length > 0;
 
-          <Card.Footer padded>
-            <XStack flex={1} />
-            <Button
-              borderRadius='$10'
-              icon={<ArrowRight size='$2' color={colorSet.primaryForeground} />}
-              chromeless
-            ></Button>
-          </Card.Footer>
-
-          <Card.Background
-            backgroundColor={colorSet.secondaryForeground}
-            borderRadius={16}
-          />
-        </Card>
-
-        <Card
-          bordered
-          flex={1}
-          pressTheme
-          onPress={() => router.push('/(listings)/create')}
-        >
-          <Card.Header padded>
-            <Text
-              color={colorSet.secondaryForeground}
-              fontSize={24}
-              fontWeight='bold'
-            >
-              List your pet for adoption
-            </Text>
-          </Card.Header>
-
-          <Card.Footer padded>
-            <XStack flex={1} />
-            <Button
-              borderRadius='$10'
-              icon={
-                <ArrowRight size='$2' color={colorSet.secondaryForeground} />
-              }
-              chromeless
-            ></Button>
-          </Card.Footer>
-
-          <Card.Background
-            backgroundColor={colorSet.primaryForeground}
-            borderRadius={16}
-          />
-        </Card>
-      </XStack>
-    );
-  };
-
-  const BreederCTA = () => {
-    return (
-      <XStack gap='$4'>
-        <Card
-          bordered
-          flex={1}
-          onPress={() => router.push('/(listings)/create')}
-        >
-          <Card.Header padded>
-            <Text
-              color={colorSet.primaryForeground}
-              fontSize={24}
-              fontWeight='bold'
-            >
-              Looking to rehome your pet?
-            </Text>
-          </Card.Header>
-          <Card.Footer padded>
-            <XStack flex={1} />
-            <Button
-              borderRadius='$10'
-              iconAfter={<Plus size='$2' color={colorSet.primaryForeground} />}
-              chromeless
-            >
-              List for adoption{' '}
-            </Button>
-          </Card.Footer>
-          <Card.Background
-            backgroundColor={colorSet.secondaryForeground}
-            borderRadius={16}
-          />
-        </Card>
-
-        <Card bordered flex={1} onPress={() => router.push('/add-litter')}>
-          <Card.Header padded>
-            <Text
-              color={colorSet.secondaryForeground}
-              fontSize={24}
-              fontWeight='bold'
-            >
-              Expecting a new litter?
-            </Text>
-          </Card.Header>
-          <Card.Footer padded>
-            <XStack flex={1} />
-            <Button
-              borderRadius='$10'
-              icon={<Plus size='$2' color={colorSet.secondaryForeground} />}
-              chromeless
-            >
-              Add for booking
-            </Button>
-          </Card.Footer>
-          <Card.Background
-            backgroundColor={colorSet.primaryForeground}
-            borderRadius={16}
-          />
-        </Card>
-      </XStack>
-    );
-  };
+      setUserPreferencesSet(userPreferencesSet);
+      updateFilter('traitPreferences', currentUser.traitPreferences);
+    }
+  }, [currentUser?.id]);
 
   return (
-    <ScrollView style={{flex: 1, backgroundColor: colorSet.primaryBackground}}>
-      <YStack padding='$4' gap='$4'>
-        <XStack gap='$2' alignItems='center'>
-          <MapPin color={colorSet.primaryForeground} />
-          <Text>
-            {currentUser.location?.latitude}, {currentUser.location?.longitude}
-          </Text>
-        </XStack>
+    <View backgroundColor={colorSet.primaryBackground} flex={1}>
+      <ScrollView
+        style={{flex: 1, backgroundColor: colorSet.primaryBackground}}
+      >
+        <YStack padding='$4' gap='$4'>
+          <XStack gap='$2' alignItems='center'>
+            <MapPin color={colorSet.primaryForeground} />
+            <Text>
+              {currentUser.location?.latitude},{' '}
+              {currentUser.location?.longitude}
+            </Text>
+          </XStack>
 
-        {currentUser.role === 'breeder' ? <BreederCTA /> : <SeekerCTA />}
+          {currentUser.role === 'seeker' && (
+            <YStack gap='$4'>
+              <EmptyStateCard
+                title={
+                  userPreferencesSet ? '' : localized('Find Your Perfect Match')
+                }
+                description={
+                  userPreferencesSet
+                    ? ''
+                    : 'Discover your ideal furry companion based on your lifestyle and preferences'
+                }
+                buttonText={userPreferencesSet ? '' : localized(' Get Started')}
+                onPress={
+                  userPreferencesSet
+                    ? () => {}
+                    : () => setIsTraitSelectorOpen(true)
+                }
+                icon={<ArrowRight color='$gray9' size='$1' />}
+                backgroundImage={
+                  userPreferencesSet
+                    ? ''
+                    : require('../../../assets/images/hero.jpg')
+                }
+                backgroundColor={colorSet.secondaryForeground}
+                color={colorSet.foregroundContrast}
+              />
 
-        <YStack gap='$4'>
+              {traitPreferences && Object.keys(traitPreferences).length > 0 && (
+                <RecommendedBreeds
+                  loading={breedsLoading}
+                  filteredBreeds={filteredBreeds}
+                  traitPreferences={traitPreferences}
+                  updateFilter={updateFilter}
+                  traitGroups={traitGroups}
+                  onSelectBreed={(breed) =>
+                    router.push({
+                      pathname: '/(tabs)/(explore)/[breed_name]',
+                      params: {breed_name: breed.name},
+                    })
+                  }
+                />
+              )}
+            </YStack>
+          )}
+
+          {/* <MatchingBreeders userBreeds={currentUser.userBreeds} /> */}
+
+          {/* <YStack gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <H3 fontWeight='bold'>{localized('Latest Pet Listings')}</H3>
-            <Button onPress={() => router.push('/all-pet-listings')}>
+            <Button onPress={() => router.push('/(listings)')}>
               {localized('See All')}
             </Button>
           </XStack>
@@ -244,7 +185,7 @@ const HomeScreen = () => {
         <YStack gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <H3 fontWeight='bold'>{localized('Upcoming Litters')}</H3>
-            <Button onPress={() => router.push('/all-litters')}>
+            <Button onPress={() => router.push('/(litters)')}>
               {localized('See All')}
             </Button>
           </XStack>
@@ -259,10 +200,17 @@ const HomeScreen = () => {
               </XStack>
             </ScrollView>
           )}
+        </YStack> */}
         </YStack>
-      </YStack>
-    </ScrollView>
-  );
-};
+      </ScrollView>
 
-export default HomeScreen;
+      <TraitSelector
+        isOpen={isTraitSelectorOpen}
+        onClose={() => setIsTraitSelectorOpen(false)}
+        traitGroups={traitGroups}
+        traitPreferences={traitPreferences}
+        updateFilter={updateFilter}
+      />
+    </View>
+  );
+}

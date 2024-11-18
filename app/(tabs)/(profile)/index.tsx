@@ -1,8 +1,7 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect} from 'react';
 import {
   View,
   Text,
-  Spinner,
   YStack,
   ListItem,
   Separator,
@@ -10,7 +9,6 @@ import {
   Avatar,
   ScrollView,
 } from 'tamagui';
-import useKennelData from '../../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {useTheme} from '../../../dopebase';
 import {
@@ -18,11 +16,10 @@ import {
   Dog,
   HelpCircle,
   LogOut,
-  Settings,
   User,
 } from '@tamagui/lucide-icons';
 import {logout} from '../../../redux/reducers/auth';
-import {Href, useRouter} from 'expo-router';
+import {useRouter} from 'expo-router';
 import {useAuth} from '../../../hooks/useAuth';
 
 const ProfileScreen = () => {
@@ -34,20 +31,10 @@ const ProfileScreen = () => {
 
   const authManager = useAuth();
 
-  // useEffect(() => {
-  //   if (currentUser?.role === 'breeder') {
-  //     getKennelByUserId(currentUser.id || currentUser.uid).then((kennel) => {
-  //       if (kennels) {
-  //         setKennel(kennel);
-  //       }
-  //     });
-  //   }
-  // }, [currentUser]);
-
   // const handleUpdateProfile = async () => {
   //   setIsUpdating(true);
   //   try {
-  //     await updateUser(currentUser.id, {
+  //     await updateUser(currentUser?.id, {
   //       /* updated user data */
   //     });
   //     // Optionally, update local state or show a success message
@@ -58,10 +45,16 @@ const ProfileScreen = () => {
   //   }
   // };
 
+  useEffect(() => {
+    if (!currentUser.id) {
+      router.replace('/(auth)/welcome');
+    }
+  }, [currentUser]);
+
   const onLogout = useCallback(() => {
     logout();
     authManager.logout(currentUser);
-    router.push('/');
+    router.replace('/(auth)/welcome');
   }, []);
 
   return (
@@ -82,7 +75,7 @@ const ProfileScreen = () => {
             <Avatar circular size='$12'>
               <Avatar.Image
                 accessibilityLabel='Cam'
-                src={currentUser.profilePictureURL}
+                src={currentUser?.profilePictureURL}
               />
               <Avatar.Fallback backgroundColor='$blue10' />
             </Avatar>
@@ -93,15 +86,15 @@ const ProfileScreen = () => {
                 fontWeight='bold'
                 color={colorSet.primaryForeground}
               >
-                {currentUser.username ||
-                  `${currentUser.firstName} ${currentUser.lastName}` ||
-                  currentUser.displayName}
+                {currentUser?.username ||
+                  `${currentUser?.firstName} ${currentUser?.lastName}` ||
+                  currentUser?.displayName}
               </Text>
 
-              <Text>{currentUser.phoneNumber || currentUser.email}</Text>
+              <Text>{currentUser?.phoneNumber || currentUser?.email}</Text>
 
               <Text>
-                Joined {new Date(currentUser.createdAt).toLocaleDateString()}
+                Joined {new Date(currentUser?.createdAt).toLocaleDateString()}
               </Text>
             </YStack>
           </YStack>
@@ -116,17 +109,21 @@ const ProfileScreen = () => {
               onPress={() => router.push('/(profile)/edit')}
             />
             <Separator />
-            {currentUser.role === 'breeder' ? (
+            {currentUser?.role === 'breeder' ? (
               <>
-                <ListItem
-                  icon={Dog}
-                  title='Kennel'
-                  subTitle='Manage your kennel information'
-                  iconAfter={ChevronRight}
-                  pressTheme
-                  onPress={() => router.push('/(profile)/kennel')}
-                />
-                <Separator />
+                {currentUser?.isKennelOwner && (
+                  <>
+                    <ListItem
+                      icon={Dog}
+                      title='Kennel'
+                      subTitle='Manage your kennel information'
+                      iconAfter={ChevronRight}
+                      pressTheme
+                      onPress={() => router.push('/(profile)/kennel')}
+                    />
+                    <Separator />
+                  </>
+                )}
                 <ListItem
                   icon={Dog}
                   title='Breeds'
@@ -155,14 +152,25 @@ const ProfileScreen = () => {
                 />
               </>
             ) : (
-              <ListItem
-                icon={Dog}
-                title='Breed preferences'
-                subTitle='Manage your preferred breeds'
-                iconAfter={ChevronRight}
-                pressTheme
-                onPress={() => router.push('/(profile)/preferences')}
-              />
+              <>
+                <ListItem
+                  icon={Dog}
+                  title='Your Breeds'
+                  subTitle='View and manage your breeds'
+                  iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('/(profile)/breeds')}
+                />
+                <Separator />
+                <ListItem
+                  icon={Dog}
+                  title='Breed preferences'
+                  subTitle='Manage your breed preferences'
+                  iconAfter={ChevronRight}
+                  pressTheme
+                  onPress={() => router.push('/(profile)/preferences')}
+                />
+              </>
             )}
           </YGroup>
           <YGroup bordered>

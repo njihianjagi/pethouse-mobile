@@ -1,8 +1,8 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList} from 'react-native';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {Href, useNavigation, useRouter} from 'expo-router';
+import {useRouter} from 'expo-router';
 import {
   Text,
   View,
@@ -10,16 +10,16 @@ import {
   Button,
   YStack,
   Input,
-  Card,
   Spinner,
-  Image,
+  XGroup,
 } from 'tamagui';
-import {LinearGradient} from 'tamagui/linear-gradient';
 
-import {ListFilter, ArrowRight} from '@tamagui/lucide-icons';
+import {ListFilter, Search} from '@tamagui/lucide-icons';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {SortPopover} from './sort';
 import {BreedFilterSheet} from './filter';
+import BreedCard from './breed-card';
+import {useBreedMatch} from '../../../hooks/useBreedMatch';
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -34,6 +34,7 @@ export default function ExploreScreen() {
   const {
     searchText,
     filteredBreeds,
+    traitGroups,
     traitPreferences,
     updateFilter,
     loading: breedsLoading,
@@ -41,57 +42,17 @@ export default function ExploreScreen() {
     page,
     hasMore,
     loadMoreBreeds,
+    totalMatches,
   } = useBreedSearch();
 
-  const BreedCard = ({breed}) => (
-    <Card
-      bordered
-      flex={1}
-      margin={5}
-      onPress={() =>
-        router.push(
-          `(explore)/${breed.name.toLowerCase().replace(/\s+/g, '-')}` as Href
-        )
-      }
-      pressTheme
-      overflow='hidden'
-    >
-      <Card.Background>
-        <Image
-          source={{uri: breed.image || ''}}
-          width='100%'
-          height='100%'
-          objectFit='cover'
-        />
-        <LinearGradient
-          start={[0, 0]}
-          end={[0, 1]}
-          fullscreen
-          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']}
-          zIndex={1}
-        />
-      </Card.Background>
+  useEffect(() => {
+    if (currentUser?.traitPreferences) {
+      console.log('traitprefs', currentUser.traitPreferences);
+      updateFilter('traitPreferences', currentUser.traitPreferences);
+    }
+  }, [currentUser]);
 
-      <Card.Header padded zIndex={2}>
-        <Text
-          color={colorSet.primaryBackground}
-          fontSize={24}
-          fontWeight='bold'
-        >
-          {breed.name}
-        </Text>
-      </Card.Header>
-
-      <Card.Footer zIndex={2}>
-        <XStack flex={1} />
-        <Button
-          borderRadius='$10'
-          icon={<ArrowRight size='$2' color={colorSet.primaryBackground} />}
-          chromeless
-        />
-      </Card.Footer>
-    </Card>
-  );
+  const {calculateBreedMatch} = useBreedMatch();
 
   return (
     <View backgroundColor={colorSet.primaryBackground} flex={1}>
@@ -104,12 +65,12 @@ export default function ExploreScreen() {
             onChangeText={(text) => updateFilter('searchText', text)}
             placeholder={localized('Search by breed')}
           />
-
           <Button
-            size='$4'
+            theme='active'
             icon={<ListFilter size='$1' />}
             onPress={() => setFilterSheetOpen(true)}
           ></Button>
+
           {Object.keys(traitPreferences).some(
             (key) => traitPreferences[key] !== null
           ) && (
@@ -122,7 +83,7 @@ export default function ExploreScreen() {
               width={8}
               height={8}
               borderRadius={4}
-              backgroundColor={colorSet.secondaryForeground}
+              backgroundColor={colorSet.primaryForeground}
             />
           )}
         </XStack>
@@ -130,23 +91,35 @@ export default function ExploreScreen() {
         <XStack justifyContent='space-between' alignItems='center'>
           <SortPopover sortOption={sortOption} />
           <Text fontSize='$4' color={colorSet.primaryForeground}>
-            {filteredBreeds.length} Breeds
+            {filteredBreeds.length} of {totalMatches} Breeds
           </Text>
         </XStack>
 
         {breedsLoading ? (
-          <View flex={1} justifyContent='center' alignItems='center'>
+          <View
+            flex={1}
+            height='100vh'
+            width='100%'
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            alignItems='center'
+            justifyContent='center'
+            backgroundColor='rgba(0,0,0,0.3)'
+            zIndex={999}
+          >
             <Spinner size='large' color={colorSet.primaryForeground} />
           </View>
         ) : filteredBreeds.length === 0 ? (
           <Text>No breeds match your current filters.</Text>
         ) : (
-          <View paddingBottom='$12'>
+          <View>
             <FlatList
               data={filteredBreeds}
               renderItem={({item, index}) => (
                 <XStack flex={1} key={index}>
-                  <BreedCard breed={item} />
+                  <BreedCard breed={item} index={index} />
                 </XStack>
               )}
               keyExtractor={(item) => item.name}
@@ -154,8 +127,18 @@ export default function ExploreScreen() {
               onEndReached={loadMoreBreeds}
               onEndReachedThreshold={0.1}
               ListFooterComponent={() =>
-                hasMore ? (
-                  <Spinner size='large' color={colorSet.primaryForeground} />
+                hasMore && breedsLoading ? (
+                  <View
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    alignItems='center'
+                    justifyContent='center'
+                    backgroundColor='rgba(0,0,0,0.3)'
+                  >
+                    <Spinner size='large' color={colorSet.primaryForeground} />
+                  </View>
                 ) : null
               }
             />
@@ -166,6 +149,9 @@ export default function ExploreScreen() {
       <BreedFilterSheet
         open={filterSheetOpen}
         onOpenChange={setFilterSheetOpen}
+        traitGroups={traitGroups}
+        traitPreferences={traitPreferences}
+        updateFilter={updateFilter}
       />
     </View>
   );

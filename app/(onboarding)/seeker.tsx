@@ -1,151 +1,94 @@
-import React, {useMemo, useState} from 'react';
-import {Alert, StyleSheet} from 'react-native';
-import {localizedErrorMessage} from '../../utils/ErrorCode';
-
+import React, {useState} from 'react';
+import {useRouter} from 'expo-router';
+import {StyleSheet} from 'react-native';
 import {
-  Text,
-  View,
   YStack,
-  Image,
-  Spinner,
-  Separator,
   XStack,
   Button,
+  Text,
+  View,
+  Image,
   ScrollView,
-  ListItem,
+  Spinner,
+  Tabs,
+  Separator,
   YGroup,
-  ToggleGroup,
-  Switch,
+  ListItem,
 } from 'tamagui';
-import {useRouter} from 'expo-router';
-import useCurrentUser from '../../hooks/useCurrentUser';
-import {useConfig} from '../../config';
 import {useTheme, useTranslations} from '../../dopebase';
-import {updateUser} from '../../api/firebase/users/userClient';
-import {useDispatch} from 'react-redux';
-import {setUserData} from '../../redux/reducers/auth';
+import useCurrentUser from '../../hooks/useCurrentUser';
 import {ChevronRight} from '@tamagui/lucide-icons';
+import {TraitSelector} from '../../components/TraitSelector';
+import {RecommendedBreeds} from '../../components/RecommendedBreeds';
 import {useBreedSearch} from '../../hooks/useBreedSearch';
 
+const OnboardingSteps = {
+  tab1: {
+    title: 'Welcome to Doghouse!',
+    description:
+      'Discover your ideal furry companion and start a journey of love and companionship.',
+    cta: 'Get Started',
+  },
+  tab2: {
+    title: 'Personal Preferences',
+    description:
+      'Tell us about your ideal pet. Your preferences will help us match you with the perfect companion.',
+    cta: 'Set Preferences',
+  },
+  tab3: {
+    title: 'Browse Breeds',
+    description:
+      'Explore a variety of breeds that match your preferences. Learn about their traits and personalities.',
+    cta: 'Explore Breeds',
+  },
+};
+
 const SeekerOnboardingScreen = () => {
-  const currentUser = useCurrentUser();
   const router = useRouter();
-
-  const dispatch = useDispatch();
-  const {localized} = useTranslations();
-
+  const currentUser = useCurrentUser();
   const {theme, appearance} = useTheme();
-  const styles = dynamicStyles(theme, appearance);
+  const {localized} = useTranslations();
   const colorSet = theme?.colors[appearance];
+  const styles = dynamicStyles(theme, appearance);
 
+  const [activeTab, setActiveTab] = useState('tab1');
   const [loading, setLoading] = useState(false);
+  const [traitPreferences, setTraitPreferences] = useState({});
 
-  // @ts-ignore
-  navigator.geolocation = require('@react-native-community/geolocation');
-
-  const {traitCategories, traitPreferences, filteredBreeds, updateFilter} =
+  const {allBreeds, filteredBreeds, updateFilter, traitGroups} =
     useBreedSearch();
 
-  const renderTraitOption = (option) => {
-    if (option.type === 'switch') {
-      return (
-        <ListItem>
-          <ListItem.Text>{option.label}</ListItem.Text>
-          <Switch
-            backgroundColor={
-              !!traitPreferences[option.name] ? colorSet.grey3 : colorSet.grey0
-            }
-            checked={!!traitPreferences[option.name]}
-            onCheckedChange={(value) =>
-              updateFilter('traitPreferences', {[option.name]: value})
-            }
-          >
-            <Switch.Thumb
-              animation='quicker'
-              backgroundColor={colorSet.primaryForeground}
-            />
-          </Switch>
-        </ListItem>
-      );
-    } else if (option.type === 'toggle') {
-      return (
-        <ListItem key={option.name} width='100%'>
-          <YStack flex={1} gap='$4'>
-            <ListItem.Text>
-              {option.name
-                .replace(/_/g, ' ')
-                .replace(/\b\w/g, (l) => l.toUpperCase())}
-            </ListItem.Text>
-            <ToggleGroup
-              type='single'
-              value={traitPreferences[option.name]?.toString()}
-              onValueChange={(value) =>
-                updateFilter('traitPreferences', {
-                  [option.name]: parseInt(value),
-                })
-              }
-              flex={1}
-            >
-              {option.values.map((value, index) => (
-                <ToggleGroup.Item
-                  key={value}
-                  value={index?.toString()}
-                  flex={1}
-                >
-                  <Text>{value}</Text>
-                </ToggleGroup.Item>
-              ))}
-            </ToggleGroup>
-          </YStack>
-        </ListItem>
-      );
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      setLoading(true);
-
-      const response: any = await updateUser(currentUser.id, {
-        preferredBreeds: filteredBreeds.map((breed) => breed.name),
-        traitPreferences: traitPreferences,
-      });
-
-      await dispatch(
-        setUserData({
-          user: response.user,
-        })
-      );
-      router.replace('/(tabs)');
-    } catch (error: any) {
-      setLoading(false);
-      Alert.alert(
-        '',
-        localizedErrorMessage(error, localized),
-        [{text: localized('OK')}],
-        {
-          cancelable: false,
-        }
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const [currentStep, setCurrentStep] = useState(0);
-
-  const handleNext = () => {
-    if (currentStep < traitCategories.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleSave();
-    }
-  };
+  const tabs = ['tab1', 'tab2', 'tab3'];
+  const currentIndex = tabs.indexOf(activeTab);
 
   const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+    if (currentIndex > 0) {
+      setActiveTab(tabs[currentIndex - 1]);
     }
+  };
+
+  const handleNext = async () => {
+    if (currentIndex < tabs.length - 1) {
+      setActiveTab(tabs[currentIndex + 1]);
+    } else {
+      // Save preferences and proceed to home
+      try {
+        setLoading(true);
+        // Save preferences logic here
+        router.push('/(tabs)');
+      } catch (error) {
+        console.error('Error saving preferences:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const updateTraitPreference = (trait: string, value: any) => {
+    setTraitPreferences((prev) => ({
+      ...prev,
+      [trait]: value,
+    }));
   };
 
   return (
@@ -175,52 +118,116 @@ const SeekerOnboardingScreen = () => {
                 <Image style={styles.logoImage} source={theme.icons?.logo} />
               </View>
 
-              <Text style={styles.title}>Hey, {currentUser?.firstName}</Text>
+              <Text style={styles.title}>
+                Hey, {currentUser?.firstName || currentUser?.username}
+              </Text>
               <Text style={styles.caption}>
-                Select your preferred dog traits to help us match you with
-                compatible breeds and find your perfect canine companion.
+                {OnboardingSteps[activeTab].description}
               </Text>
             </YStack>
 
-            <YStack gap='$4'>
-              <YGroup separator={<Separator />} gap='$2'>
-                <YGroup.Item>
-                  <ListItem
-                    title={traitCategories[currentStep].name}
-                    subTitle={traitCategories[currentStep].caption} // You'll need to define icons for each category
-                    iconAfter={ChevronRight}
-                  />
-                </YGroup.Item>
-                {traitCategories[currentStep].options.map(renderTraitOption)}
-              </YGroup>
-            </YStack>
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              flexDirection='column'
+              gap='$4'
+            >
+              <Tabs.List>
+                {tabs.map((tab, index) => (
+                  <Tabs.Trigger
+                    key={tab}
+                    value={tab}
+                    flex={1}
+                    backgroundColor={
+                      activeTab === tab
+                        ? colorSet.primaryForeground
+                        : colorSet.grey0
+                    }
+                    borderRadius='$4'
+                  >
+                    <Text
+                      color={
+                        activeTab === tab
+                          ? colorSet.primaryBackground
+                          : colorSet.primaryForeground
+                      }
+                    >
+                      Step {index + 1}
+                    </Text>
+                  </Tabs.Trigger>
+                ))}
+              </Tabs.List>
 
-            <XStack justifyContent='space-between' padding='$2'>
-              <Button
-                onPress={handleBack}
-                disabled={currentStep === 0}
-                chromeless
-              >
-                Back
-              </Button>
+              <Tabs.Content value='tab1'>
+                <YStack gap='$4' alignItems='center'>
+                  <Text fontSize='$6' textAlign='center'>
+                    {OnboardingSteps.tab1.title}
+                  </Text>
+                </YStack>
+              </Tabs.Content>
 
+              <Tabs.Content value='tab2'>
+                {/* <TraitSelector
+                  isOpen={false}
+                  onClose={() => {}}
+                  traitGroups={traitGroups}
+                  traitPreferences={traitPreferences}
+                  updateFilter={updateFilter}
+                /> */}
+              </Tabs.Content>
+
+              <Tabs.Content value='tab3'>
+                {/* <YStack gap='$4' alignItems='center'>
+                  <Text fontSize='$6' textAlign='center'>
+                    Based on your preferences, here are some breeds that might
+                    be perfect for you:
+                  </Text>
+                  
+                </YStack> */}
+
+                <RecommendedBreeds
+                  loading={loading}
+                  filteredBreeds={filteredBreeds}
+                  traitPreferences={traitPreferences}
+                  updateFilter={updateFilter}
+                  traitGroups={traitGroups}
+                  onSelectBreed={(breed) => {
+                    // Handle breed selection
+                    router.push({
+                      pathname: '/(explore)/[breed_name]',
+                      params: {breed_name: breed.name},
+                    });
+                  }}
+                />
+              </Tabs.Content>
+            </Tabs>
+
+            <YStack gap='$4' paddingTop='$4'>
               <Button
+                size='$5'
+                theme='active'
                 onPress={handleNext}
-                iconAfter={<ChevronRight />}
-                themeShallow
-                icon={loading ? <Spinner /> : undefined}
+                iconAfter={ChevronRight}
               >
-                {currentStep === traitCategories.length - 1
-                  ? 'Save'
-                  : traitCategories[currentStep + 1].name}
+                {currentIndex === tabs.length - 1
+                  ? 'Find Your Match'
+                  : OnboardingSteps[activeTab].cta}
               </Button>
-            </XStack>
+
+              {currentIndex > 0 && (
+                <Button size='$4' chromeless onPress={handleBack}>
+                  Back
+                </Button>
+              )}
+            </YStack>
           </YStack>
         </ScrollView>
       )}
     </View>
   );
 };
+
+export default SeekerOnboardingScreen;
 
 const dynamicStyles = (theme, colorScheme) => {
   const colorSet = theme.colors[colorScheme];
@@ -259,5 +266,3 @@ const dynamicStyles = (theme, colorScheme) => {
     },
   });
 };
-
-export default SeekerOnboardingScreen;

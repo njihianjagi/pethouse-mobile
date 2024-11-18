@@ -23,6 +23,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName='(home)'
       screenOptions={{
         tabBarActiveTintColor: colorSet.primaryForeground,
         tabBarInactiveTintColor: colorSet.secondaryText,
@@ -40,6 +41,7 @@ export default function TabLayout() {
           ),
 
           headerShown: false,
+          lazy: true,
         }}
       />
 
@@ -52,6 +54,7 @@ export default function TabLayout() {
           ),
 
           headerShown: false,
+          lazy: true,
         }}
       />
 
@@ -66,6 +69,7 @@ export default function TabLayout() {
           ),
 
           headerShown: false,
+          lazy: true,
         }}
       />
 
@@ -78,6 +82,7 @@ export default function TabLayout() {
           ),
 
           headerShown: false,
+          lazy: true,
         }}
       />
     </Tabs>

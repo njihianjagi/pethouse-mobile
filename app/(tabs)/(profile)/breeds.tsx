@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect} from 'react';
 import {ScrollView, Alert} from 'react-native';
 import {
   View,
@@ -10,17 +10,14 @@ import {
   ListItem,
   Spinner,
 } from 'tamagui';
-import {
-  KennelBreed,
-  useKennelData,
-} from '../../../api/firebase/kennels/useKennelData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {Trash, Plus, ChevronRight} from '@tamagui/lucide-icons';
+import {Trash, Plus} from '@tamagui/lucide-icons';
 import {useTheme, useTranslations} from '../../../dopebase';
 import BreedSelector from '../../../components/BreedSelector';
-import {useListingData} from '../../../api/firebase/listings/useListingData';
-import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useRouter} from 'expo-router';
+import useBreedData from '../../../api/firebase/breeds/useBreedData';
+import {EmptyStateCard} from '../../../components/EmptyStateCard';
+import {updateUser} from '../../../api/firebase/users/userClient';
 
 const BreedsScreen = () => {
   const currentUser = useCurrentUser();
@@ -30,67 +27,43 @@ const BreedsScreen = () => {
   const {localized} = useTranslations();
 
   const {
+    userBreeds,
+    fetchUserBreeds,
+    addUserBreed,
+    deleteUserBreed,
     loading,
     error,
-    getKennelByUserId,
-    fetchKennelBreeds,
-    addKennelBreed,
-    deleteKennelBreed,
-  } = useKennelData();
-  const {fetchListingsByKennelId} = useListingData();
-  const {fetchLittersByKennelId} = useLitterData();
-
-  const [kennelBreeds, setKennelBreeds] = useState([] as KennelBreed[]);
-  const [listings, setListings] = useState({});
-  const [litters, setLitters] = useState({});
+  } = useBreedData(currentUser.id);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (currentUser) {
-        const kennel = await getKennelByUserId(
-          currentUser.id || currentUser.uid
-        );
-        if (kennel) {
-          const breeds = await fetchKennelBreeds(kennel.id);
-          setKennelBreeds(breeds);
-
-          const kennelListings = await fetchListingsByKennelId(kennel.id);
-          const listingsByBreed = kennelListings.reduce((acc, listing) => {
-            acc[listing.breedId] = (acc[listing.breedId] || 0) + 1;
-            return acc;
-          }, {});
-          setListings(listingsByBreed);
-
-          const kennelLitters = await fetchLittersByKennelId(kennel.id);
-          const littersByBreed = kennelLitters.reduce((acc, litter) => {
-            acc[litter.breedId] = (acc[litter.breedId] || 0) + 1;
-            return acc;
-          }, {});
-          setLitters(littersByBreed);
-        }
-      }
-    };
-
-    fetchData();
+    fetchUserBreeds(currentUser.id);
   }, [currentUser.id]);
 
   const handleAddBreed = async (breed) => {
-    if (kennelBreeds.some((kb) => kb.breedId === breed.id)) {
+    if (userBreeds.some((kb) => kb.breedId === breed.id)) {
       Alert.alert(
         'Breed already added',
         'This breed is already in your kennel.'
       );
       return;
     }
-    await addKennelBreed(breed);
-    setKennelBreeds((prev) => [...prev, {...breed, breedId: breed.id}]);
+    const userBreed = await addUserBreed(breed);
+
+    await updateUser(currentUser.id, {
+      userBreeds: {...currentUser.userBreeds, userBreed},
+    });
   };
 
-  const handleRemoveBreed = async (kennelBreedId) => {
-    await deleteKennelBreed(kennelBreedId);
-    setKennelBreeds((prev) =>
-      prev.filter((breed) => breed.id !== kennelBreedId)
-    );
+  const handleRemoveBreed = async (userBreedId) => {
+    await deleteUserBreed(userBreedId);
+
+    await updateUser(currentUser.id, {
+      userBreeds: {
+        ...(currentUser.userBreeds || []).filter(
+          (userBreed) => userBreed.id !== userBreedId
+        ),
+      },
+    });
   };
 
   return (
@@ -101,10 +74,21 @@ const BreedsScreen = () => {
             <Spinner size='large' />
           ) : error ? (
             <Text color='$red10'>{error}</Text>
-          ) : kennelBreeds.length === 0 ? (
-            <Text>{localized('No breeds added yet.')}</Text>
+          ) : userBreeds.length === 0 ? (
+            <EmptyStateCard
+              title={localized('No breeds added yet.')}
+              description={''}
+              buttonText={localized('Add a Breed')}
+              onPress={() => {
+                /* Add breed action */
+              }}
+              icon={<Plus size='$2' color={colorSet.primaryBackground} />}
+              backgroundImage={require('../../../assets/images/doggos_3.png')}
+              backgroundColor={colorSet.secondaryForeground}
+              color={''}
+            />
           ) : (
-            kennelBreeds.map((breed) => (
+            userBreeds.map((breed) => (
               <YGroup key={breed.id} separator={<Separator />} flex={1}>
                 <YGroup.Item>
                   <ListItem
@@ -121,7 +105,7 @@ const BreedsScreen = () => {
                   />
                 </YGroup.Item>
 
-                <YGroup.Item>
+                {/* <YGroup.Item>
                   <ListItem
                     title='Listings'
                     iconAfter={
@@ -152,13 +136,13 @@ const BreedsScreen = () => {
                       </Button>
                     }
                   />
-                </YGroup.Item>
+                </YGroup.Item> */}
               </YGroup>
             ))
           )}
           <BreedSelector
             onSelectBreed={handleAddBreed}
-            kennelBreeds={kennelBreeds}
+            userBreeds={userBreeds}
             buttonText={localized('Add Breed')}
           />
         </YStack>

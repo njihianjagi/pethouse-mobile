@@ -10,23 +10,20 @@ export default function HomeLayout() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const currentUser = useCurrentUser();
-  const authManager = useAuth();
-
-  const router = useRouter();
-  const onLogout = useCallback(() => {
-    authManager?.logout(currentUser);
-    router.push('/');
-  }, [currentUser]);
-
   return (
-    <Stack>
+    <Stack initialRouteName='index'>
       <Stack.Screen
         name='index'
         options={{
           headerShown: true,
           headerShadowVisible: false,
           title: 'Home',
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
           headerRight: () => (
             <Button
               onPress={() => {}}

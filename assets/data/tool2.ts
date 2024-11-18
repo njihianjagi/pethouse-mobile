@@ -1,6 +1,7 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import fs from 'fs/promises';
+import {TraitGroup} from '../../hooks/useBreedSearch';
 
 async function scrapeData(dogName: string, notFoundBreeds) {
   try {
@@ -36,36 +37,61 @@ async function scrapeData(dogName: string, notFoundBreeds) {
 }
 
 function extractTraits($) {
-  const traits = {};
+  const traitGroups = [] as any;
 
-  // Get trait names
-  $('.xe-breed-characteristics-list__heading').each((i, element) => {
-    const traitName = $(element).html().trim();
-    const traitKey = traitName.toLowerCase().replace(/\s+/g, '_');
-    traits[traitKey] = {name: traitName, score: 0};
-  });
+  // Process each main accordion group
+  $('.xe-breed-accordion').each((_, groupElement) => {
+    const $group = $(groupElement);
 
-  $('.xe-breed-accordion__item-summary').each((i, element) => {
-    const traitName = $(element)
-      .find('.xe-breed-characteristics-list__heading')
+    // Get group name from the heading
+    const groupName = $group
+      .find('.xe-breed-accordion__summary-heading')
       .text()
       .trim();
-    const traitKey = traitName.toLowerCase().replace(/\s+/g, '_');
 
-    const score = $(element).find(
-      '.xe-breed-star.xe-breed-star--selected'
+    // Calculate group score from selected stars
+    const groupScore = $group.find(
+      '.xe-breed-accordion__summary .xe-breed-star.xe-breed-star--selected'
     ).length;
 
-    traits[traitKey] = {name: traitName, score: score};
+    // Initialize group object
+    traitGroups.push({
+      name: groupName,
+      score: groupScore,
+      traits: [], // Change to array instead of object
+    });
+
+    // Process individual traits within the group
+    $group
+      .find('.xe-breed-characteristics-list__item')
+      .each((_, traitElement) => {
+        const $trait = $(traitElement);
+        const traitName = $trait
+          .find('.xe-breed-characteristics-list__heading')
+          .text()
+          .trim();
+        const traitScore = $trait.find(
+          '.xe-breed-accordion__item-summary .xe-breed-star.xe-breed-star--selected'
+        ).length;
+
+        traitGroups.map((group) => {
+          if (group.name === groupName) {
+            group.traits.push({
+              name: traitName,
+              score: traitScore,
+            });
+          }
+        });
+      });
   });
 
-  return traits;
+  return traitGroups;
 }
 
 async function main() {
   try {
     const dogBreedsData = await fs.readFile(
-      './breeds_with_group.json',
+      './breeds_with_group_and_traits.json',
       'utf-8'
     );
     const dogBreeds = JSON.parse(dogBreedsData);

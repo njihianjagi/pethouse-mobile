@@ -9,7 +9,7 @@ export default function OnboardingLayout() {
       />
       <Stack.Screen
         name='role'
-        options={{headerShown: true, headerShadowVisible: false}}
+        options={{headerShown: false, headerShadowVisible: false}}
       />
       <Stack.Screen
         name='breeder'

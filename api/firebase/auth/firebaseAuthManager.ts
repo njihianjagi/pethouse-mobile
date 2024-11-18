@@ -203,7 +203,8 @@ const loginOrSignUpWithApple = (appConfig) => {
 
 const loginOrSignUpWithGoogle = (appConfig) => {
   GoogleSignin.configure({
-    webClientId: appConfig.webClientId,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    offlineAccess: true,
   });
 
   return new Promise(async (resolve, _reject) => {
@@ -226,16 +227,17 @@ const loginOrSignUpWithGoogle = (appConfig) => {
               newResponse.user,
               response.accountCreated
             ).then((response: any) => {
-              // resolve(response);
-              resolve({
-                ...response,
-              });
+              resolve(response);
+              // resolve({
+              //   ...response,
+              // });
             });
           } else {
             resolve({error: ErrorCode.googleSigninFailed});
           }
         });
     } catch (error: any) {
+      console.log(error);
       resolve({
         error: ErrorCode.googleSigninFailed,
       });

@@ -1,15 +1,24 @@
 import React, {useState, useEffect} from 'react';
-import {ScrollView} from 'react-native';
-import {View, YStack, Text, XStack, Card, Button} from 'tamagui';
+import {Alert, ScrollView} from 'react-native';
+import {
+  View,
+  YStack,
+  Text,
+  XStack,
+  Card,
+  Button,
+  ListItem,
+  YGroup,
+  Spinner,
+} from 'tamagui';
 import {
   Listing,
   useListingData,
 } from '../../../api/firebase/listings/useListingData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {ArrowRight} from '@tamagui/lucide-icons';
+import {ArrowRight, Trash} from '@tamagui/lucide-icons';
 import {useTheme, useTranslations} from '../../../dopebase';
 import {useRouter} from 'expo-router';
-import {useKennelData} from '../../../api/firebase/kennels/useKennelData';
 
 const ListingsScreen = () => {
   const currentUser = useCurrentUser();
@@ -18,52 +27,66 @@ const ListingsScreen = () => {
   const colorSet = theme?.colors[appearance];
   const {localized} = useTranslations();
 
-  const {fetchListingsByKennelId} = useListingData();
-  const {getKennelByUserId} = useKennelData();
-
-  const [listings, setListings] = useState([] as Listing[]);
+  const {listings, loading, error, fetchListings, deleteListing} =
+    useListingData();
 
   useEffect(() => {
-    const fetchListings = async () => {
-      if (currentUser) {
-        const kennel = await getKennelByUserId(
-          currentUser.id || currentUser.uid
-        );
-        if (kennel) {
-          const kennelListings = await fetchListingsByKennelId(kennel.id);
-          setListings(kennelListings);
-        }
-      }
-    };
+    if (currentUser?.id) {
+      fetchListings({userId: currentUser.id});
+    }
+  }, [currentUser?.id]);
 
-    fetchListings();
-  }, [currentUser.id]);
+  // const renderListingCard = (listing) => (
+  //   <Card
+  //     key={listing.id}
+  //     bordered
+  //     elevate
+  //     size='$4'
+  //     animation='bouncy'
+  //     scale={0.9}
+  //     hoverStyle={{scale: 0.925}}
+  //     pressStyle={{scale: 0.875}}
+  //     onPress={() => router.push(`/(listings)/${listing.id}`)}
+  //   >
+  //     <Card.Header padded>
+  //       <Text fontSize='$5' fontWeight='bold'>
+  //         {listing.name}
+  //       </Text>
+  //     </Card.Header>
+  //     <Card.Footer padded>
+  //       <XStack flex={1} justifyContent='space-between'>
+  //         <Text fontSize='$3'>{listing.breed}</Text>
+  //         <Text fontSize='$3'>{listing.age}</Text>
+  //       </XStack>
+  //     </Card.Footer>
+  //   </Card>
+  // );
 
-  const renderListingCard = (listing) => (
-    <Card
-      key={listing.id}
-      bordered
-      elevate
-      size='$4'
-      animation='bouncy'
-      scale={0.9}
-      hoverStyle={{scale: 0.925}}
-      pressStyle={{scale: 0.875}}
-      onPress={() => router.push(`/(listings)/${listing.id}`)}
-    >
-      <Card.Header padded>
-        <Text fontSize='$5' fontWeight='bold'>
-          {listing.name}
-        </Text>
-      </Card.Header>
-      <Card.Footer padded>
-        <XStack flex={1} justifyContent='space-between'>
-          <Text fontSize='$3'>{listing.breed}</Text>
-          <Text fontSize='$3'>{listing.age}</Text>
-        </XStack>
-      </Card.Footer>
-    </Card>
-  );
+  const handleDeleteListing = async (listingId: string) => {
+    try {
+      await deleteListing(listingId);
+      Alert.alert('Success', 'Listing deleted successfully');
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      Alert.alert('Error', 'Failed to delete listing. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <YStack flex={1} justifyContent='center' alignItems='center'>
+        <Spinner size='large' />
+      </YStack>
+    );
+  }
+
+  if (error) {
+    return (
+      <YStack flex={1} justifyContent='center' alignItems='center'>
+        <Text>{error}</Text>
+      </YStack>
+    );
+  }
 
   return (
     <View flex={1} backgroundColor={colorSet.primaryBackground}>
@@ -89,9 +112,27 @@ const ListingsScreen = () => {
               </Card.Footer>
             </Card>
           ) : (
-            <XStack flexWrap='wrap' justifyContent='space-between'>
-              {listings.map(renderListingCard)}
-            </XStack>
+            // <XStack flexWrap='wrap' justifyContent='space-between'>
+            //   {listings.map(renderListingCard)}
+            // </XStack>
+            <YGroup>
+              {listings.map((listing) => (
+                <YGroup.Item key={listing.id}>
+                  <ListItem
+                    title={listing.name}
+                    subTitle={`${listing.breed} - ${listing.age}`}
+                    onPress={() => router.push(`/(listings)/${listing.id}`)}
+                    iconAfter={
+                      <Button
+                        chromeless
+                        icon={Trash}
+                        onPress={() => handleDeleteListing(listing.id)}
+                      />
+                    }
+                  />
+                </YGroup.Item>
+              ))}
+            </YGroup>
           )}
         </YStack>
       </ScrollView>

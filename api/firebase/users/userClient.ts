@@ -9,7 +9,7 @@ export const updateUser = async (userID, newData) => {
     lastOnlineTimestamp: getUnixTimeStamp(),
   };
   try {
-    await usersRef.doc(userID).set({...dataWithOnlineStatus}, {merge: true});
+    await usersRef.doc(userID).update({...dataWithOnlineStatus});
     const updatedUser = await usersRef.doc(userID).get();
 
     return {success: true, user: updatedUser.data()};

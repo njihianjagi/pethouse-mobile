@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "838635783062-jcjdejrjk3sqrflpc2gl5agtvm6nfhg5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.doghouse.ke",
+            "certificate_hash": "889cb906932176ff64b64d925bdba982851a9a70"
+          }
+        },
+        {
           "client_id": "838635783062-lum2hnj0eujchm0hrac0e7iimbmraenb.apps.googleusercontent.com",
           "client_type": 3
         }

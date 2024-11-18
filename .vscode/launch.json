@@ -1,16 +1,16 @@
 {
+  "version": "0.2.0",
   "configurations": [
-    {
-      "name": "Attach to packager",
-      "request": "attach",
-      "type": "reactnative",
-      "cwd": "${workspaceFolder}"
-    },
     {
       "type": "radon-ide",
       "request": "launch",
       "name": "Radon IDE panel",
-      "android": {}
+      "ios": {
+        "configuration": "Debug"
+      },
+      "android": {
+        "buildType": "debug"
+      }
     }
   ]
 }
