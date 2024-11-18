@@ -1,16 +1,12 @@
-import React, {useCallback, useLayoutEffect} from 'react';
+import React, {useCallback} from 'react';
 import {Keyboard} from 'react-native';
-import {Href, useFocusEffect, useNavigation, useRouter} from 'expo-router';
+import {useFocusEffect, useRouter} from 'expo-router';
 import deviceStorage from '../../utils/AuthDeviceStorage';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/reducers/auth';
 import {useAuth} from '../../hooks/useAuth';
-import {ThemedView} from '../../components/ThemedView';
 import {useConfig} from '../../config';
-import {checkUserOnboardingStage} from '../../utils/onboardingUtils';
-import {authStore, checkPersistenceLoaded, debugPersistence} from '../../store';
 import {observer} from '@legendapp/state/react';
-import {syncState, when} from '@legendapp/state';
 import {Spinner, View} from 'tamagui';
 import {useTheme} from '../../dopebase';
 
@@ -32,22 +28,9 @@ const LoadScreen = observer(() => {
 
   const setAppState = async () => {
     // Add timeout to prevent infinite waiting
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(console.log('Persistence load timeout')), 5000)
-    );
+    const shouldShowOnboardingFlow =
+      await deviceStorage.getShouldShowOnboardingFlow();
 
-    debugPersistence();
-
-    const state$ = syncState(authStore);
-    await Promise.race([when(state$.isPersistLoaded), timeoutPromise]);
-
-    debugPersistence();
-    // Log the persistence state to debug
-    console.log('Persistence loaded:', state$.isPersistLoaded.get());
-
-    const shouldShowOnboardingFlow = authStore.shouldShowOnboardingFlow.get();
-
-    console.log('should show onbaording: ', shouldShowOnboardingFlow);
     if (!shouldShowOnboardingFlow) {
       if (config?.isDelayedLoginEnabled) {
         fetchPersistedUserIfNeeded();

@@ -1,4 +1,4 @@
-import React, {useLayoutEffect} from 'react';
+import React from 'react';
 import {View, Image, Text, StyleSheet} from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 // import { useNavigation } from '@react-navigation/core'
@@ -6,10 +6,7 @@ import {useTheme, useTranslations} from '../../dopebase';
 import deviceStorage from '../../utils/AuthDeviceStorage';
 import {useConfig} from '../../config';
 import {Href, useRouter} from 'expo-router';
-import {authActions} from '../../store/actions';
 import {observer} from '@legendapp/state/react';
-import {syncState, when} from '@legendapp/state';
-import {authStore} from '../../store';
 
 const WalkthroughScreen = observer(() => {
   // const navigation = useNavigation()
@@ -31,10 +28,7 @@ const WalkthroughScreen = observer(() => {
   );
 
   const _onDone = async () => {
-    const state$ = syncState(authStore);
-    await when(state$.isPersistLoaded);
-
-    authActions.setShouldShowOnboardingFlow('false');
+    deviceStorage.setShouldShowOnboardingFlow('false');
     if (config?.isDelayedLoginEnabled) {
       // navigation.navigate('DelayedHome')
       router.push('delayed-login' as Href);
