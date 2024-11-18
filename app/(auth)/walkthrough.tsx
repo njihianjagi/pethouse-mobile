@@ -6,8 +6,12 @@ import {useTheme, useTranslations} from '../../dopebase';
 import deviceStorage from '../../utils/AuthDeviceStorage';
 import {useConfig} from '../../config';
 import {Href, useRouter} from 'expo-router';
+import {authActions} from '../../store/actions';
+import {observer} from '@legendapp/state/react';
+import {syncState, when} from '@legendapp/state';
+import {authStore} from '../../store';
 
-const WalkthroughScreen = () => {
+const WalkthroughScreen = observer(() => {
   // const navigation = useNavigation()
   const router = useRouter();
   const config = useConfig();
@@ -26,8 +30,11 @@ const WalkthroughScreen = () => {
     }
   );
 
-  const _onDone = () => {
-    deviceStorage.setShouldShowOnboardingFlow('false');
+  const _onDone = async () => {
+    const state$ = syncState(authStore);
+    await when(state$.isPersistLoaded);
+
+    authActions.setShouldShowOnboardingFlow('false');
     if (config?.isDelayedLoginEnabled) {
       // navigation.navigate('DelayedHome')
       router.push('delayed-login' as Href);
@@ -86,7 +93,7 @@ const WalkthroughScreen = () => {
       renderDoneButton={_renderDoneButton}
     />
   );
-};
+});
 
 export default WalkthroughScreen;
 

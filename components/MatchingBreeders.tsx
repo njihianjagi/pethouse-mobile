@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {ScrollView, Image} from 'react-native';
+import {ScrollView, Image, FlatList} from 'react-native';
 import {XStack, YStack, Text, Card, Button, H3, View, Spinner} from 'tamagui';
 import {MapPin, Star, ChevronRight} from '@tamagui/lucide-icons';
 import {useTheme} from '../dopebase';
@@ -146,13 +146,16 @@ export const MatchingBreeders = ({userBreeds}: MatchingBreedersProps) => {
                 </Text>
               </YStack>
             ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <XStack gap='$2'>
-                  {breeders.map((breeder) => (
-                    <BreederCard key={breeder.id} breeder={breeder} />
-                  ))}
-                </XStack>
-              </ScrollView>
+              <FlatList
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                data={breeders}
+                renderItem={({item: breeder}) => (
+                  <BreederCard key={breeder.id} breeder={breeder} />
+                )}
+                keyExtractor={(breeder) => breeder.id}
+                contentContainerStyle={{gap: 8, paddingHorizontal: 16}}
+              />
             )}
           </YStack>
         );

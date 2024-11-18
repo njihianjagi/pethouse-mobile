@@ -2,8 +2,19 @@ import {ErrorCode} from '../../../utils/ErrorCode';
 import {getUnixTimeStamp} from '../../../helpers/timeFormat';
 import {updateUser} from '../users/userClient';
 import {auth, db, messaging} from '../../../firebase/config';
+import {UserBreed} from '../breeds/useBreedData';
 
 const usersRef = db.collection('users');
+
+export interface User {
+  id: string;
+  firstName?: string;
+  username?: string;
+  role?: 'breeder' | 'seeker';
+  traitPreferences?: Record<string, any>;
+  location?: string;
+  userBreeds?: UserBreed[];
+}
 
 const handleUserFromAuthStateChanged = (user, resolve) => {
   if (user) {

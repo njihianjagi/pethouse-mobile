@@ -45,9 +45,7 @@ export const RecommendedBreeds = ({
       <YStack gap='$4'>
         <XStack justifyContent='space-between' alignItems='center'>
           <H3 fontWeight='bold'>Recommended for you</H3>
-          <Button onPress={() => router.push('/(tabs)/(explore)')}>
-            See All
-          </Button>
+          <Button onPress={() => router.push('/(explore)')}>See All</Button>
         </XStack>
 
         {loading ? (
@@ -71,11 +69,13 @@ export const RecommendedBreeds = ({
             keyExtractor={(item) => item.id}
             numColumns={2}
             scrollEnabled={false}
-            columnWrapperStyle={{
-              gap: 12,
-              paddingHorizontal: 2,
-              marginBottom: 12,
-            }}
+            columnWrapperStyle={
+              {
+                // gap: 12,
+                // paddingHorizontal: 2,
+                // marginBottom: 12,
+              }
+            }
           />
         )}
       </YStack>

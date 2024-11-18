@@ -41,6 +41,7 @@ export default function TabLayout() {
           ),
 
           headerShown: false,
+          lazy: true,
         }}
       />
 
@@ -53,6 +54,7 @@ export default function TabLayout() {
           ),
 
           headerShown: false,
+          lazy: true,
         }}
       />
 
@@ -67,6 +69,7 @@ export default function TabLayout() {
           ),
 
           headerShown: false,
+          lazy: true,
         }}
       />
 
@@ -79,6 +82,7 @@ export default function TabLayout() {
           ),
 
           headerShown: false,
+          lazy: true,
         }}
       />
     </Tabs>

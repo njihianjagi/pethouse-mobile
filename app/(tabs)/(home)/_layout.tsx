@@ -11,13 +11,19 @@ export default function HomeLayout() {
   const colorSet = theme.colors[appearance];
 
   return (
-    <Stack>
+    <Stack initialRouteName='index'>
       <Stack.Screen
         name='index'
         options={{
           headerShown: true,
           headerShadowVisible: false,
           title: 'Home',
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
           headerRight: () => (
             <Button
               onPress={() => {}}

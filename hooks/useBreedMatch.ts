@@ -3,11 +3,11 @@ import {TraitPreferences} from './useBreedSearch';
 
 // Weights for different trait categories
 const CATEGORY_WEIGHTS = {
-  Adaptability: 1.2,
-  'All-around friendliness': 1.5,
+  Adaptability: 1.0,
+  'All-around friendliness': 1.0,
   'Health And Grooming Needs': 1.0,
-  Trainability: 1.3,
-  'Exercise needs': 1.4,
+  Trainability: 1.0,
+  'Exercise needs': 1.0,
 };
 
 export const useBreedMatch = () => {
@@ -87,11 +87,12 @@ export const useBreedMatch = () => {
           preference,
           traitGroup.name
         );
-
         totalScore += matchScore * weight;
         totalWeight += weight;
       }
     });
+    console.log('totalScore', totalScore);
+    console.log('totalWeight', totalWeight);
 
     return totalWeight > 0 ? (totalScore / totalWeight) * 100 : 0;
   };

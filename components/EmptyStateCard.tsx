@@ -1,5 +1,5 @@
 // ... existing imports ...
-import {Button, Card, XStack, Text, ListItem} from 'tamagui';
+import {Button, Card, XStack, Text, ListItem, YStack} from 'tamagui';
 import {LinearGradient} from 'tamagui/linear-gradient';
 import {useTheme} from '../dopebase';
 import {ImageBackground} from 'react-native';
@@ -41,27 +41,21 @@ export const EmptyStateCard = ({
         )}
       </Card.Background>
 
-      {/* <Card.Background
-        backgroundColor={colorSet.primaryForeground}
-        borderRadius={16}
-      /> */}
-
       <Card.Header zIndex={2}>
-        <Text color={color} fontSize={24} fontWeight='bold'>
-          {title}
-        </Text>
-        <Text color={color} fontSize={16}>
-          {description}
-        </Text>
+        <YStack gap='$2'>
+          <Text color={color} fontSize={24} fontWeight='bold'>
+            {title}
+          </Text>
+          <Text color={color} fontSize={16}>
+            {description}
+          </Text>
+        </YStack>
       </Card.Header>
 
       <Card.Footer zIndex={2} padded>
-        <XStack flex={1} />
-        <Button
-          borderRadius='$10'
-          icon={<ArrowRight size='$2' color={color} />}
-          chromeless
-        />
+        <Button theme='active' borderColor='$gray6' iconAfter={icon}>
+          {buttonText}
+        </Button>
       </Card.Footer>
     </Card>
   );

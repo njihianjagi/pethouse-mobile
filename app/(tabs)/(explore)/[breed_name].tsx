@@ -30,6 +30,7 @@ import {
 } from '@tamagui/lucide-icons';
 import {Breed, useBreedData} from '../../../api/firebase/breeds/useBreedData';
 import useCurrentUser from '../../../hooks/useCurrentUser';
+import {useBreedMatch} from '../../../hooks/useBreedMatch';
 
 function BreedDetailScreen() {
   const {theme, appearance} = useTheme();
@@ -43,6 +44,8 @@ function BreedDetailScreen() {
   const {breed_name} = useLocalSearchParams();
 
   const [expanded, setExpanded] = useState(false);
+  const {calculateBreedMatch} = useBreedMatch();
+  const [matchPercentage, setMatchPercentage] = useState(null as any);
 
   const unslugifyBreedName = (sluggedName: string): string => {
     return sluggedName
@@ -81,15 +84,25 @@ function BreedDetailScreen() {
     }
   }, [breed]);
 
+  useEffect(() => {
+    if (currentUser?.traitPreferences) {
+      const matchPercentage = Math.round(
+        calculateBreedMatch(breed, currentUser.traitPreferences)
+      );
+
+      setMatchPercentage(matchPercentage);
+    }
+  }, [breed, currentUser]);
+
   // Function to determine if a trait matches user preferences
-  const isTraitMatching = (traitName: string, traitValue: {score: number}) => {
-    const preference = currentUser.traitPreferences[traitName];
+  const isTraitMatching = (trait: {name: string; score: number}) => {
+    const preference = currentUser.traitPreferences[trait.name];
     if (preference === null || preference === undefined) return false;
 
     if (typeof preference === 'boolean') {
       return preference === true;
     } else if (typeof preference === 'number') {
-      return traitValue.score >= preference;
+      return trait.score >= preference;
     }
     return false;
   };
@@ -162,7 +175,11 @@ function BreedDetailScreen() {
           <XStack justifyContent='space-between' alignItems='center'>
             <YStack>
               <H2>{breed.name}</H2>
-              <Text>{`${breed.breedGroup} group`}</Text>
+
+              <XStack>
+                <Text>{`${breed.breedGroup} group`}</Text>
+                <Text>{` | ${matchPercentage}% match`}</Text>
+              </XStack>
             </YStack>
             <Button icon={Heart} circular size='$5' themeShallow />
           </XStack>
@@ -262,23 +279,23 @@ function BreedDetailScreen() {
                                   iconAfter={
                                     <XStack gap='$2' alignItems='center'>
                                       <RatingStars score={trait.score} />
-                                      {/* {currentUser?.traitPreferences &&
-                                          isTraitMatching(traitKey, trait) && (
-                                            <CheckCircle
-                                              color={
-                                                theme.colors[appearance].primary
-                                              }
-                                            />
-                                          )} */}
+                                      {currentUser?.traitPreferences &&
+                                        isTraitMatching(trait) && (
+                                          <CheckCircle
+                                            color={
+                                              theme.colors[appearance].primary
+                                            }
+                                          />
+                                        )}
                                     </XStack>
                                   }
-                                  // backgroundColor={
-                                  //   currentUser?.traitPreferences &&
-                                  //   isTraitMatching(traitKey, trait)
-                                  //     ? theme.colors[appearance]
-                                  //         .secondaryBackground
-                                  //     : undefined
-                                  // }
+                                  backgroundColor={
+                                    currentUser?.traitPreferences &&
+                                    isTraitMatching(trait)
+                                      ? theme.colors[appearance]
+                                          .secondaryBackground
+                                      : undefined
+                                  }
                                 />
                               </YGroup.Item>
                             ))}

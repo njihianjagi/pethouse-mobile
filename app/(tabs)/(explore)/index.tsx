@@ -116,18 +116,10 @@ export default function ExploreScreen() {
         ) : (
           <View>
             <FlatList
-              data={filteredBreeds.sort((a, b) => {
-                const matchA = calculateBreedMatch(a, traitPreferences);
-                const matchB = calculateBreedMatch(b, traitPreferences);
-                return matchB - matchA;
-              })}
+              data={filteredBreeds}
               renderItem={({item, index}) => (
                 <XStack flex={1} key={index}>
-                  <BreedCard
-                    breed={item}
-                    traitPreferences={traitPreferences}
-                    index={index}
-                  />
+                  <BreedCard breed={item} index={index} />
                 </XStack>
               )}
               keyExtractor={(item) => item.name}

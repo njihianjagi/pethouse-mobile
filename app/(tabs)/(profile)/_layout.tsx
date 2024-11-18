@@ -24,13 +24,19 @@ export default function ExploreLayout() {
   }, [currentUser]);
 
   return (
-    <Stack>
+    <Stack initialRouteName='index'>
       <Stack.Screen
         name='index'
         options={{
           headerShown: true,
           headerShadowVisible: false,
           title: 'Profile',
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
           headerRight: () => (
             <Button
               onPress={onLogout}
@@ -48,6 +54,12 @@ export default function ExploreLayout() {
           headerShown: true,
           title: 'Manage kennel',
           headerShadowVisible: false,
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
         }}
       />
 
@@ -57,6 +69,12 @@ export default function ExploreLayout() {
           headerShown: true,
           title: 'Manage your breeds',
           headerShadowVisible: false,
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
         }}
       />
 
@@ -66,6 +84,12 @@ export default function ExploreLayout() {
           headerShown: true,
           title: 'Manage your listings',
           headerShadowVisible: false,
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
         }}
       />
 
@@ -75,6 +99,12 @@ export default function ExploreLayout() {
           headerShown: true,
           title: 'Manage your litters',
           headerShadowVisible: false,
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
         }}
       />
       <Stack.Screen
@@ -83,6 +113,12 @@ export default function ExploreLayout() {
           headerShown: true,
           headerShadowVisible: false,
           title: 'Your preferences',
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
         }}
       />
 
@@ -92,6 +128,12 @@ export default function ExploreLayout() {
           headerShown: true,
           headerShadowVisible: false,
           title: 'Edit Profile',
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
         }}
       />
     </Stack>

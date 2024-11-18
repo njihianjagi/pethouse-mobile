@@ -24,6 +24,7 @@ import {
 } from 'react-native-safe-area-context';
 
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {StoreProvider} from '../store/provider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -72,60 +73,64 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
-      <TranslationProvider translations={translations}>
-        <DopebaseProvider theme={theme}>
-          <ConfigProvider>
-            <AuthProvider authManager={authManager}>
-              <MenuProvider>
-                <ActionSheetProvider>
-                  <ThemeProvider
-                    value={colorScheme === 'dark' ? DefaultTheme : DefaultTheme}
-                  >
-                    <TamaguiProvider
-                      config={tamaguiConfig}
-                      defaultTheme={colorScheme as string | undefined}
+      <StoreProvider>
+        <TranslationProvider translations={translations}>
+          <DopebaseProvider theme={theme}>
+            <ConfigProvider>
+              <AuthProvider authManager={authManager}>
+                <MenuProvider>
+                  <ActionSheetProvider>
+                    <ThemeProvider
+                      value={
+                        colorScheme === 'dark' ? DefaultTheme : DefaultTheme
+                      }
                     >
-                      <QueryClientProvider client={queryClient}>
-                        <SafeAreaProvider>
-                          <SafeAreaView style={{flex: 1, paddingTop: 0}}>
-                            <Stack>
-                              <Stack.Screen
-                                name='(auth)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(onboarding)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(tabs)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(kennels)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(listings)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(litters)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen name='+not-found' />
-                            </Stack>
-                          </SafeAreaView>
-                        </SafeAreaProvider>
-                      </QueryClientProvider>
-                    </TamaguiProvider>
-                  </ThemeProvider>
-                </ActionSheetProvider>
-              </MenuProvider>
-            </AuthProvider>
-          </ConfigProvider>
-        </DopebaseProvider>
-      </TranslationProvider>
+                      <TamaguiProvider
+                        config={tamaguiConfig}
+                        defaultTheme={colorScheme as string | undefined}
+                      >
+                        <QueryClientProvider client={queryClient}>
+                          <SafeAreaProvider>
+                            <SafeAreaView style={{flex: 1, paddingTop: 0}}>
+                              <Stack>
+                                <Stack.Screen
+                                  name='(auth)'
+                                  options={{headerShown: false}}
+                                />
+                                <Stack.Screen
+                                  name='(onboarding)'
+                                  options={{headerShown: false}}
+                                />
+                                <Stack.Screen
+                                  name='(tabs)'
+                                  options={{headerShown: false}}
+                                />
+                                <Stack.Screen
+                                  name='(kennels)'
+                                  options={{headerShown: false}}
+                                />
+                                <Stack.Screen
+                                  name='(listings)'
+                                  options={{headerShown: false}}
+                                />
+                                <Stack.Screen
+                                  name='(litters)'
+                                  options={{headerShown: false}}
+                                />
+                                <Stack.Screen name='+not-found' />
+                              </Stack>
+                            </SafeAreaView>
+                          </SafeAreaProvider>
+                        </QueryClientProvider>
+                      </TamaguiProvider>
+                    </ThemeProvider>
+                  </ActionSheetProvider>
+                </MenuProvider>
+              </AuthProvider>
+            </ConfigProvider>
+          </DopebaseProvider>
+        </TranslationProvider>
+      </StoreProvider>
     </Provider>
   );
 }

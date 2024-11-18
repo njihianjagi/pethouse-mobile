@@ -1,19 +1,34 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {ArrowRight} from '@tamagui/lucide-icons';
 import {router, Href} from 'expo-router';
 import {LinearGradient} from 'tamagui/linear-gradient';
 import {View, Text, Button, Card, XStack, Image, YStack} from 'tamagui';
 import {useTheme} from '../../../dopebase';
 import {useBreedMatch} from '../../../hooks/useBreedMatch';
+import {Breed} from '../../../api/firebase/breeds/useBreedData';
 
-const BreedCard = ({breed, traitPreferences, index}) => {
+interface BreedCardProps {
+  breed: Breed;
+  index: number;
+  traitPreferences?: any;
+}
+
+const BreedCard = ({breed, index, traitPreferences}: BreedCardProps) => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
   const {calculateBreedMatch} = useBreedMatch();
-  const matchPercentage = Math.round(
-    calculateBreedMatch(breed, traitPreferences)
-  );
+  const [matchPercentage, setMatchPercentage] = useState(null as any);
+
+  useEffect(() => {
+    if (traitPreferences) {
+      const matchPercentage = Math.round(
+        calculateBreedMatch(breed, traitPreferences)
+      );
+
+      setMatchPercentage(matchPercentage);
+    }
+  }, [breed, traitPreferences]);
 
   return (
     <Card
@@ -62,15 +77,19 @@ const BreedCard = ({breed, traitPreferences, index}) => {
       </Card.Header>
 
       <Card.Footer zIndex={2}>
-        <XStack flex={1} alignItems='center' justifyContent='flex-end'>
-          {/* <XStack borderRadius='$4' padding='$2'>
-            <Text
-              fontWeight='bold'
-              color={matchPercentage > 70 ? '$green10' : '$gray10'}
-            >
-              {matchPercentage}% Match
-            </Text>
-          </XStack> */}
+        <XStack flex={1} alignItems='center' justifyContent='space-between'>
+          {traitPreferences && (
+            <XStack borderRadius='$4' paddingHorizontal='$4'>
+              <Text
+                fontWeight='bold'
+                color={
+                  matchPercentage > 70 ? colorSet.foregroundContrast : '$gray10'
+                }
+              >
+                {matchPercentage}% Match
+              </Text>
+            </XStack>
+          )}
 
           <Button
             borderRadius='$10'
