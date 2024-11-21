@@ -8,15 +8,11 @@ export default function OnboardingLayout() {
         options={{headerShown: false, headerShadowVisible: false}}
       />
       <Stack.Screen
-        name='role'
-        options={{headerShown: false, headerShadowVisible: false}}
-      />
-      <Stack.Screen
-        name='breeder'
+        name='(breeder)/index'
         options={{headerShown: true, headerShadowVisible: false}}
       />
       <Stack.Screen
-        name='seeker'
+        name='(seeker)/index'
         options={{headerShown: true, headerShadowVisible: false}}
       />
     </Stack>

@@ -64,7 +64,6 @@ export default function BreedPreferences() {
           traitPreferences: tempPreferences,
         });
 
-        console.log('response: ', response.user);
         if (response && response.user) {
           dispatch(
             setUserData({

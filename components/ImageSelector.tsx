@@ -4,16 +4,18 @@ import {Upload, Trash} from '@tamagui/lucide-icons';
 import * as ImagePicker from 'expo-image-picker';
 import {storageAPI} from '../api/firebase/media';
 
-interface ImageManagerProps {
+interface ImageSelectorProps {
   images: {downloadURL: string; thumbnailURL: string}[];
-  onAddImage: (newImage: {downloadURL: string; thumbnailURL: string}) => void;
+  onSelectImage: (imageUri: string) => void; // Changed to pass URI only
   onRemoveImage: (index: number) => void;
+  maxImages?: number;
 }
 
-const ImageManager: React.FC<ImageManagerProps> = ({
+const ImageSelector: React.FC<ImageSelectorProps> = ({
   images,
-  onAddImage,
+  onSelectImage,
   onRemoveImage,
+  maxImages = Infinity, // Default to unlimited if not specified
 }) => {
   const handleSelectImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -24,13 +26,7 @@ const ImageManager: React.FC<ImageManagerProps> = ({
     });
 
     if (!result.canceled) {
-      const imageUri = result.assets[0].uri;
-      const uploadedImageUrl = await storageAPI.uploadMedia({uri: imageUri});
-      const newImage = {
-        downloadURL: uploadedImageUrl,
-        thumbnailURL: uploadedImageUrl,
-      };
-      onAddImage(newImage as any);
+      onSelectImage(result.assets[0].uri);
     }
   };
 
@@ -60,17 +56,20 @@ const ImageManager: React.FC<ImageManagerProps> = ({
             />
           </XStack>
         ))}
-        <Button
-          onPress={handleSelectImage}
-          icon={<Upload size='$1' />}
-          width={100}
-          height={100}
-          borderRadius='$2'
-          backgroundColor='$gray5'
-        />
+        {/* Only show upload button if we haven't reached maxImages */}
+        {images.length < maxImages && (
+          <Button
+            onPress={handleSelectImage}
+            icon={<Upload size='$1' />}
+            width={100}
+            height={100}
+            borderRadius='$2'
+            backgroundColor='$gray5'
+          />
+        )}
       </XStack>
     </ScrollView>
   );
 };
 
-export default ImageManager;
+export default ImageSelector;
