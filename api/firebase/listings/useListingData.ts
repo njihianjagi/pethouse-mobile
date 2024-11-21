@@ -151,6 +151,7 @@ export interface AdoptionListing extends BaseListing {
   sex: 'male' | 'female';
   dateOfBirth: Date;
   color: string;
+  status: 'available' | 'reserved' | 'closed';
   price: {
     base: number;
     withBreedingRights?: number;

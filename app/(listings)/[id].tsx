@@ -5,13 +5,13 @@ import {useRouter} from 'expo-router';
 import {Share} from 'react-native';
 import {MessageCircle, Share as ShareIcon} from '@tamagui/lucide-icons';
 import {
-  PuppyListing,
+  AdoptionListing,
   LitterListing,
   WantedListing,
 } from '../../api/firebase/listings/useListingData';
 
 interface ListingDetailProps {
-  listing: PuppyListing | LitterListing | WantedListing;
+  listing: AdoptionListing | LitterListing | WantedListing;
   onContact: () => void;
 }
 
@@ -34,7 +34,7 @@ export const ListingDetail = ({listing, onContact}: ListingDetailProps) => {
 
   const renderContent = () => {
     switch (listing.type) {
-      case 'puppy':
+      case 'adoption':
         return (
           <YStack gap='$4'>
             <Text fontSize='$6' fontWeight='bold'>

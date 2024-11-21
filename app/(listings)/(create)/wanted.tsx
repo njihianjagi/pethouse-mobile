@@ -17,11 +17,17 @@ import {WantedListing} from '../../../api/firebase/listings/useListingData';
 interface WantedListingProps {
   formData: Partial<WantedListing>;
   onChange: (field: string, value: any) => void;
+  onSubmit: () => void;
+  loading: boolean;
+  error: any;
 }
 
-export const WantedListingScreen = ({
+export const WantedListingForm = ({
   formData,
   onChange,
+  onSubmit,
+  loading,
+  error,
 }: WantedListingProps) => {
   const {localized} = useTranslations();
 

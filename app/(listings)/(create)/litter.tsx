@@ -8,11 +8,17 @@ import ImageSelector from '../../../components/ImageSelector';
 interface LitterListingProps {
   formData: Partial<LitterListing>;
   onChange: (field: string, value: any) => void;
+  onSubmit: () => void;
+  loading: boolean;
+  error: any;
 }
 
-export const LitterListingScreen = ({
+export const LitterListingForm = ({
   formData,
   onChange,
+  onSubmit,
+  loading,
+  error,
 }: LitterListingProps) => {
   const {localized} = useTranslations();
 

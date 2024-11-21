@@ -8,16 +8,15 @@ import {
   Listing,
   useListingData,
 } from '../../../api/firebase/listings/useListingData';
-import {AdoptionListingScreen} from './adoption';
-import {WantedListingScreen} from './wanted';
-import {LitterListingScreen} from './litter';
+import {AdoptionListingForm} from './adoption';
+import {WantedListingForm} from './wanted';
+import {LitterListingForm} from './litter';
 
 export default function CreateListingScreen() {
   const router = useRouter();
   const {localized} = useTranslations();
   const currentUser = useCurrentUser();
-  const {addListing} = useListingData();
-  const [loading, setLoading] = useState(false);
+  const {loading, error, addListing} = useListingData();
   const [listingType, setListingType] = useState<
     'litter' | 'adoption' | 'wanted'
   >(currentUser.role === 'breeder' ? 'litter' : 'wanted');
@@ -108,7 +107,6 @@ export default function CreateListingScreen() {
   };
 
   const handleSubmit = async () => {
-    setLoading(true);
     try {
       await addListing({
         type: listingType,
@@ -127,61 +125,42 @@ export default function CreateListingScreen() {
         localized('Failed to create listing. Please try again.')
       );
     } finally {
-      setLoading(false);
+      router.back();
     }
   };
 
   return (
     <Form onSubmit={handleSubmit}>
       <YStack f={1} p='$4'>
-        {currentUser.role === 'breeder' && (
-          <Tabs
-            value={listingType}
-            onValueChange={(value) =>
-              setListingType(value as typeof listingType)
-            }
-            flexGrow={1}
-            mb='$4'
-          >
-            <Tabs.List>
-              <Tabs.Tab value='litter' flex={1}>
-                <Text>{localized('Litter')}</Text>
-              </Tabs.Tab>
-              <Tabs.Tab value='puppy' flex={1}>
-                <Text>{localized('Puppy')}</Text>
-              </Tabs.Tab>
-            </Tabs.List>
-          </Tabs>
+        {listingType === 'adoption' && (
+          <AdoptionListingForm
+            formData={formData as any}
+            onChange={handleInputChange}
+            onSubmit={handleSubmit}
+            loading={loading}
+            error={error}
+          />
         )}
 
         {listingType === 'litter' && (
-          <LitterListingScreen
+          <LitterListingForm
             formData={formData as any}
             onChange={handleInputChange}
-          />
-        )}
-        {listingType === 'adoption' && (
-          <AdoptionListingScreen
-            formData={formData as any}
-            onChange={handleInputChange}
-          />
-        )}
-        {listingType === 'wanted' && (
-          <WantedListingScreen
-            formData={formData as any}
-            onChange={handleInputChange}
+            onSubmit={handleSubmit}
+            loading={loading}
+            error={error}
           />
         )}
 
-        <Button
-          theme='active'
-          onPress={handleSubmit}
-          disabled={loading}
-          icon={loading ? () => <Spinner /> : undefined}
-          mt='$4'
-        >
-          {loading ? '' : localized('Create Listing')}
-        </Button>
+        {listingType === 'wanted' && (
+          <WantedListingForm
+            formData={formData as any}
+            onChange={handleInputChange}
+            onSubmit={handleSubmit}
+            loading={loading}
+            error={error}
+          />
+        )}
       </YStack>
     </Form>
   );
