@@ -119,23 +119,29 @@ export default function HomeScreen() {
             <YStack gap='$4'>
               <EmptyStateCard
                 title={
-                  userPreferencesSet ? '' : localized('Find Your Perfect Match')
+                  userPreferencesSet
+                    ? localized('Find Your Next Pet')
+                    : localized('Find Your Perfect Match')
                 }
                 description={
                   userPreferencesSet
-                    ? ''
+                    ? "Let breeders know what you're looking for in your next furry friend"
                     : 'Discover your ideal furry companion based on your lifestyle and preferences'
                 }
-                buttonText={userPreferencesSet ? '' : localized(' Get Started')}
+                buttonText={
+                  userPreferencesSet
+                    ? localized('Create Listing')
+                    : localized(' Get Started')
+                }
                 onPress={
                   userPreferencesSet
-                    ? () => {}
+                    ? () => router.push('/(listings)/(create)/wanted')
                     : () => setIsTraitSelectorOpen(true)
                 }
                 icon={<ArrowRight color='$gray9' size='$1' />}
                 backgroundImage={
                   userPreferencesSet
-                    ? ''
+                    ? require('../../../assets/images/hero_2.png')
                     : require('../../../assets/images/hero.jpg')
                 }
                 backgroundColor={colorSet.secondaryForeground}

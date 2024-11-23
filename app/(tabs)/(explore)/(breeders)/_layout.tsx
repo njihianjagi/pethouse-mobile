@@ -1,6 +1,6 @@
 import React from 'react';
 import {Stack} from 'expo-router';
-import {useTheme} from '../../dopebase';
+import {useTheme} from '../../../../dopebase';
 
 export default function KennelsLayout() {
   const {theme, appearance} = useTheme();

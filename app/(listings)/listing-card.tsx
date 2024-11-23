@@ -1,14 +1,10 @@
 import React from 'react';
 import {Card, YStack, XStack, Text, Image} from 'tamagui';
 import {useTranslations} from '../../dopebase';
-import {
-  PuppyListing,
-  LitterListing,
-  WantedListing,
-} from '../../api/firebase/listings/useListingData';
+import {Listing} from '../../api/firebase/listings/useListingData';
 
 interface ListingCardProps {
-  listing: PuppyListing | LitterListing | WantedListing;
+  listing: Listing;
   onPress: () => void;
 }
 
@@ -20,7 +16,7 @@ export const ListingCard = ({listing, onPress}: ListingCardProps) => {
 
   const renderPreview = () => {
     switch (listing.type) {
-      case 'puppy':
+      case 'adoption':
         return (
           <XStack gap='$2'>
             <Text>{listing.sex}</Text>

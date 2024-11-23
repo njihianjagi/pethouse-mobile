@@ -1,8 +1,8 @@
 import React from 'react';
 import {Stack} from 'expo-router';
-import {useTheme} from '../../dopebase';
+import {useTheme} from '../../../dopebase';
 
-export default function ListingsLayout() {
+export default function CreateListingLayout() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
@@ -14,6 +14,7 @@ export default function ListingsLayout() {
         },
       }}
     >
+      {' '}
       <Stack.Screen
         name='index'
         options={{
@@ -21,17 +22,24 @@ export default function ListingsLayout() {
         }}
       />
       <Stack.Screen
-        name='[id]'
+        name='litter'
         options={{
           headerShown: true,
-          title: 'View Listing',
+          title: 'New Litter Listing',
         }}
       />
       <Stack.Screen
-        name='(create)'
+        name='wanted'
         options={{
-          headerShown: false,
-          title: 'Create Listing',
+          headerShown: true,
+          title: 'New Wanted Listing',
+        }}
+      />
+      <Stack.Screen
+        name='adoption'
+        options={{
+          headerShown: true,
+          title: 'New Adoption Listing',
         }}
       />
     </Stack>

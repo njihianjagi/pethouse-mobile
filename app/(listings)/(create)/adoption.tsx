@@ -11,9 +11,15 @@ import {
   Spinner,
 } from 'tamagui';
 import {useTranslations} from '../../../dopebase';
-import {AdoptionListing} from '../../../api/firebase/listings/useListingData';
+import {
+  AdoptionListing,
+  useListingData,
+} from '../../../api/firebase/listings/useListingData';
 import BreedSelector from '../../../components/BreedSelector';
 import ImageSelector from '../../../components/ImageSelector';
+import {useRouter} from 'expo-router';
+import {Alert} from 'react-native';
+import useCurrentUser from '../../../hooks/useCurrentUser';
 
 // ... existing interfaces ...
 
@@ -239,73 +245,142 @@ const MediaStep = ({formData, onChange}) => {
   );
 };
 
-interface AdoptionListingProps {
-  formData: Partial<AdoptionListing>;
-  onChange: (field: string, value: any) => void;
-  onSubmit: () => void;
-  loading: boolean;
-  error: any;
-}
+const useAdoptionListingForm = () => {
+  const {loading, error, addListing} = useListingData();
+  const router = useRouter();
+  const currentUser = useCurrentUser();
 
-export const AdoptionListingForm = ({
-  formData,
-  onChange,
-  onSubmit,
-  loading,
-  error,
-}: AdoptionListingProps) => {
+  const [formData, setFormData] = useState<Partial<AdoptionListing>>({
+    type: 'adoption',
+    breed: {
+      breedId: '',
+      breedName: '',
+    },
+    status: 'available',
+    name: '',
+    sex: 'male',
+    dateOfBirth: new Date(),
+    color: '',
+    price: {
+      base: 0,
+      deposit: 0,
+      depositRefundable: true,
+    },
+    registration: {
+      type: 'limited',
+      organization: '',
+    },
+    health: {
+      vaccinated: false,
+      dewormed: false,
+      microchipped: false,
+      vetChecked: false,
+    },
+    training: {
+      houseTrained: false,
+      crateTrained: false,
+      basicCommands: false,
+    },
+    requirements: {
+      application: false,
+      contract: false,
+      spayNeuter: false,
+      returnPolicy: false,
+      homeCheck: false,
+      references: false,
+      experience: false,
+      yard: false,
+      fence: false,
+      otherPets: 'allowed',
+      children: 'allowed',
+    },
+    media: {
+      images: [],
+      videos: [],
+    },
+    description: '',
+  });
+
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => {
+      const newData = {...prev};
+      const fieldPath = field.split('.');
+      let current = newData as any;
+
+      for (let i = 0; i < fieldPath.length - 1; i++) {
+        if (!current[fieldPath[i]]) {
+          current[fieldPath[i]] = {};
+        }
+        current = current[fieldPath[i]];
+      }
+      current[fieldPath[fieldPath.length - 1]] = value;
+
+      return newData;
+    });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (!currentUser) {
+        Alert.alert('Error', 'You must be logged in to create a listing');
+        return;
+      }
+
+      await addListing({
+        ...formData,
+        userId: currentUser.id,
+      } as AdoptionListing);
+
+      router.push('/(tabs)/listings');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to create listing');
+      console.error(error);
+    }
+  };
+
+  return {
+    formData,
+    loading,
+    error,
+    handleChange,
+    handleSubmit,
+  };
+};
+
+export default function AdoptionListingForm() {
   const {localized} = useTranslations();
-  const [currentStep, setCurrentStep] = useState('BASIC_INFO');
+  const {formData, loading, error, handleChange, handleSubmit} =
+    useAdoptionListingForm();
 
-  const isLastStep = currentStep === 'MEDIA';
-
-  const handleNext = async () => {
-    if (isLastStep) {
-      await onSubmit();
-      return;
-    }
-
-    const steps = Object.keys(STEPS);
-    const currentIndex = steps.indexOf(currentStep);
-    if (currentIndex < steps.length - 1) {
-      setCurrentStep(steps[currentIndex + 1] as keyof typeof STEPS);
-    }
-  };
-
-  const handleBack = () => {
-    const steps = Object.keys(STEPS);
-    const currentIndex = steps.indexOf(currentStep);
-    if (currentIndex > 0) {
-      setCurrentStep(steps[currentIndex - 1]);
-    }
-  };
+  const [currentStep, setCurrentStep] = useState(0);
+  const steps = Object.values(STEPS);
 
   const renderStep = () => {
     switch (currentStep) {
-      case 'BASIC_INFO':
-        return <BasicInfoStep formData={formData} onChange={onChange} />;
-      case 'PRICING':
-        return <PricingStep formData={formData} onChange={onChange} />;
-      case 'HEALTH':
-        return <HealthStep formData={formData} onChange={onChange} />;
-      case 'REQUIREMENTS':
-        return <RequirementsStep formData={formData} onChange={onChange} />;
-      case 'MEDIA':
-        return <MediaStep formData={formData} onChange={onChange} />;
+      case 0:
+        return <BasicInfoStep formData={formData} onChange={handleChange} />;
+      case 1:
+        return <MediaStep formData={formData} onChange={handleChange} />;
+      case 2:
+        return <PricingStep formData={formData} onChange={handleChange} />;
+      case 3:
+        return <HealthStep formData={formData} onChange={handleChange} />;
+      case 4:
+        return <RequirementsStep formData={formData} onChange={handleChange} />;
       default:
         return null;
     }
   };
 
   return (
-    <Form>
-      <YStack gap='$4' p='$4'>
-        <Card elevate>
-          <YStack p='$4' gap='$2'>
-            <Text fontWeight='bold'>{localized(STEPS[currentStep].title)}</Text>
-            <Text color='$gray10'>
-              {localized(STEPS[currentStep].description)}
+    <Form onSubmit={handleSubmit}>
+      <YStack gap='$4' pb='$4'>
+        <Card elevate bordered p='$4'>
+          <YStack gap='$2'>
+            <Text fontSize='$6' fontWeight='bold'>
+              {steps[currentStep].title}
             </Text>
+            <Text color='$gray11'>{steps[currentStep].description}</Text>
           </YStack>
         </Card>
 
@@ -313,23 +388,40 @@ export const AdoptionListingForm = ({
 
         <XStack gap='$4' justifyContent='space-between'>
           <Button
-            variant='outlined'
-            disabled={currentStep === 'BASIC_INFO'}
-            onPress={handleBack}
+            disabled={currentStep === 0}
+            onPress={() => setCurrentStep((prev) => prev - 1)}
+            theme='alt2'
+            flex={1}
           >
-            {localized('Back')}
+            {localized('Previous')}
           </Button>
-          <Button theme='active' onPress={handleNext} disabled={loading}>
-            {loading ? (
-              <Spinner />
-            ) : isLastStep ? (
-              localized('Submit')
-            ) : (
-              localized('Next')
-            )}
-          </Button>
+          {currentStep < steps.length - 1 ? (
+            <Button
+              onPress={() => setCurrentStep((prev) => prev + 1)}
+              theme='active'
+              flex={1}
+            >
+              {localized('Next')}
+            </Button>
+          ) : (
+            <Button
+              onPress={handleSubmit}
+              theme='active'
+              flex={1}
+              icon={loading ? () => <Spinner /> : undefined}
+              disabled={loading}
+            >
+              {localized('Submit')}
+            </Button>
+          )}
         </XStack>
+
+        {error && (
+          <Text color='$red10' textAlign='center'>
+            {error.message}
+          </Text>
+        )}
       </YStack>
     </Form>
   );
-};
+}

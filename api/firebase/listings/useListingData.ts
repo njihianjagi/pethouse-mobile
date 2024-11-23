@@ -282,6 +282,7 @@ export interface WantedListing extends BaseListing {
     breedName: string;
     isRequired: boolean;
   };
+  status: 'searching' | 'found' | 'closed';
   preferences: {
     sex: 'male' | 'female' | 'either';
     ageRange: {
@@ -328,7 +329,7 @@ export interface WantedListing extends BaseListing {
 export const useListingData = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<any | null>(null);
 
   const fetchListings = async (params: {
     userId?: string;
