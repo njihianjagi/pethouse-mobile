@@ -26,18 +26,7 @@ export interface BaseUser {
 
 export interface BreederProfile extends BaseUser {
   role: 'breeder';
-  kennelName: string;
-  location: {
-    name: string;
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    coordinates?: {
-      latitude: number;
-      longitude: number;
-    };
-  };
+
   rating?: number;
   reviewCount?: number;
   images: {
@@ -58,6 +47,17 @@ export interface BreederProfile extends BaseUser {
     };
     description?: string;
     specialties?: string[];
+    location: {
+      name: string;
+      address: string;
+      city: string;
+      state: string;
+      country: string;
+      coordinates?: {
+        latitude: number;
+        longitude: number;
+      };
+    };
   };
   facilities: {
     type: 'home' | 'dedicated_facility' | 'both';

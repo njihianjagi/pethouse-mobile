@@ -18,7 +18,7 @@ const BreederCard = ({breeder, index}: BreederCardProps) => {
   const colorSet = theme.colors[appearance];
 
   const displayImage = breeder.images?.[0]?.thumbnailURL || DEFAULT_IMAGE;
-  const location = breeder.location?.name || 'Location unknown';
+  const location = breeder.kennel.location?.name || 'Location unknown';
   const rating = breeder.rating || 0;
   const reviewCount = breeder.reviewCount || 0;
 
@@ -56,7 +56,7 @@ const BreederCard = ({breeder, index}: BreederCardProps) => {
             fontSize={24}
             fontWeight='bold'
           >
-            {breeder.kennelName || breeder.firstName}
+            {breeder.kennel.name || breeder.firstName}
           </Text>
 
           <XStack space='$2' alignItems='center'>

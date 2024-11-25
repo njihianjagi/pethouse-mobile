@@ -1,19 +1,26 @@
 import {Stack} from 'expo-router';
+import {useTheme} from '../../dopebase';
 
 export default function OnboardingLayout() {
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
   return (
-    <Stack>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
       <Stack.Screen
         name='index'
         options={{headerShown: false, headerShadowVisible: false}}
       />
       <Stack.Screen
-        name='(breeder)/index'
-        options={{headerShown: true, headerShadowVisible: false}}
+        name='(breeder)'
+        options={{headerShown: false, headerShadowVisible: false}}
       />
       <Stack.Screen
-        name='(seeker)/index'
-        options={{headerShown: true, headerShadowVisible: false}}
+        name='(seeker)'
+        options={{headerShown: false, headerShadowVisible: false}}
       />
     </Stack>
   );
