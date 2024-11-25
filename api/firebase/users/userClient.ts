@@ -26,6 +26,26 @@ export interface BaseUser {
 
 export interface BreederProfile extends BaseUser {
   role: 'breeder';
+  kennelName: string;
+  location: {
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  };
+  rating?: number;
+  reviewCount?: number;
+  images: {
+    id: string;
+    url: string;
+    thumbnailURL: string;
+    type: 'profile' | 'facility' | 'dogs' | 'other';
+  }[];
   kennel: {
     name: string;
     registrationNumber?: string;
@@ -36,6 +56,8 @@ export interface BreederProfile extends BaseUser {
       facebook?: string;
       twitter?: string;
     };
+    description?: string;
+    specialties?: string[];
   };
   facilities: {
     type: 'home' | 'dedicated_facility' | 'both';

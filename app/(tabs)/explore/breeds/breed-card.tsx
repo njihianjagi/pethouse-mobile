@@ -2,10 +2,10 @@ import React, {useEffect, useState} from 'react';
 import {ArrowRight} from '@tamagui/lucide-icons';
 import {router, Href} from 'expo-router';
 import {LinearGradient} from 'tamagui/linear-gradient';
-import {View, Text, Button, Card, XStack, Image, YStack} from 'tamagui';
-import {useTheme} from '../../../dopebase';
-import {useBreedMatch} from '../../../hooks/useBreedMatch';
-import {Breed} from '../../../api/firebase/breeds/useBreedData';
+import {View, Text, Button, Card, XStack, Image, YStack, YGroup} from 'tamagui';
+import {useTheme} from '../../../../dopebase';
+import {useBreedMatch} from '../../../../hooks/useBreedMatch';
+import {Breed} from '../../../../api/firebase/breeds/useBreedData';
 
 interface BreedCardProps {
   breed: Breed;
@@ -38,12 +38,15 @@ const BreedCard = ({breed, index, traitPreferences}: BreedCardProps) => {
       margin={5}
       onPress={() =>
         router.push({
-          pathname: '/(explore)/[breed_name]',
-          params: {breed_name: breed.name.toLowerCase().replace(/\s+/g, '-')},
+          pathname: '/explore/breeds/[breed_name]',
+          params: {
+            breed_name: breed.name.toLowerCase().replace(/\s+/g, '-'),
+          },
         })
       }
       pressTheme
       overflow='hidden'
+      aspectRatio={1 / 1}
     >
       <Card.Background>
         <Image
@@ -54,15 +57,35 @@ const BreedCard = ({breed, index, traitPreferences}: BreedCardProps) => {
         />
         <LinearGradient
           start={[0, 0]}
-          end={[0, 1]}
+          end={[1, 1]}
           fullscreen
-          colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0)']}
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.7)']}
           zIndex={1}
         />
       </Card.Background>
 
-      <Card.Header padded zIndex={2}>
-        <YStack>
+      {matchPercentage && (
+        <Card.Header padded zIndex={2}>
+          <XStack
+            position='absolute'
+            top={8}
+            right={8}
+            backgroundColor='$background'
+            borderRadius='$4'
+            padding='$2'
+          >
+            <Text
+              fontWeight='bold'
+              color={matchPercentage > 70 ? '$green10' : '$gray10'}
+            >
+              {matchPercentage}% Match
+            </Text>
+          </XStack>
+        </Card.Header>
+      )}
+
+      <Card.Footer padding='$4'>
+        <XStack justifyContent='space-between' width='100%' flex={1}>
           <Text
             color={colorSet.foregroundContrast}
             fontSize={24}
@@ -70,50 +93,14 @@ const BreedCard = ({breed, index, traitPreferences}: BreedCardProps) => {
           >
             {breed.name}
           </Text>
-          <Text color={colorSet.foregroundContrast}>
-            {breed.breedGroup} group
-          </Text>
-        </YStack>
-      </Card.Header>
 
-      <Card.Footer zIndex={2}>
-        <XStack flex={1} alignItems='center' justifyContent='space-between'>
-          {traitPreferences && (
-            <XStack borderRadius='$4' paddingHorizontal='$4'>
-              <Text
-                fontWeight='bold'
-                color={
-                  matchPercentage > 70 ? colorSet.foregroundContrast : '$gray10'
-                }
-              >
-                {matchPercentage}% Match
-              </Text>
-            </XStack>
-          )}
-
-          <Button
+          {/* <Button
             borderRadius='$10'
             icon={<ArrowRight size='$2' color={colorSet.foregroundContrast} />}
             chromeless
-          />
+          /> */}
         </XStack>
       </Card.Footer>
-
-      {/* <XStack
-        position='absolute'
-        top={8}
-        right={8}
-        backgroundColor='$background'
-        borderRadius='$4'
-        padding='$2'
-      >
-        <Text
-          fontWeight='bold'
-          color={matchPercentage > 70 ? '$green10' : '$gray10'}
-        >
-          {matchPercentage}% Match
-        </Text>
-      </XStack> */}
     </Card>
   );
 };

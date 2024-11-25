@@ -15,7 +15,7 @@ import {
 import {ArrowRight, MapPin} from '@tamagui/lucide-icons';
 import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useListingData} from '../../../api/firebase/listings/useListingData';
-import {RecommendedBreeds} from '../../../components/RecommendedBreeds';
+import {RecommendedBreeds} from '../explore/breeds/recommended-breeds';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {EmptyStateCard} from '../../../components/EmptyStateCard';
 import {TraitSelector} from '../../../components/TraitSelector';
@@ -147,22 +147,6 @@ export default function HomeScreen() {
                 backgroundColor={colorSet.secondaryForeground}
                 color={colorSet.foregroundContrast}
               />
-
-              {traitPreferences && Object.keys(traitPreferences).length > 0 && (
-                <RecommendedBreeds
-                  loading={breedsLoading}
-                  filteredBreeds={filteredBreeds}
-                  traitPreferences={traitPreferences}
-                  updateFilter={updateFilter}
-                  traitGroups={traitGroups}
-                  onSelectBreed={(breed) =>
-                    router.push({
-                      pathname: '/(tabs)/(explore)/[breed_name]',
-                      params: {breed_name: breed.name},
-                    })
-                  }
-                />
-              )}
             </YStack>
           )}
 

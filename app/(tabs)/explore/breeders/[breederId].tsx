@@ -1,12 +1,12 @@
 import {View, Text} from 'react-native';
 import React from 'react';
 
-const KennelDetail = () => {
+const BreederProfile = () => {
   return (
     <View>
-      <Text>[id]</Text>
+      <Text>[breederId]</Text>
     </View>
   );
 };
 
-export default KennelDetail;
+export default BreederProfile;

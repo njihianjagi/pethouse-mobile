@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {FlatList} from 'react-native';
-import {useTheme, useTranslations} from '../../../dopebase';
-import useCurrentUser from '../../../hooks/useCurrentUser';
+import {useTheme, useTranslations} from '../../../../dopebase';
+import useCurrentUser from '../../../../hooks/useCurrentUser';
 import {useRouter} from 'expo-router';
 import {
   Text,
@@ -15,13 +15,13 @@ import {
 } from 'tamagui';
 
 import {ListFilter, Search} from '@tamagui/lucide-icons';
-import {useBreedSearch} from '../../../hooks/useBreedSearch';
+import {useBreedSearch} from '../../../../hooks/useBreedSearch';
 import {SortPopover} from './sort';
 import {BreedFilterSheet} from './filter';
 import BreedCard from './breed-card';
-import {useBreedMatch} from '../../../hooks/useBreedMatch';
+import {useBreedMatch} from '../../../../hooks/useBreedMatch';
 
-export default function ExploreScreen() {
+export default function ExploreBreedsScreen() {
   const router = useRouter();
 
   const currentUser = useCurrentUser();

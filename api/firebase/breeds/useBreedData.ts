@@ -227,13 +227,14 @@ export const useBreedData = (userId?: string) => {
       );
 
       setUserBreeds(userBreedsData);
-      return userBreedsData;
       setError(null);
+      return userBreedsData;
     } catch (err: any) {
       setError(err.message);
       console.error('Error fetching user breeds:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {

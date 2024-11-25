@@ -18,7 +18,7 @@ import {
   Tabs,
   Accordion,
 } from 'tamagui';
-import {useTheme, useTranslations} from '../../../dopebase';
+import {useTheme, useTranslations} from '../../../../dopebase';
 import {
   CheckCircle,
   ChevronDown,
@@ -28,9 +28,12 @@ import {
   StarHalf,
   StarOff,
 } from '@tamagui/lucide-icons';
-import {Breed, useBreedData} from '../../../api/firebase/breeds/useBreedData';
-import useCurrentUser from '../../../hooks/useCurrentUser';
-import {useBreedMatch} from '../../../hooks/useBreedMatch';
+import {
+  Breed,
+  useBreedData,
+} from '../../../../api/firebase/breeds/useBreedData';
+import useCurrentUser from '../../../../hooks/useCurrentUser';
+import {useBreedMatch} from '../../../../hooks/useBreedMatch';
 
 function BreedDetailScreen() {
   const {theme, appearance} = useTheme();

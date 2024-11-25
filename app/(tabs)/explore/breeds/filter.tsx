@@ -12,12 +12,12 @@ import {
   Switch,
   Spinner,
 } from 'tamagui';
-import {useTheme} from '../../../dopebase';
+import {useTheme} from '../../../../dopebase';
 import {X} from '@tamagui/lucide-icons';
-import useCurrentUser from '../../../hooks/useCurrentUser';
-import {updateUser} from '../../../api/firebase/users/userClient';
+import useCurrentUser from '../../../../hooks/useCurrentUser';
+import {updateUser} from '../../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
-import {setUserData} from '../../../redux/reducers/auth';
+import {setUserData} from '../../../../redux/reducers/auth';
 
 interface BreedFilterSheetProps {
   open: boolean;
