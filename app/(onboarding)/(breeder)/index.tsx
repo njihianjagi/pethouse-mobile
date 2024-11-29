@@ -8,26 +8,27 @@ const BreederOnboardingScreen = () => {
   const currentUser = useCurrentUser();
 
   useEffect(() => {
+    console.log('current user: ', currentUser);
     if (!currentUser) return;
 
-    const {breeding} = currentUser;
+    const {kennel} = currentUser;
 
-    if (breeding?.onboardingComplete) {
+    if (currentUser?.onboardingComplete) {
       router.replace('/(tabs)');
       return;
     }
 
-    if (!breeding?.basicInfo) {
+    if (!kennel) {
       router.push('/(onboarding)/(breeder)/basic-info');
       return;
     }
 
-    if (!breeding?.breeds || breeding.breeds.length === 0) {
+    if (!kennel?.breeds || kennel.breeds.length === 0) {
       router.push('/(onboarding)/(breeder)/breeds');
       return;
     }
 
-    if (!breeding?.facilities) {
+    if (!kennel?.facilities) {
       router.push('/(onboarding)/(breeder)/facilities');
       return;
     }

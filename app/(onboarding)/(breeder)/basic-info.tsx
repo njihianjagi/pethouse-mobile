@@ -18,7 +18,7 @@ import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
-import {Home, MapPin} from '@tamagui/lucide-icons';
+import {Copyright, Home, MapPin} from '@tamagui/lucide-icons';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 1;
@@ -75,7 +75,6 @@ export const BasicInfoScreen = () => {
   const handleContinue = async () => {
     if (
       !formData.kennel.name ||
-      !formData.kennel.description ||
       !formData.kennel.location.address ||
       !formData.kennel.location.city ||
       !formData.kennel.location.state ||
@@ -143,10 +142,10 @@ export const BasicInfoScreen = () => {
             <YStack gap='$4'>
               <YStack gap='$4'>
                 <YStack gap='$2'>
-                  <Text>{localized('Kennel Name')}*</Text>
+                  {/* <Text>{localized('Kennel Name')}*</Text> */}
                   <XGroup>
                     <XGroup.Item>
-                      <Button disabled theme='active' icon={<MapPin />} />
+                      <Button disabled theme='active' icon={<Home />} />
                     </XGroup.Item>
 
                     <XGroup.Item>
@@ -164,7 +163,7 @@ export const BasicInfoScreen = () => {
                 </YStack>
 
                 <YStack gap='$2'>
-                  <Text>{localized('Location')}*</Text>
+                  {/* <Text>{localized('Location')}*</Text> */}
                   <XGroup>
                     <XGroup.Item>
                       <Button disabled theme='active' icon={<MapPin />} />
@@ -176,7 +175,7 @@ export const BasicInfoScreen = () => {
                         placeholder={localized('Search for your location')}
                         value={
                           formData.kennel.location.address
-                            ? `${formData.kennel.location.address}, ${formData.kennel.location.city}, ${formData.kennel.location.state}, ${formData.kennel.location.country}`
+                            ? `${formData.kennel.location.address}`
                             : ''
                         }
                         onPressIn={() => setIsLocationSheetOpen(true)}
@@ -186,10 +185,10 @@ export const BasicInfoScreen = () => {
                 </YStack>
 
                 <YStack gap='$2'>
-                  <Text>{localized('Registration Number')}</Text>
+                  {/* <Text>{localized('Registration Number')}</Text> */}
                   <XGroup>
                     <XGroup.Item>
-                      <Button disabled theme='active' icon={<MapPin />} />
+                      <Button disabled theme='active' icon={<Copyright />} />
                     </XGroup.Item>
 
                     <XGroup.Item>
@@ -242,10 +241,10 @@ export const BasicInfoScreen = () => {
           <LocationSelector
             isLocationSheetOpen={isLocationSheetOpen}
             setIsLocationSheetOpen={setIsLocationSheetOpen}
-            handleInputChange={(location) =>
+            onChange={(location) =>
               handleInputChange('kennel', 'location', location)
             }
-            currentLocation={currentUser.location}
+            currentLocation={currentUser?.kennel?.location}
           />
         </ScrollView>
       )}

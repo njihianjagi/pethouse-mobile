@@ -9,16 +9,19 @@ export const ConfigContext = React.createContext({} as any);
 export const ConfigProvider = ({children}) => {
   const {localized} = useTranslations();
   const config = {
-    isDelayedLoginEnabled: false,
-    isSMSAuthEnabled: true,
-    isGoogleAuthEnabled: true,
-    isFacebookAuthEnabled: false,
-    isAppleAuthEnabled: false,
-    forgotPasswordEnabled: true,
-    appIdentifier: 'com.doghouse.ke',
-    facebookIdentifier: '285315185217069',
+    isDelayedLoginEnabled:
+      process.env.EXPO_PUBLIC_DELAYED_LOGIN_ENABLED === 'true',
+    isSMSAuthEnabled: process.env.EXPO_PUBLIC_SMS_AUTH_ENABLED === 'true',
+    isGoogleAuthEnabled: process.env.EXPO_PUBLIC_GOOGLE_AUTH_ENABLED === 'true',
+    isFacebookAuthEnabled:
+      process.env.EXPO_PUBLIC_FACEBOOK_AUTH_ENABLED === 'true',
+    isAppleAuthEnabled: process.env.EXPO_PUBLIC_APPLE_AUTH_ENABLED === 'true',
+    forgotPasswordEnabled:
+      process.env.EXPO_PUBLIC_FORGOT_PASSWORD_ENABLED === 'true',
+    appIdentifier: process.env.EXPO_PUBLIC_ANDROID_PACKAGE_NAME,
+    facebookIdentifier: process.env.EXPO_PUBLIC_FACEBOOK_IDENTIFIER,
     googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-    webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
     onboardingConfig: {
       welcomeTitle: localized('Your home for quality breeds'),
       welcomeCaption: localized(
