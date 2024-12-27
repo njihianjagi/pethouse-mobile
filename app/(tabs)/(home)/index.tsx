@@ -13,7 +13,6 @@ import {
   YStack,
 } from 'tamagui';
 import {ArrowRight, MapPin} from '@tamagui/lucide-icons';
-import {useLitterData} from '../../../api/firebase/litters/useLitterData';
 import {useListingData} from '../../../api/firebase/listings/useListingData';
 import {RecommendedBreeds} from '../explore/breeds/recommended-breeds';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
@@ -36,7 +35,6 @@ export default function HomeScreen() {
   } = useBreedSearch();
 
   const {listings, loading: listingsLoading} = useListingData();
-  const {litters, loading: littersLoading} = useLitterData();
   const [isTraitSelectorOpen, setIsTraitSelectorOpen] = useState(false);
   const [userPreferencesSet, setUserPreferencesSet] = useState(false);
 
@@ -138,7 +136,7 @@ export default function HomeScreen() {
                     ? () => router.push('/(listings)/(create)/wanted')
                     : () => setIsTraitSelectorOpen(true)
                 }
-                icon={<ArrowRight color='$gray9' size='$1' />}
+                buttonIcon={<ArrowRight color='$gray9' size='$1' />}
                 backgroundImage={
                   userPreferencesSet
                     ? require('../../../assets/images/hero_2.png')

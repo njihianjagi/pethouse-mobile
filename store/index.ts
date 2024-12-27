@@ -8,7 +8,6 @@ import {ActivityLog} from '../api/firebase/activity_logs/useActivityLogData';
 import {Listing} from '../api/firebase/listings/useListingData';
 import {BreedFilters} from '../hooks/useBreedSearch';
 import {User} from '../api/firebase/auth/authClient';
-import {Litter} from '../api/firebase/litters/useLitterData';
 
 // Enable React tracking
 enableReactTracking({
@@ -95,22 +94,11 @@ export const listingStore = observable({
   error: null as string | null,
 });
 
-// Litter Store
-export const litterStore = observable({
-  litters: mySynced({
-    initial: [] as Litter[],
-    persist: {name: 'litters-list'},
-  }),
-  loading: false,
-  error: null as string | null,
-});
-
 // Export all stores
 export const stores = {
   auth: authStore,
   breeds: breedStore,
   listings: listingStore,
-  litters: litterStore,
 };
 
 export const checkPersistenceLoaded = async () => {
@@ -119,7 +107,6 @@ export const checkPersistenceLoaded = async () => {
     when(syncState(stores.auth).isPersistLoaded),
     when(syncState(stores.breeds).isPersistLoaded),
     when(syncState(stores.listings).isPersistLoaded),
-    when(syncState(stores.litters).isPersistLoaded),
   ]);
   return true;
 };

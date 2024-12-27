@@ -4,134 +4,6 @@ import firestore, {
 } from '@react-native-firebase/firestore';
 import {db} from '../../../firebase/config';
 
-// export interface Listing {
-//   id: string;
-//   userId: string;
-//   userBreedId: string;
-//   breedId: string;
-//   breedName: string; // Denormalized for filtering/display
-//   name: string;
-//   sex: string;
-//   age: string;
-//   ageYears: number;
-//   ageMonths: number;
-//   price?: number;
-//   type: 'adoption' | 'wanted';
-//   status: 'available' | 'pending' | 'sold';
-//   // traits: {
-//   //   [traitName: string]: {
-//   //     score: number;
-//   //     description: string;
-//   //   };
-//   // };
-//   media: {
-//     images: string[];
-//     videos: string[];
-//   };
-//   location: string;
-//   medical: {
-//     vaccinated: boolean;
-//     dewormed: boolean;
-//     neutered: boolean;
-//     microchipped: boolean;
-//     lastVetVisit: string;
-//     healthCertificate: any;
-//     medicalNotes: string;
-//   };
-//   createdAt?: FirebaseFirestoreTypes.Timestamp;
-//   modifiedAt?: FirebaseFirestoreTypes.Timestamp;
-// }
-
-// interface BaseListing {
-//   id: string;
-//   userId: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-//   status: 'active' | 'pending' | 'completed' | 'cancelled';
-//   breedId: string;
-//   breedName: string;
-// }
-
-// export interface BreederListing extends BaseListing {
-//   type: 'adoption';
-//   name: string;
-//   sex: 'male' | 'female';
-//   ageYears: number;
-//   ageMonths: number;
-//   price: number;
-//   media: {
-//     images: {downloadURL: string; thumbnailURL: string}[];
-//     videos: {downloadURL: string; thumbnailURL: string}[];
-//   };
-//   medical: {
-//     vaccinated: boolean;
-//     dewormed: boolean;
-//     neutered: boolean;
-//     microchipped: boolean;
-//     lastVetVisit: string;
-//     healthCertificate: {downloadURL: string; thumbnailURL: string}[];
-//     medicalNotes: string;
-//   };
-//   training: {
-//     houseTrained: boolean;
-//     crateTraining: boolean;
-//     basicCommands: boolean;
-//     socialization: {
-//       goodWithDogs: boolean;
-//       goodWithCats: boolean;
-//       goodWithChildren: boolean;
-//       goodWithStrangers: boolean;
-//     };
-//     trainingNotes: string;
-//   };
-//   requirements: {
-//     mustHaveYard: boolean;
-//     minimumYardSize?: number;
-//     noFirstTimeDogOwners?: boolean;
-//     noSmallChildren?: boolean;
-//     requiresCompanionDog?: boolean;
-//     activityLevel: 'low' | 'moderate' | 'high';
-//     additionalRequirements?: string;
-//   };
-// }
-
-// export interface SeekerListing extends BaseListing {
-//   type: 'wanted';
-//   preferences: {
-//     sex: 'male' | 'female' | 'any';
-//     ageRange: {
-//       min: number;
-//       max: number;
-//     };
-//     priceRange: {
-//       min: number;
-//       max: number;
-//     };
-//     lifestyle: {
-//       hoursAlonePerDay: number;
-//       livingArrangement: 'apartment' | 'house' | 'other';
-//       hasYard: boolean;
-//       yardDetails?: {
-//         isFenced: boolean;
-//         size: 'small' | 'medium' | 'large';
-//       };
-//       activityLevel: 'low' | 'moderate' | 'high';
-//       primaryPurpose: 'companion' | 'breeding' | 'showing' | 'working';
-//     };
-//     experience: {
-//       hasDogExperience: boolean;
-//       hasBreedExperience: boolean;
-//       currentPets: boolean;
-//       petDetails?: string;
-//     };
-//     training: {
-//       willingToTrain: boolean;
-//       plannedTrainingMethod?: string;
-//       trainingGoals?: string[];
-//     };
-//   };
-// }
-
 export interface BaseListing {
   id?: string;
   userId: string;
@@ -226,6 +98,7 @@ export interface LitterListing extends BaseListing {
     available: number;
     reserved: number;
   };
+  parents: Parents;
   price: {
     base: number;
     withBreedingRights?: number;
@@ -243,6 +116,9 @@ export interface LitterListing extends BaseListing {
     eyes: boolean;
     heart: boolean;
     certificates?: string[];
+    vaccinations: VaccinationRecord[];
+    dewormings: DewormingRecord[];
+    vetChecks: VetCheckRecord[];
   };
   requirements: {
     application: boolean;
@@ -325,6 +201,156 @@ export interface WantedListing extends BaseListing {
   };
   description: string;
 }
+
+export interface ParentInfo {
+  name: string;
+  registration: string;
+  registryType: 'AKC' | 'UKC' | 'CKC' | 'other';
+  breed: {
+    id: string;
+    name: string;
+    variety?: string; // For breeds with multiple varieties
+  };
+  color: string;
+  dateOfBirth?: string;
+  healthTesting: {
+    dna: boolean;
+    hips: boolean;
+    elbows: boolean;
+    eyes: boolean;
+    heart: boolean;
+    other?: string[];
+    certificates?: {
+      type: string;
+      number: string;
+      date: string;
+      expiryDate?: string;
+    }[];
+  };
+  titles?: string[]; // Championship titles, etc.
+  images: string[];
+  isCoOwned: boolean;
+  isExternal?: boolean; // For stud services/external sires
+}
+
+interface Parents {
+  sire: ParentInfo;
+  dam: ParentInfo;
+}
+
+export interface BaseHealthRecord {
+  type: string;
+  label: string;
+  description?: string;
+  dueDate: string;
+  completed: boolean;
+  completedDate?: string;
+  notes?: string;
+}
+
+export interface VaccinationRecord extends BaseHealthRecord {
+  type: 'dhpp_1' | 'dhpp_2' | 'dhpp_3' | 'bordetella';
+}
+
+export interface DewormingRecord extends BaseHealthRecord {
+  type: 'deworming_1' | 'deworming_2' | 'deworming_3' | 'deworming_4';
+  product?: string;
+}
+
+export interface VetCheckRecord extends BaseHealthRecord {
+  type: 'newborn' | 'two_week' | 'four_week' | 'six_week' | 'final';
+  weight?: number;
+}
+
+// Define the schedules as arrays
+export const HEALTH_SCHEDULES = {
+  vaccinations: [
+    {
+      type: 'dhpp_1',
+      label: 'DHPP (1st)',
+      description: 'Distemper, Hepatitis, Parainfluenza, Parvovirus',
+      weekAfterBirth: 6,
+      required: true,
+    },
+    {
+      type: 'dhpp_2',
+      label: 'DHPP (2nd)',
+      weekAfterBirth: 8,
+      required: true,
+    },
+    {
+      type: 'dhpp_3',
+      label: 'DHPP (3rd)',
+      weekAfterBirth: 12,
+      required: true,
+    },
+    {
+      type: 'bordetella',
+      label: 'Bordetella',
+      description: 'Kennel Cough',
+      weekAfterBirth: 8,
+      required: false,
+    },
+  ],
+  dewormings: [
+    {
+      type: 'deworming_1',
+      label: 'First Deworming',
+      weekAfterBirth: 2,
+      required: true,
+    },
+    {
+      type: 'deworming_2',
+      label: 'Second Deworming',
+      weekAfterBirth: 4,
+      required: true,
+    },
+    {
+      type: 'deworming_3',
+      label: 'Third Deworming',
+      weekAfterBirth: 6,
+      required: true,
+    },
+    {
+      type: 'deworming_4',
+      label: 'Fourth Deworming',
+      weekAfterBirth: 8,
+      required: true,
+    },
+  ],
+  vetChecks: [
+    {
+      type: 'newborn',
+      label: 'Newborn Check',
+      dayAfterBirth: 1,
+      required: true,
+    },
+    {
+      type: 'two_week',
+      label: '2-Week Check',
+      weekAfterBirth: 2,
+      required: true,
+    },
+    {
+      type: 'four_week',
+      label: '4-Week Check',
+      weekAfterBirth: 4,
+      required: true,
+    },
+    {
+      type: 'six_week',
+      label: '6-Week Check',
+      weekAfterBirth: 6,
+      required: true,
+    },
+    {
+      type: 'final',
+      label: 'Final Check',
+      weekAfterBirth: 8,
+      required: true,
+    },
+  ],
+} as const;
 
 export const useListingData = () => {
   const [listings, setListings] = useState<Listing[]>([]);

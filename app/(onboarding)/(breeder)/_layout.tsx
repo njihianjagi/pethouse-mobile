@@ -1,7 +1,8 @@
 import {Stack, useRouter} from 'expo-router';
 import {useTheme, useTranslations} from '../../../dopebase';
-import {Text, View} from 'react-native';
+import {Text, View, Image} from 'react-native';
 import {HeaderBackButton} from '@react-navigation/elements';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
 
 const StepIndicator = ({current, total}: {current: number; total: number}) => {
   const {theme, appearance} = useTheme();
@@ -69,7 +70,7 @@ export default function BreederOnboardingLayout() {
         name='basic-info'
         options={{
           title: localized('Basic Info'),
-          headerRight: () => <StepIndicator current={1} total={TOTAL_STEPS} />,
+          // headerRight: () => <StepIndicator current={1} total={TOTAL_STEPS} />,
           headerLeft: (props) => (
             <HeaderBackButton
               {...props}
@@ -82,7 +83,7 @@ export default function BreederOnboardingLayout() {
         name='breeds'
         options={{
           title: localized('Breeds'),
-          headerRight: () => <StepIndicator current={2} total={TOTAL_STEPS} />,
+          // headerRight: () => <StepIndicator current={2} total={TOTAL_STEPS} />,
           headerLeft: (props) => (
             <HeaderBackButton {...props} onPress={() => handleBack('breeds')} />
           ),
@@ -92,7 +93,7 @@ export default function BreederOnboardingLayout() {
         name='facilities'
         options={{
           title: localized('Facilities'),
-          headerRight: () => <StepIndicator current={3} total={TOTAL_STEPS} />,
+          // headerRight: () => <StepIndicator current={3} total={TOTAL_STEPS} />,
           headerLeft: (props) => (
             <HeaderBackButton
               {...props}

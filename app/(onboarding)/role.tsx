@@ -12,10 +12,9 @@ import {
 } from 'tamagui';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import {useTheme, useTranslations} from '../../dopebase';
-import {useConfig} from '../../config';
 import {Image} from 'react-native';
 import {updateUser} from '../../api/firebase/users/userClient';
-import {Dog, UserRound, Check} from '@tamagui/lucide-icons';
+import {Dog, UserRound, Circle, CircleCheck} from '@tamagui/lucide-icons';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../redux/reducers/auth';
 
@@ -142,13 +141,15 @@ export default function RoleSelectionScreen() {
                 icon={role.icon}
                 iconAfter={
                   selectedRole === role.id ? (
-                    <Check color={colorSet.primary} size={24} />
-                  ) : null
+                    <CircleCheck color={colorSet.primaryForeground} size={24} />
+                  ) : (
+                    <Circle color='$gray6' size={24} />
+                  )
                 }
                 onPress={() => setSelectedRole(role.id as 'breeder' | 'seeker')}
                 backgroundColor={
                   selectedRole === role.id
-                    ? colorSet.grey3
+                    ? colorSet.grey0
                     : colorSet.secondaryBackground
                 }
               />

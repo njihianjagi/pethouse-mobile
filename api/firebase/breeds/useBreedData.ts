@@ -36,6 +36,13 @@ export interface UserBreed {
   breedName: string;
   breedGroup: string;
   isOwner: boolean;
+  yearsBreeding: number;
+  healthTesting: {
+    dna: boolean;
+    hips: boolean;
+    eyes: boolean;
+    heart: boolean;
+  };
   images?: {thumbnailURL: string; downloadURL: string}[];
   videos?: {downloadURL: string}[];
 }

@@ -46,7 +46,11 @@ const BreedPreferencesStep = ({formData, onChange, localized}) => (
   <YStack gap='$4'>
     <YStack gap='$2'>
       <Text>{localized('Preferred Breeds')}</Text>
-      <BreedSelector onSelectBreed={(breeds) => onChange('breeds', breeds)} />
+      <BreedSelector
+        onSelectBreed={(breeds) => onChange('breeds', breeds)}
+        open={false}
+        onOpenChange={() => {}}
+      />
     </YStack>
 
     <YStack gap='$2'>

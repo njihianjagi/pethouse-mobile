@@ -11,6 +11,7 @@ import {
   View,
   ScrollView,
   Spinner,
+  Image,
 } from 'tamagui';
 import BreedSelector from '../../../components/BreedSelector';
 import {useTranslations} from '../../../dopebase';
@@ -20,21 +21,13 @@ import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
+import {EmptyStateCard} from '../../../components/EmptyStateCard';
+import {Dog} from '@tamagui/lucide-icons';
+import {Plus} from '@tamagui/lucide-icons';
+import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;
-
-interface Breed {
-  breedId: string;
-  breedName: string;
-  yearsBreeding: number;
-  healthTesting: {
-    dna: boolean;
-    hips: boolean;
-    eyes: boolean;
-    heart: boolean;
-  };
-}
 
 const BreedsScreen = () => {
   const {localized} = useTranslations();
@@ -46,7 +39,8 @@ const BreedsScreen = () => {
   const colorSet = theme?.colors[appearance];
   const styles = dynamicStyles(theme, appearance);
 
-  const [breeds, setBreeds] = useState<Breed[]>([]);
+  const [breeds, setBreeds] = useState<UserBreed[]>([]);
+  const [selectorOpen, setSelectorOpen] = useState(false);
 
   useEffect(() => {
     if (currentUser?.breeding?.breeds) {
@@ -57,9 +51,11 @@ const BreedsScreen = () => {
   const healthTests = ['dna', 'hips', 'eyes', 'heart'];
 
   const handleAddBreed = (breed: any) => {
-    const newBreed: Breed = {
+    const newBreed: UserBreed = {
+      userId: currentUser.id,
       breedId: breed.id,
       breedName: breed.name,
+      breedGroup: breed.breedGroup,
       yearsBreeding: 0,
       healthTesting: {
         dna: false,
@@ -67,28 +63,19 @@ const BreedsScreen = () => {
         eyes: false,
         heart: false,
       },
+      isOwner: true,
     };
-    setBreeds(prev => [...prev, newBreed]);
+    setBreeds((prev) => [...prev, newBreed]);
   };
 
   const handleRemoveBreed = (breedId: string) => {
-    setBreeds(prev => prev.filter(b => b.breedId !== breedId));
+    setBreeds((prev) => prev.filter((b) => b.breedId !== breedId));
   };
 
   const handleUpdateBreed = (breedId: string, field: string, value: any) => {
-    setBreeds(prev =>
-      prev.map(breed => {
+    setBreeds((prev) =>
+      prev.map((breed) => {
         if (breed.breedId === breedId) {
-          if (field.startsWith('healthTesting.')) {
-            const testName = field.split('.')[1];
-            return {
-              ...breed,
-              healthTesting: {
-                ...breed.healthTesting,
-                [testName]: value,
-              },
-            };
-          }
           return {...breed, [field]: value};
         }
         return breed;
@@ -134,13 +121,15 @@ const BreedsScreen = () => {
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
+            justifyContent: 'center',
             backgroundColor: colorSet.primaryBackground,
           }}
         >
           <YStack padding='$4' gap='$4'>
-            <YStack gap='$4' padding='$4'>
+            <YStack gap='$2' padding='$4'>
               <Text style={styles.stepIndicator}>
-                {localized('Step')} {CURRENT_STEP} {localized('of')} {TOTAL_STEPS}
+                {localized('Step')} {CURRENT_STEP} {localized('of')}{' '}
+                {TOTAL_STEPS}
               </Text>
 
               <Text style={styles.title}>
@@ -153,25 +142,68 @@ const BreedsScreen = () => {
             </YStack>
 
             <YStack gap='$4'>
+              {breeds.length === 0 ? (
+                <EmptyStateCard
+                  title={localized('No Breeds Selected')}
+                  description={localized('Add the breeds you work with')}
+                  buttonText={localized('Add Breed')}
+                  headerIcon={<Dog size={48} color='$gray9' />}
+                  buttonIcon={<Plus size={20} color='$gray9' />}
+                  headerAlign='center'
+                  buttonAlign='center'
+                  color='$gray9'
+                  backgroundColor={colorSet.background}
+                  gap='$6'
+                  padding='$6'
+                  onPress={() => setSelectorOpen(true)}
+                />
+              ) : (
+                <Button onPress={() => setSelectorOpen(true)} theme='active'>
+                  {localized('Add Another Breed')}
+                </Button>
+              )}
+
               <BreedSelector
                 onSelectBreed={handleAddBreed}
-                buttonText={breeds.length > 0 ? localized('Add Another Breed') : localized('Add Breed')}
+                open={selectorOpen}
+                onOpenChange={setSelectorOpen}
               />
 
               {breeds.map((breed) => (
                 <Card key={breed.breedId} elevate bordered p='$4'>
                   <YStack gap='$3'>
-                    <XStack jc='space-between' ai='center'>
-                      <Text fontSize='$6' fontWeight='bold'>
-                        {breed.breedName}
-                      </Text>
-                      <Button
-                        theme='red'
-                        size='$3'
-                        onPress={() => handleRemoveBreed(breed.breedId)}
-                      >
-                        {localized('Remove')}
-                      </Button>
+                    <XStack gap='$4' flex={1}>
+                      {breed.images && (
+                        <Image
+                          source={{uri: breed.images[0].thumbnailURL}}
+                          style={{
+                            width: 80,
+                            height: 80,
+                            borderRadius: 8,
+                          }}
+                        />
+                      )}
+                      <YStack flex={1} gap='$2'>
+                        <XStack jc='space-between' ai='center' flex={1}>
+                          <YStack>
+                            <Text fontSize='$6' fontWeight='bold'>
+                              {breed.breedName}
+                            </Text>
+                            {breed.breedGroup && (
+                              <Text fontSize='$3' color='$gray10'>
+                                {breed.breedGroup}
+                              </Text>
+                            )}
+                          </YStack>
+                          <Button
+                            theme='red'
+                            size='$3'
+                            onPress={() => handleRemoveBreed(breed.breedId)}
+                          >
+                            {localized('Remove')}
+                          </Button>
+                        </XStack>
+                      </YStack>
                     </XStack>
 
                     <Input
@@ -210,14 +242,18 @@ const BreedsScreen = () => {
                 </Card>
               ))}
 
-              <Button
-                backgroundColor={colorSet.secondaryForeground}
-                color={colorSet.primaryForeground}
-                onPress={handleContinue}
-                disabled={breeds.length === 0 || loading}
-              >
-                {loading ? localized('Please wait...') : localized('Continue')}
-              </Button>
+              {breeds.length > 0 && (
+                <Button
+                  backgroundColor={colorSet.secondaryForeground}
+                  color={colorSet.primaryForeground}
+                  onPress={handleContinue}
+                  disabled={breeds.length === 0 || loading}
+                >
+                  {loading
+                    ? localized('Please wait...')
+                    : localized('Continue')}
+                </Button>
+              )}
             </YStack>
           </YStack>
         </ScrollView>
@@ -230,7 +266,7 @@ const dynamicStyles = (theme, colorScheme) => {
   const colorSet = theme.colors[colorScheme];
   return StyleSheet.create({
     title: {
-      fontSize: 40,
+      fontSize: 36,
       fontWeight: 'bold',
       color: colorSet.primaryForeground,
       marginTop: 0,
