@@ -60,7 +60,7 @@ const FacilitiesScreen = () => {
   ];
 
   const handleChange = (field: string, value: any) => {
-    setFacilities(prev => ({...prev, [field]: value}));
+    setFacilities((prev) => ({...prev, [field]: value}));
   };
 
   const handleContinue = async () => {
@@ -93,7 +93,7 @@ const FacilitiesScreen = () => {
     <View
       alignItems='center'
       justifyContent='center'
-      backgroundColor={colorSet.primaryBackground}
+      // backgroundColor={colorSet.primaryBackground}
       flex={1}
     >
       {loading ? (
@@ -102,18 +102,17 @@ const FacilitiesScreen = () => {
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
-            backgroundColor: colorSet.primaryBackground,
+            // backgroundColor: colorSet.primaryBackground,
           }}
         >
           <YStack padding='$4' gap='$4'>
-            <YStack gap='$4' padding='$4'>
+            <YStack gap='$2' padding='$4'>
               <Text style={styles.stepIndicator}>
-                {localized('Step')} {CURRENT_STEP} {localized('of')} {TOTAL_STEPS}
+                {localized('Step')} {CURRENT_STEP} {localized('of')}{' '}
+                {TOTAL_STEPS}
               </Text>
 
-              <Text style={styles.title}>
-                {localized('Your Facilities')}
-              </Text>
+              <Text style={styles.title}>{localized('Your Facilities')}</Text>
 
               <Text style={styles.caption}>
                 {localized('Tell us about your breeding facilities')}
@@ -127,14 +126,20 @@ const FacilitiesScreen = () => {
                   value={facilities.type}
                   onValueChange={(value) => handleChange('type', value)}
                 >
-                  <XStack gap='$4' flexWrap='wrap'>
+                  <YStack gap='$4' flexWrap='wrap'>
                     {facilityTypes.map((type) => (
-                      <RadioGroup.Item key={type.value} value={type.value} size='$4'>
-                        <RadioGroup.Indicator />
+                      <XStack>
+                        <RadioGroup.Item
+                          key={type.value}
+                          value={type.value}
+                          // size='$12'
+                        >
+                          <RadioGroup.Indicator />
+                        </RadioGroup.Item>
                         <Text ml='$2'>{localized(type.label)}</Text>
-                      </RadioGroup.Item>
+                      </XStack>
                     ))}
-                  </XStack>
+                  </YStack>
                 </RadioGroup>
               </YStack>
 

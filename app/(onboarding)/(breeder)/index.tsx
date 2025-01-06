@@ -11,8 +11,9 @@ const BreederOnboardingScreen = () => {
     console.log('current user: ', currentUser);
     if (!currentUser) return;
 
-    const {kennel} = currentUser;
+    const {kennel, breeding, facilities} = currentUser;
 
+    console.log(kennel);
     if (currentUser?.onboardingComplete) {
       router.replace('/(tabs)');
       return;
@@ -23,12 +24,12 @@ const BreederOnboardingScreen = () => {
       return;
     }
 
-    if (!kennel?.breeds || kennel.breeds.length === 0) {
+    if (!breeding || breeding.breeds.length === 0) {
       router.push('/(onboarding)/(breeder)/breeds');
       return;
     }
 
-    if (!kennel?.facilities) {
+    if (!facilities) {
       router.push('/(onboarding)/(breeder)/facilities');
       return;
     }

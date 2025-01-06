@@ -49,8 +49,6 @@ export default function RootLayout() {
     SpaceMono: require('../assets/fonts/Oswald-Regular.ttf'),
   });
 
-  const insets = useSafeAreaInsets();
-
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -91,35 +89,33 @@ export default function RootLayout() {
                       >
                         <QueryClientProvider client={queryClient}>
                           <SafeAreaProvider>
-                            <SafeAreaView style={{flex: 1, paddingTop: 0}}>
-                              <Stack>
-                                <Stack.Screen
-                                  name='(auth)'
-                                  options={{headerShown: false}}
-                                />
-                                <Stack.Screen
-                                  name='(onboarding)'
-                                  options={{headerShown: false}}
-                                />
-                                <Stack.Screen
-                                  name='(tabs)'
-                                  options={{headerShown: false}}
-                                />
-                                <Stack.Screen
-                                  name='(kennels)'
-                                  options={{headerShown: false}}
-                                />
-                                <Stack.Screen
-                                  name='(listings)'
-                                  options={{headerShown: false}}
-                                />
-                                <Stack.Screen
-                                  name='(litters)'
-                                  options={{headerShown: false}}
-                                />
-                                <Stack.Screen name='+not-found' />
-                              </Stack>
-                            </SafeAreaView>
+                            <Stack>
+                              <Stack.Screen
+                                name='(auth)'
+                                options={{headerShown: false}}
+                              />
+                              <Stack.Screen
+                                name='(onboarding)'
+                                options={{headerShown: false}}
+                              />
+                              <Stack.Screen
+                                name='(tabs)'
+                                options={{headerShown: false}}
+                              />
+                              <Stack.Screen
+                                name='(kennels)'
+                                options={{headerShown: false}}
+                              />
+                              <Stack.Screen
+                                name='(listings)'
+                                options={{headerShown: false}}
+                              />
+                              <Stack.Screen
+                                name='(litters)'
+                                options={{headerShown: false}}
+                              />
+                              <Stack.Screen name='+not-found' />
+                            </Stack>
                           </SafeAreaProvider>
                         </QueryClientProvider>
                       </TamaguiProvider>

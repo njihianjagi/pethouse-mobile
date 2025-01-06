@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
+    //padding: 16,
     gap: 16,
     overflow: 'scroll',
   },

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet} from 'react-native';
+import {FlatList, StyleSheet} from 'react-native';
 import {
   YStack,
   Text,
@@ -25,6 +25,7 @@ import {EmptyStateCard} from '../../../components/EmptyStateCard';
 import {Dog} from '@tamagui/lucide-icons';
 import {Plus} from '@tamagui/lucide-icons';
 import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
+import UserBreedCard from './user-breed-card';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;
@@ -56,6 +57,7 @@ const BreedsScreen = () => {
       breedId: breed.id,
       breedName: breed.name,
       breedGroup: breed.breedGroup,
+      images: [breed.image],
       yearsBreeding: 0,
       healthTesting: {
         dna: false,
@@ -112,7 +114,7 @@ const BreedsScreen = () => {
     <View
       alignItems='center'
       justifyContent='center'
-      backgroundColor={colorSet.primaryBackground}
+      // backgroundColor={colorSet.primaryBackground}
       flex={1}
     >
       {loading ? (
@@ -122,7 +124,7 @@ const BreedsScreen = () => {
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: 'center',
-            backgroundColor: colorSet.primaryBackground,
+            // backgroundColor: colorSet.primaryBackground,
           }}
         >
           <YStack padding='$4' gap='$4'>
@@ -142,7 +144,7 @@ const BreedsScreen = () => {
             </YStack>
 
             <YStack gap='$4'>
-              {breeds.length === 0 ? (
+              {breeds.length === 0 && (
                 <EmptyStateCard
                   title={localized('No Breeds Selected')}
                   description={localized('Add the breeds you work with')}
@@ -157,10 +159,6 @@ const BreedsScreen = () => {
                   padding='$6'
                   onPress={() => setSelectorOpen(true)}
                 />
-              ) : (
-                <Button onPress={() => setSelectorOpen(true)} theme='active'>
-                  {localized('Add Another Breed')}
-                </Button>
               )}
 
               <BreedSelector
@@ -169,79 +167,25 @@ const BreedsScreen = () => {
                 onOpenChange={setSelectorOpen}
               />
 
-              {breeds.map((breed) => (
-                <Card key={breed.breedId} elevate bordered p='$4'>
-                  <YStack gap='$3'>
-                    <XStack gap='$4' flex={1}>
-                      {breed.images && (
-                        <Image
-                          source={{uri: breed.images[0].thumbnailURL}}
-                          style={{
-                            width: 80,
-                            height: 80,
-                            borderRadius: 8,
-                          }}
-                        />
-                      )}
-                      <YStack flex={1} gap='$2'>
-                        <XStack jc='space-between' ai='center' flex={1}>
-                          <YStack>
-                            <Text fontSize='$6' fontWeight='bold'>
-                              {breed.breedName}
-                            </Text>
-                            {breed.breedGroup && (
-                              <Text fontSize='$3' color='$gray10'>
-                                {breed.breedGroup}
-                              </Text>
-                            )}
-                          </YStack>
-                          <Button
-                            theme='red'
-                            size='$3'
-                            onPress={() => handleRemoveBreed(breed.breedId)}
-                          >
-                            {localized('Remove')}
-                          </Button>
-                        </XStack>
-                      </YStack>
-                    </XStack>
-
-                    <Input
-                      placeholder={localized('Years of breeding experience')}
-                      keyboardType='numeric'
-                      value={breed.yearsBreeding.toString()}
-                      onChangeText={(value) =>
-                        handleUpdateBreed(
-                          breed.breedId,
-                          'yearsBreeding',
-                          parseInt(value) || 0
-                        )
-                      }
+              <FlatList
+                data={breeds}
+                renderItem={({item, index}) => (
+                  <XStack flex={1} key={index}>
+                    <UserBreedCard
+                      key={item.id}
+                      userBreed={item}
+                      handleRemoveBreed={handleRemoveBreed}
                     />
+                  </XStack>
+                )}
+                keyExtractor={(item) => item.breedId}
+              />
 
-                    <Text fontSize='$5' fontWeight='bold'>
-                      {localized('Health Testing')}
-                    </Text>
-
-                    {healthTests.map((test) => (
-                      <XStack key={test} jc='space-between' ai='center'>
-                        <Text textTransform='capitalize'>{test}</Text>
-                        <Switch
-                          checked={breed.healthTesting[test]}
-                          onCheckedChange={(checked) =>
-                            handleUpdateBreed(
-                              breed.breedId,
-                              `healthTesting.${test}`,
-                              checked
-                            )
-                          }
-                        />
-                      </XStack>
-                    ))}
-                  </YStack>
-                </Card>
-              ))}
-
+              {breeds.length > 0 && (
+                <Button onPress={() => setSelectorOpen(true)} theme='active'>
+                  {localized('Add Another Breed')}
+                </Button>
+              )}
               {breeds.length > 0 && (
                 <Button
                   backgroundColor={colorSet.secondaryForeground}
