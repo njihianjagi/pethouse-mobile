@@ -108,12 +108,12 @@ export default function HomeScreen() {
           <XStack gap='$2' alignItems='center'>
             <MapPin color={colorSet.primaryForeground} />
             <Text>
-              {currentUser.location?.latitude},{' '}
-              {currentUser.location?.longitude}
+              {currentUser?.location?.latitude},{' '}
+              {currentUser?.location?.longitude}
             </Text>
           </XStack>
 
-          {currentUser.role === 'seeker' && (
+          {currentUser?.role === 'seeker' && (
             <YStack gap='$4'>
               <EmptyStateCard
                 title={

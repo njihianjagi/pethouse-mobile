@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {FlatList, StyleSheet} from 'react-native';
+import {Alert, FlatList, StyleSheet} from 'react-native';
 import {
   YStack,
   Text,
@@ -36,6 +36,8 @@ const BreedsScreen = () => {
   const currentUser = useCurrentUser();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   const {theme, appearance} = useTheme();
   const colorSet = theme?.colors[appearance];
   const styles = dynamicStyles(theme, appearance);
@@ -87,10 +89,14 @@ const BreedsScreen = () => {
 
   const handleContinue = async () => {
     if (breeds.length === 0) {
+      Alert.alert(
+        localized('Error'),
+        localized('Please add at least one breed to continue')
+      );
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     try {
       const userData = {
         ...currentUser,
@@ -106,7 +112,7 @@ const BreedsScreen = () => {
     } catch (error) {
       console.error('Error updating user:', error);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -192,10 +198,16 @@ const BreedsScreen = () => {
                   color={colorSet.primaryForeground}
                   onPress={handleContinue}
                   disabled={breeds.length === 0 || loading}
+                  iconAfter={
+                    saving ? (
+                      <Spinner
+                        size='large'
+                        color={colorSet.primaryForeground}
+                      />
+                    ) : undefined
+                  }
                 >
-                  {loading
-                    ? localized('Please wait...')
-                    : localized('Continue')}
+                  {saving ? localized('Please wait...') : localized('Continue')}
                 </Button>
               )}
             </YStack>

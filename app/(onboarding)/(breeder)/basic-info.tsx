@@ -29,6 +29,8 @@ export const BasicInfoScreen = () => {
   const currentUser = useCurrentUser();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
   const {theme, appearance} = useTheme();
   const colorSet = theme?.colors[appearance];
@@ -60,9 +62,6 @@ export const BasicInfoScreen = () => {
   }, [currentUser]);
 
   const handleInputChange = (section: string, field: string, value: any) => {
-    console.log('section', section);
-    console.log('field', field);
-    console.log('value', value);
     setFormData((prev) => ({
       ...prev,
       [section]: {
@@ -232,8 +231,13 @@ export const BasicInfoScreen = () => {
                 color={colorSet.primaryForeground}
                 onPress={handleContinue}
                 disabled={loading}
+                iconAfter={
+                  saving ? (
+                    <Spinner color={colorSet.primaryForeground} />
+                  ) : undefined
+                }
               >
-                {loading ? localized('Please wait...') : localized('Continue')}
+                {saving ? localized('Please wait...') : localized('Continue')}
               </Button>
             </YStack>
           </YStack>

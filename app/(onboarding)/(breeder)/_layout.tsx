@@ -1,14 +1,14 @@
-import {Slot} from 'expo-router';
+import {Slot, useRouter} from 'expo-router';
 import {useTheme} from '../../../dopebase';
-import {SafeAreaView, Text, View} from 'react-native';
-import {Image} from 'tamagui';
+import {SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
+import {Button, Image} from 'tamagui';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const StepIndicator = ({current, total}: {current: number; total: number}) => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
-
   return (
     <View>
       <Text style={{color: colorSet.primaryText, fontSize: 16}}>
@@ -20,6 +20,12 @@ const StepIndicator = ({current, total}: {current: number; total: number}) => {
 
 export default function BreederOnboardingLayout() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const handleBack = () => {
+    // Logic to navigate back
+    router.back();
+  };
 
   return (
     <SafeAreaView style={{flex: 1, paddingTop: insets.top}}>

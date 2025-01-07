@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {StyleSheet} from 'react-native';
+import {Alert, StyleSheet} from 'react-native';
 import {
   YStack,
   Text,
@@ -36,6 +36,7 @@ const FacilitiesScreen = () => {
   const currentUser = useCurrentUser();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const {theme, appearance} = useTheme();
   const colorSet = theme?.colors[appearance];
   const styles = dynamicStyles(theme, appearance);
@@ -65,10 +66,14 @@ const FacilitiesScreen = () => {
 
   const handleContinue = async () => {
     if (!facilities.type || !facilities.details) {
+      Alert.alert(
+        localized('Error'),
+        localized('Please fill in all required fields')
+      );
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     try {
       const userData = {
         ...currentUser,
@@ -85,7 +90,7 @@ const FacilitiesScreen = () => {
     } catch (error) {
       console.error('Error updating user:', error);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -96,101 +101,122 @@ const FacilitiesScreen = () => {
       // backgroundColor={colorSet.primaryBackground}
       flex={1}
     >
-      {loading ? (
-        <Spinner size='large' color={colorSet.primaryForeground} />
-      ) : (
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            // backgroundColor: colorSet.primaryBackground,
-          }}
-        >
-          <YStack padding='$4' gap='$4'>
-            <YStack gap='$2' padding='$4'>
-              <Text style={styles.stepIndicator}>
-                {localized('Step')} {CURRENT_STEP} {localized('of')}{' '}
-                {TOTAL_STEPS}
-              </Text>
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          // backgroundColor: colorSet.primaryBackground,
+        }}
+      >
+        <YStack padding='$4' gap='$4'>
+          <YStack gap='$2' padding='$4'>
+            <Text style={styles.stepIndicator}>
+              {localized('Step')} {CURRENT_STEP} {localized('of')} {TOTAL_STEPS}
+            </Text>
 
-              <Text style={styles.title}>{localized('Your Facilities')}</Text>
+            <Text style={styles.title}>{localized('Your Facilities')}</Text>
 
-              <Text style={styles.caption}>
-                {localized('Tell us about your breeding facilities')}
-              </Text>
-            </YStack>
-
-            <YStack gap='$4'>
-              <YStack gap='$2'>
-                <Text>{localized('Facility Type')}*</Text>
-                <RadioGroup
-                  value={facilities.type}
-                  onValueChange={(value) => handleChange('type', value)}
-                >
-                  <YStack gap='$4' flexWrap='wrap'>
-                    {facilityTypes.map((type) => (
-                      <XStack>
-                        <RadioGroup.Item
-                          key={type.value}
-                          value={type.value}
-                          // size='$12'
-                        >
-                          <RadioGroup.Indicator />
-                        </RadioGroup.Item>
-                        <Text ml='$2'>{localized(type.label)}</Text>
-                      </XStack>
-                    ))}
-                  </YStack>
-                </RadioGroup>
-              </YStack>
-
-              <YStack gap='$2'>
-                <Text>{localized('Facility Details')}*</Text>
-                <Input
-                  value={facilities.details}
-                  onChangeText={(value) => handleChange('details', value)}
-                  placeholder={localized('Describe your breeding facilities')}
-                  multiline
-                  numberOfLines={4}
-                  textAlignVertical='top'
-                />
-              </YStack>
-
-              <YStack gap='$2'>
-                <Text>{localized('Additional Features')}</Text>
-                <XStack gap='$4' flexWrap='wrap'>
-                  <XStack gap='$2' ai='center'>
-                    <Switch
-                      checked={facilities.hasWhelping}
-                      onCheckedChange={(checked) =>
-                        handleChange('hasWhelping', checked)
-                      }
-                    />
-                    <Text>{localized('Whelping Area')}</Text>
-                  </XStack>
-                  <XStack gap='$2' ai='center'>
-                    <Switch
-                      checked={facilities.hasExerciseArea}
-                      onCheckedChange={(checked) =>
-                        handleChange('hasExerciseArea', checked)
-                      }
-                    />
-                    <Text>{localized('Exercise Area')}</Text>
-                  </XStack>
-                </XStack>
-              </YStack>
-
-              <Button
-                backgroundColor={colorSet.secondaryForeground}
-                color={colorSet.primaryForeground}
-                onPress={handleContinue}
-                disabled={!facilities.type || !facilities.details || loading}
-              >
-                {loading ? localized('Please wait...') : localized('Complete')}
-              </Button>
-            </YStack>
+            <Text style={styles.caption}>
+              {localized('Tell us about your breeding facilities')}
+            </Text>
           </YStack>
-        </ScrollView>
-      )}
+
+          <YStack gap='$4'>
+            <YStack gap='$2'>
+              <Text fontWeight={200}>{localized('Facility Type')}*</Text>
+              <RadioGroup
+                value={facilities.type}
+                onValueChange={(value) => handleChange('type', value)}
+              >
+                <YStack gap='$4' flexWrap='wrap'>
+                  {facilityTypes.map((type) => (
+                    <XStack>
+                      <RadioGroup.Item
+                        key={type.value}
+                        value={type.value}
+                        // size='$12'
+                      >
+                        <RadioGroup.Indicator />
+                      </RadioGroup.Item>
+                      <Text ml='$2'>{localized(type.label)}</Text>
+                    </XStack>
+                  ))}
+                </YStack>
+              </RadioGroup>
+            </YStack>
+
+            <YStack gap='$2'>
+              <Text>{localized('Facility Details')}*</Text>
+              <Input
+                value={facilities.details}
+                onChangeText={(value) => handleChange('details', value)}
+                placeholder={localized('Describe your breeding facilities')}
+                multiline
+                numberOfLines={4}
+                textAlignVertical='top'
+              />
+            </YStack>
+
+            <YStack gap='$2'>
+              <Text>{localized('Additional Features')}</Text>
+              <XStack gap='$4' flexWrap='wrap'>
+                <XStack gap='$2' ai='center'>
+                  <Switch
+                    borderColor={colorSet.secondaryForeground}
+                    backgroundColor={
+                      !!facilities.hasWhelping
+                        ? colorSet.secondaryForeground
+                        : colorSet.grey0
+                    }
+                    checked={facilities.hasWhelping}
+                    onCheckedChange={(checked) =>
+                      handleChange('hasWhelping', checked)
+                    }
+                  >
+                    <Switch.Thumb
+                      animation='quicker'
+                      backgroundColor={colorSet.primaryForeground}
+                    />
+                  </Switch>
+                  <Text>{localized('Whelping Area')}</Text>
+                </XStack>
+                <XStack gap='$2' ai='center'>
+                  <Switch
+                    borderColor={colorSet.secondaryForeground}
+                    backgroundColor={
+                      !!facilities.hasExerciseArea
+                        ? colorSet.secondaryForeground
+                        : colorSet.grey0
+                    }
+                    checked={facilities.hasExerciseArea}
+                    onCheckedChange={(checked) =>
+                      handleChange('hasExerciseArea', checked)
+                    }
+                  >
+                    <Switch.Thumb
+                      animation='quicker'
+                      backgroundColor={colorSet.primaryForeground}
+                    />
+                  </Switch>
+                  <Text>{localized('Exercise Area')}</Text>
+                </XStack>
+              </XStack>
+            </YStack>
+
+            <Button
+              backgroundColor={colorSet.secondaryForeground}
+              color={colorSet.primaryForeground}
+              onPress={handleContinue}
+              iconAfter={
+                saving ? (
+                  <Spinner color={colorSet.primaryForeground} />
+                ) : undefined
+              }
+            >
+              {saving ? localized('Please wait...') : localized('Complete')}
+            </Button>
+          </YStack>
+        </YStack>
+      </ScrollView>
     </View>
   );
 };
