@@ -9,6 +9,7 @@ import {
   Spinner,
   Button,
   XGroup,
+  Image,
 } from 'tamagui';
 import {useTranslations} from '../../../dopebase';
 import LocationSelector from '../../../components/LocationSelector';
@@ -19,6 +20,7 @@ import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
 import {Copyright, Home, MapPin} from '@tamagui/lucide-icons';
+import ParallaxScrollView from '../../../components/ParallaxScrollView';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 1;
@@ -30,6 +32,7 @@ export const BasicInfoScreen = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [noKennel, setNoKennel] = useState(false);
 
   const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
   const {theme, appearance} = useTheme();
@@ -73,11 +76,12 @@ export const BasicInfoScreen = () => {
 
   const handleContinue = async () => {
     if (
-      !formData.kennel.name ||
-      !formData.kennel.location.address ||
-      !formData.kennel.location.city ||
-      !formData.kennel.location.state ||
-      !formData.kennel.location.country
+      (!formData.kennel.name ||
+        !formData.kennel.location.address ||
+        !formData.kennel.location.city ||
+        !formData.kennel.location.state ||
+        !formData.kennel.location.country) &&
+      !noKennel
     ) {
       Alert.alert(
         localized('Error'),
@@ -85,12 +89,12 @@ export const BasicInfoScreen = () => {
       );
       return;
     }
+    setSaving(true);
 
-    setLoading(true);
     try {
       const userData = {
         ...currentUser,
-        kennel: formData.kennel,
+        kennel: noKennel ? null : formData.kennel,
       };
 
       await updateUser(currentUser?.id, userData);
@@ -99,7 +103,7 @@ export const BasicInfoScreen = () => {
     } catch (error) {
       console.error('Error updating user:', error);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -113,14 +117,11 @@ export const BasicInfoScreen = () => {
       {loading ? (
         <Spinner size='large' color={colorSet.primaryForeground} />
       ) : (
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'center',
-            backgroundColor: colorSet.primaryBackground,
-          }}
+        <ParallaxScrollView
+          headerImage={<Image source={{uri: '../assets/images/doggo.png'}} />}
+          headerBackgroundColor={{dark: '#ffffff', light: '#000000'}}
         >
-          <YStack padding='$4' gap='$4'>
+          <YStack padding='$4' gap='$4' flex={1} height='100%'>
             <YStack gap='$4' padding='$4'>
               <Text style={styles.stepIndicator}>
                 {localized('Step')} {CURRENT_STEP} {localized('of')}{' '}
@@ -250,7 +251,17 @@ export const BasicInfoScreen = () => {
             }
             currentLocation={currentUser?.kennel?.location}
           />
-        </ScrollView>
+        </ParallaxScrollView>
+
+        // <ScrollView
+        //   contentContainerStyle={{
+        //     flexGrow: 1,
+        //     justifyContent: 'center',
+        //     backgroundColor: colorSet.primaryBackground,
+        //   }}
+        // >
+
+        // </ScrollView>
       )}
     </View>
   );

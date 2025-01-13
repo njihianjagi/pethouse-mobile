@@ -3,10 +3,12 @@ import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {Href, useRouter} from 'expo-router';
 import {
+  Button,
   Card,
   H3,
   ListItem,
   ScrollView,
+  Spinner,
   Text,
   View,
   XStack,
@@ -150,45 +152,25 @@ export default function HomeScreen() {
 
           {/* <MatchingBreeders userBreeds={currentUser.userBreeds} /> */}
 
-          {/* <YStack gap='$4'>
-          <XStack justifyContent='space-between' alignItems='center'>
-            <H3 fontWeight='bold'>{localized('Latest Pet Listings')}</H3>
-            <Button onPress={() => router.push('/(listings)')}>
-              {localized('See All')}
-            </Button>
-          </XStack>
-          {listingsLoading ? (
-            <Spinner />
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <XStack gap='$2'>
-                {listings.slice(0, 5).map((listing) => (
-                  <PetCard key={listing.id} listing={listing} />
-                ))}
-              </XStack>
-            </ScrollView>
-          )}
-        </YStack>
-
-        <YStack gap='$4'>
-          <XStack justifyContent='space-between' alignItems='center'>
-            <H3 fontWeight='bold'>{localized('Upcoming Litters')}</H3>
-            <Button onPress={() => router.push('/(litters)')}>
-              {localized('See All')}
-            </Button>
-          </XStack>
-          {littersLoading ? (
-            <Spinner />
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <XStack gap='$2'>
-                {litters.slice(0, 5).map((litter) => (
-                  <LitterCard key={litter.id} litter={litter} />
-                ))}
-              </XStack>
-            </ScrollView>
-          )}
-        </YStack> */}
+          <YStack gap='$4'>
+            <XStack justifyContent='space-between' alignItems='center'>
+              <H3 fontWeight='bold'>{localized('Latest Pet Listings')}</H3>
+              <Button onPress={() => router.push('/(listings)')}>
+                {localized('See All')}
+              </Button>
+            </XStack>
+            {listingsLoading ? (
+              <Spinner />
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <XStack gap='$2'>
+                  {listings.slice(0, 5).map((listing) => (
+                    <PetCard key={listing.id} listing={listing} />
+                  ))}
+                </XStack>
+              </ScrollView>
+            )}
+          </YStack>
         </YStack>
       </ScrollView>
 

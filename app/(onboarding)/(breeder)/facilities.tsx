@@ -77,11 +77,8 @@ const FacilitiesScreen = () => {
     try {
       const userData = {
         ...currentUser,
-        breeding: {
-          ...currentUser?.breeding,
-          facilities,
-          onboardingComplete: true,
-        },
+        facilities,
+        onboardingComplete: true,
       };
 
       await updateUser(currentUser?.id, userData);

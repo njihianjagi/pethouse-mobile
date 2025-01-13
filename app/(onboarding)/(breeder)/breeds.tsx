@@ -46,6 +46,9 @@ const BreedsScreen = () => {
   const [selectorOpen, setSelectorOpen] = useState(false);
 
   useEffect(() => {
+    if (!currentUser) {
+      router.replace('/');
+    }
     if (currentUser?.breeding?.breeds) {
       setBreeds(currentUser.breeding.breeds);
     }
@@ -192,24 +195,19 @@ const BreedsScreen = () => {
                   {localized('Add Another Breed')}
                 </Button>
               )}
-              {breeds.length > 0 && (
-                <Button
-                  backgroundColor={colorSet.secondaryForeground}
-                  color={colorSet.primaryForeground}
-                  onPress={handleContinue}
-                  disabled={breeds.length === 0 || loading}
-                  iconAfter={
-                    saving ? (
-                      <Spinner
-                        size='large'
-                        color={colorSet.primaryForeground}
-                      />
-                    ) : undefined
-                  }
-                >
-                  {saving ? localized('Please wait...') : localized('Continue')}
-                </Button>
-              )}
+              <Button
+                backgroundColor={colorSet.secondaryForeground}
+                color={colorSet.primaryForeground}
+                onPress={handleContinue}
+                disabled={loading}
+                iconAfter={
+                  saving ? (
+                    <Spinner color={colorSet.primaryForeground} />
+                  ) : undefined
+                }
+              >
+                {saving ? localized('Please wait...') : localized('Continue')}
+              </Button>
             </YStack>
           </YStack>
         </ScrollView>
