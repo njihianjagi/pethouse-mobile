@@ -10,29 +10,30 @@ const SeekerOnboardingScreen = () => {
   useEffect(() => {
     if (!currentUser) return;
 
-    const {seeker} = currentUser;
+    console.log('currentUser: ', currentUser);
+    const {household, preferences, experience, housing} = currentUser;
 
-    if (seeker?.onboardingComplete) {
+    if (currentUser?.profileComplete) {
       router.replace('/(tabs)');
       return;
     }
 
-    if (!seeker?.household) {
+    if (!household) {
       router.replace('/(onboarding)/(seeker)/household');
       return;
     }
 
-    if (!seeker?.housing) {
+    if (!housing) {
       router.replace('/(onboarding)/(seeker)/housing');
       return;
     }
 
-    if (!seeker?.experience) {
+    if (!experience) {
       router.replace('/(onboarding)/(seeker)/experience');
       return;
     }
 
-    if (!seeker?.preferences) {
+    if (!preferences) {
       router.replace('/(onboarding)/(seeker)/preferences');
       return;
     }

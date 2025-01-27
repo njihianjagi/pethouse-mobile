@@ -1,26 +1,24 @@
 import React, {useState, useEffect} from 'react';
-import {Alert, StyleSheet} from 'react-native';
 import {
   YStack,
-  Input,
   Text,
+  XStack,
+  Input,
   View,
-  ScrollView,
-  Spinner,
   Button,
-  XGroup,
   Image,
+  Spinner,
 } from 'tamagui';
 import {useTranslations} from '../../../dopebase';
-import LocationSelector from '../../../components/LocationSelector';
 import {useRouter} from 'expo-router';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
+import ParallaxScrollView from '@/components/ParallaxScrollView';
+import LocationSelector from '@/components/LocationSelector';
 import {Copyright, Home, MapPin} from '@tamagui/lucide-icons';
-import ParallaxScrollView from '../../../components/ParallaxScrollView';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 1;
@@ -30,19 +28,17 @@ export const BasicInfoScreen = () => {
   const router = useRouter();
   const currentUser = useCurrentUser();
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [noKennel, setNoKennel] = useState(false);
-
-  const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
   const {theme, appearance} = useTheme();
   const colorSet = theme?.colors[appearance];
-  const styles = dynamicStyles(theme, appearance);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
+  const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
   const [formData, setFormData] = useState({
     kennel: {
       name: '',
-      registrationNumber: '',
+      yearsOfExperience: 0,
+      website: '',
       description: '',
       location: {
         name: '',
@@ -55,11 +51,18 @@ export const BasicInfoScreen = () => {
     },
   });
 
+  const facilityTypes = [
+    {value: 'home', label: 'Home Based'},
+    {value: 'dedicated_facility', label: 'Dedicated Facility'},
+  ];
+
   useEffect(() => {
     if (currentUser?.kennel) {
       setFormData((prev) => ({
-        ...prev,
-        kennel: currentUser.kennel,
+        kennel: {
+          ...prev.kennel,
+          ...currentUser.kennel,
+        },
       }));
     }
   }, [currentUser]);
@@ -74,223 +77,175 @@ export const BasicInfoScreen = () => {
     }));
   };
 
-  const handleContinue = async () => {
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      kennel: {
+        ...prev.kennel,
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleSubmit = async () => {
+    // Basic validation
     if (
-      (!formData.kennel.name ||
-        !formData.kennel.location.address ||
-        !formData.kennel.location.city ||
-        !formData.kennel.location.state ||
-        !formData.kennel.location.country) &&
-      !noKennel
+      !formData.kennel.name ||
+      !formData.kennel.location.address ||
+      !formData.kennel.location.city ||
+      !formData.kennel.location.state ||
+      !formData.kennel.location.country
     ) {
-      Alert.alert(
-        localized('Error'),
-        localized('Please fill in all required location fields')
-      );
+      alert(localized('Please fill in all required fields'));
       return;
     }
-    setSaving(true);
 
     try {
+      setSaving(true);
       const userData = {
         ...currentUser,
-        kennel: noKennel ? null : formData.kennel,
+        kennel: formData.kennel,
       };
 
       await updateUser(currentUser?.id, userData);
       dispatch(setUserData(userData));
-      router.push('/(onboarding)/(breeder)/breeds');
+      router.replace('/(onboarding)/(breeder)/breeds');
     } catch (error) {
-      console.error('Error updating user:', error);
+      alert(localized('Failed to update profile. Please try again.'));
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <View
-      alignItems='center'
-      justifyContent='center'
-      backgroundColor={colorSet.primaryBackground}
-      flex={1}
-    >
-      {loading ? (
-        <Spinner size='large' color={colorSet.primaryForeground} />
-      ) : (
-        <ParallaxScrollView
-          headerImage={<Image source={{uri: '../assets/images/doggo.png'}} />}
-          headerBackgroundColor={{dark: '#ffffff', light: '#000000'}}
-        >
-          <YStack padding='$4' gap='$4' flex={1} height='100%'>
-            <YStack gap='$4' padding='$4'>
-              <Text style={styles.stepIndicator}>
-                {localized('Step')} {CURRENT_STEP} {localized('of')}{' '}
-                {TOTAL_STEPS}
-              </Text>
+    <View alignItems='center' justifyContent='center' flex={1}>
+      <ParallaxScrollView
+        headerImage={
+          <Image
+            source={require('../../../assets/images/doggo.png')}
+            objectFit='contain'
+          />
+        }
+        headerBackgroundColor={{
+          dark: colorSet.primaryBackground,
+          light: colorSet.primaryBackground,
+        }}
+      >
+        <YStack padding='$4' gap='$4' flex={1} height='100%'>
+          <YStack gap='$4' padding='$4'>
+            <Text
+              style={{
+                fontSize: 14,
+                color: colorSet.primaryForeground,
+                textAlign: 'center',
+                opacity: 0.8,
+              }}
+            >
+              {localized('Step')} {CURRENT_STEP} {localized('of')} {TOTAL_STEPS}
+            </Text>
 
-              <Text style={styles.title}>
-                {localized('Tell us about your kennel')}
-              </Text>
+            <Text
+              style={{
+                fontSize: 40,
+                fontWeight: 'bold',
+                color: colorSet.primaryForeground,
+                marginTop: 0,
+                marginBottom: 0,
+                textAlign: 'center',
+              }}
+            >
+              {localized('Tell us about your kennel')}
+            </Text>
 
-              <Text style={styles.caption}>
-                {localized(
-                  'This information will be shown to potential adopters'
-                )}
-              </Text>
-            </YStack>
-
-            <YStack gap='$4'>
-              <YStack gap='$4'>
-                <YStack gap='$2'>
-                  {/* <Text>{localized('Kennel Name')}*</Text> */}
-                  <XGroup>
-                    <XGroup.Item>
-                      <Button disabled theme='active' icon={<Home />} />
-                    </XGroup.Item>
-
-                    <XGroup.Item>
-                      <Input
-                        flex={1}
-                        value={formData.kennel.name}
-                        onChangeText={(value) =>
-                          handleInputChange('kennel', 'name', value)
-                        }
-                        placeholder={localized('Enter your kennel name')}
-                        autoCapitalize='words'
-                      />
-                    </XGroup.Item>
-                  </XGroup>
-                </YStack>
-
-                <YStack gap='$2'>
-                  {/* <Text>{localized('Location')}*</Text> */}
-                  <XGroup>
-                    <XGroup.Item>
-                      <Button disabled theme='active' icon={<MapPin />} />
-                    </XGroup.Item>
-
-                    <XGroup.Item>
-                      <Input
-                        flex={1}
-                        placeholder={localized('Search for your location')}
-                        value={
-                          formData.kennel.location.address
-                            ? `${formData.kennel.location.address}`
-                            : ''
-                        }
-                        onPressIn={() => setIsLocationSheetOpen(true)}
-                      />
-                    </XGroup.Item>
-                  </XGroup>
-                </YStack>
-
-                <YStack gap='$2'>
-                  {/* <Text>{localized('Registration Number')}</Text> */}
-                  <XGroup>
-                    <XGroup.Item>
-                      <Button disabled theme='active' icon={<Copyright />} />
-                    </XGroup.Item>
-
-                    <XGroup.Item>
-                      <Input
-                        flex={1}
-                        value={formData.kennel.registrationNumber}
-                        onChangeText={(value) =>
-                          handleInputChange(
-                            'kennel',
-                            'registrationNumber',
-                            value
-                          )
-                        }
-                        placeholder={localized(
-                          'Enter registration number (optional)'
-                        )}
-                      />
-                    </XGroup.Item>
-                  </XGroup>
-                </YStack>
-                {/* 
-                <YStack gap='$2'>
-                  <Text>{localized('Description')}*</Text>
-                  <Input
-                    value={formData.kennel.description}
-                    onChangeText={(value) =>
-                      handleInputChange('kennel', 'description', value)
-                    }
-                    placeholder={localized(
-                      'Tell us about your breeding program'
-                    )}
-                    multiline
-                    numberOfLines={4}
-                    textAlignVertical='top'
-                  />
-                </YStack> */}
-              </YStack>
-
-              <Button
-                backgroundColor={colorSet.secondaryForeground}
-                color={colorSet.primaryForeground}
-                onPress={handleContinue}
-                disabled={loading}
-                iconAfter={
-                  saving ? (
-                    <Spinner color={colorSet.primaryForeground} />
-                  ) : undefined
-                }
-              >
-                {saving ? localized('Please wait...') : localized('Continue')}
-              </Button>
-            </YStack>
+            <Text
+              style={{
+                fontSize: 16,
+                lineHeight: 24,
+                textAlign: 'center',
+                color: colorSet.primaryForeground,
+              }}
+            >
+              {localized(
+                'This information will be shown to potential adopters'
+              )}
+            </Text>
           </YStack>
 
-          <LocationSelector
-            isLocationSheetOpen={isLocationSheetOpen}
-            setIsLocationSheetOpen={setIsLocationSheetOpen}
-            onChange={(location) =>
-              handleInputChange('kennel', 'location', location)
-            }
-            currentLocation={currentUser?.kennel?.location}
-          />
-        </ParallaxScrollView>
+          <YStack gap='$4'>
+            <YStack gap='$4'>
+              <YStack gap='$2'>
+                <XStack>
+                  <Button disabled theme='active' icon={<Home />} />
+                  <Input
+                    flex={1}
+                    value={formData.kennel.name}
+                    onChangeText={(value) =>
+                      handleInputChange('kennel', 'name', value)
+                    }
+                    placeholder={localized('Enter your kennel name')}
+                    autoCapitalize='words'
+                  />
+                </XStack>
+              </YStack>
 
-        // <ScrollView
-        //   contentContainerStyle={{
-        //     flexGrow: 1,
-        //     justifyContent: 'center',
-        //     backgroundColor: colorSet.primaryBackground,
-        //   }}
-        // >
+              <YStack gap='$2'>
+                <XStack>
+                  <Button disabled theme='active' icon={<MapPin />} />
+                  <Input
+                    flex={1}
+                    placeholder={localized('Search for your location')}
+                    value={
+                      formData.kennel.location.address
+                        ? `${formData.kennel.location.address}`
+                        : ''
+                    }
+                    onPressIn={() => setIsLocationSheetOpen(true)}
+                  />
+                </XStack>
+              </YStack>
 
-        // </ScrollView>
-      )}
+              <YStack gap='$2'>
+                <XStack>
+                  <Button disabled theme='active' icon={<Copyright />} />
+                  <Input
+                    flex={1}
+                    value={formData.kennel.website}
+                    onChangeText={(value) =>
+                      handleInputChange('kennel', 'website', value)
+                    }
+                    placeholder={localized('Enter website (optional)')}
+                  />
+                </XStack>
+              </YStack>
+            </YStack>
+
+            <Button
+              backgroundColor={colorSet.secondaryForeground}
+              color={colorSet.primaryForeground}
+              onPress={handleSubmit}
+              disabled={loading}
+              iconAfter={
+                saving ? (
+                  <Spinner color={colorSet.primaryForeground} />
+                ) : undefined
+              }
+            >
+              {localized('Continue')}
+            </Button>
+          </YStack>
+        </YStack>
+      </ParallaxScrollView>
+
+      <LocationSelector
+        isLocationSheetOpen={isLocationSheetOpen}
+        setIsLocationSheetOpen={setIsLocationSheetOpen}
+        onChange={(location) =>
+          handleInputChange('kennel', 'location', location)
+        }
+        currentLocation={currentUser?.kennel?.location}
+      />
     </View>
   );
-};
-
-const dynamicStyles = (theme, colorScheme) => {
-  const colorSet = theme.colors[colorScheme];
-  return StyleSheet.create({
-    title: {
-      fontSize: 40,
-      fontWeight: 'bold',
-      color: colorSet.primaryForeground,
-      marginTop: 0,
-      marginBottom: 0,
-      textAlign: 'center',
-    },
-    caption: {
-      fontSize: 16,
-      lineHeight: 24,
-      textAlign: 'center',
-      color: colorSet.primaryForeground,
-    },
-    stepIndicator: {
-      fontSize: 14,
-      color: colorSet.primaryForeground,
-      textAlign: 'center',
-      opacity: 0.8,
-    },
-  });
 };
 
 export default BasicInfoScreen;

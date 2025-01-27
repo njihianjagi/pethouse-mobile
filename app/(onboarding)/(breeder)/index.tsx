@@ -13,35 +13,34 @@ const BreederOnboardingScreen = () => {
   const colorSet = theme?.colors[appearance];
 
   useEffect(() => {
-    console.log('current user: ', currentUser);
     if (!currentUser) {
       router.replace('/(auth)/welcome');
       return;
     }
-    const {kennel, breeding} = currentUser;
 
-    console.log(kennel);
-    if (currentUser?.onboardingComplete) {
+    if (currentUser?.profileComplete) {
       router.replace('/(tabs)');
       return;
     }
 
-    if (!kennel) {
+    // Simplified onboarding checks
+    if (!currentUser.kennel?.name) {
       router.push('/(onboarding)/(breeder)/basic-info');
       return;
     }
 
-    if (!breeding || breeding.breeds.length === 0) {
+    if (!currentUser.kennel?.primaryBreeds?.length) {
       router.push('/(onboarding)/(breeder)/breeds');
       return;
     }
 
-    if (!breeding.facilities) {
-      router.push('/(onboarding)/(breeder)/facilities');
+    if (!currentUser.images || currentUser.images.length === 0) {
+      router.push('/(onboarding)/(breeder)/image-upload');
       return;
     }
 
-    router.push('/(onboarding)/(breeder)/basic-info');
+    // If all checks pass, mark onboarding as complete
+    router.push('/(tabs)');
   }, [currentUser, router]);
 
   return (

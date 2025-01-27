@@ -10,7 +10,14 @@ const UserBreedCard = ({userBreed, handleRemoveBreed}) => {
   const colorSet = theme.colors[appearance];
 
   return (
-    <Card key={userBreed.breedId} elevate bordered p='$4' height='$16'>
+    <Card
+      key={userBreed.breedId}
+      elevate
+      bordered
+      p='$4'
+      borderRadius='$4'
+      height='$16'
+    >
       <Card.Header padding='$0'>
         <XStack justifyContent='space-between' width='100%' flex={1}>
           <Spacer />

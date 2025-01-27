@@ -29,25 +29,21 @@ export interface BreederProfile extends BaseUser {
 
   rating?: number;
   reviewCount?: number;
+
   images: {
     id: string;
     url: string;
-    thumbnailURL: string;
-    type: 'profile' | 'facility' | 'dogs' | 'other';
+    type: 'profile' | 'dogs';
   }[];
+
   kennel: {
     name: string;
-    registrationNumber?: string;
-    yearsBreeding: number;
+    yearsOfExperience: number;
     website?: string;
-    socialMedia?: {
-      instagram?: string;
-      facebook?: string;
-      twitter?: string;
-    };
     description?: string;
-    specialties?: string[];
-    location: {
+    primaryBreeds: string[];
+    facilityType: 'home' | 'dedicated_facility';
+    location?: {
       name: string;
       address: string;
       city: string;
@@ -59,62 +55,18 @@ export interface BreederProfile extends BaseUser {
       };
     };
   };
-  facilities: {
-    type: 'home' | 'dedicated_facility' | 'both';
-    breedingPairs: number;
-    maxLittersPerYear: number;
-    hasWhelping: boolean;
-    hasQuarantine: boolean;
-    hasExerciseArea: boolean;
-    facilitiesDescription?: string;
-  };
+
   breeding: {
-    breeds: {
-      breedId: string;
-      breedName: string;
-      yearsBreeding: number;
-      specializations?: string[];
-    }[];
-    healthTesting: {
-      dna: boolean;
-      hips: boolean;
-      eyes: boolean;
-      heart: boolean;
-      additionalTests?: string[];
-    };
-    registrations: {
-      type: string;
-      number: string;
-      verificationStatus: 'pending' | 'verified' | 'rejected';
-      documentUrl?: string;
-    }[];
+    healthTestingCompleted: boolean;
+    registrationStatus: 'pending' | 'verified';
   };
-  veterinary: {
-    primaryVet: {
-      name: string;
-      clinic: string;
-      phone: string;
-      email?: string;
+
+  contact: {
+    socialMedia?: {
+      instagram?: string;
+      facebook?: string;
     };
-    emergencyVet?: {
-      name: string;
-      clinic: string;
-      phone: string;
-    };
-  };
-  certifications: {
-    type: string;
-    issuedBy: string;
-    issueDate: Date;
-    expiryDate?: Date;
-    documentUrl?: string;
-    verificationStatus: 'pending' | 'verified' | 'rejected';
-  }[];
-  insurance: {
-    provider?: string;
-    policyNumber?: string;
-    expiryDate?: Date;
-    coverageType?: string[];
+    primaryVetContact?: string;
   };
 }
 

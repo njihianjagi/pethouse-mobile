@@ -37,6 +37,7 @@ const OnboardingScreen = () => {
 
     if (!currentUser) return;
 
+    console.log('currentUser: ', currentUser);
     // If user already has a role, redirect to appropriate screen
     if (currentUser.role) {
       if (currentUser.role === 'breeder') {

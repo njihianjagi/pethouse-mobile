@@ -1,18 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {Alert, FlatList, StyleSheet} from 'react-native';
-import {
-  YStack,
-  Text,
-  Button,
-  XStack,
-  Switch,
-  Input,
-  Card,
-  View,
-  ScrollView,
-  Spinner,
-  Image,
-} from 'tamagui';
+import {TouchableOpacity, Alert, FlatList, StyleSheet} from 'react-native';
+import {YStack, Text, Button, XStack, View, Spinner, Image} from 'tamagui';
 import BreedSelector from '../../../components/BreedSelector';
 import {useTranslations} from '../../../dopebase';
 import {useRouter} from 'expo-router';
@@ -21,11 +9,10 @@ import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
-import {EmptyStateCard} from '../../../components/EmptyStateCard';
-import {Dog} from '@tamagui/lucide-icons';
 import {Plus} from '@tamagui/lucide-icons';
 import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
 import UserBreedCard from './user-breed-card';
+import ParallaxScrollView from '../../../components/ParallaxScrollView';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;
@@ -72,22 +59,15 @@ const BreedsScreen = () => {
       },
       isOwner: true,
     };
-    setBreeds((prev) => [...prev, newBreed]);
+
+    const existingBreed = breeds.find((b) => b.breedId === breed.id);
+    if (!existingBreed) {
+      setBreeds((prev) => [...prev, newBreed]);
+    }
   };
 
   const handleRemoveBreed = (breedId: string) => {
     setBreeds((prev) => prev.filter((b) => b.breedId !== breedId));
-  };
-
-  const handleUpdateBreed = (breedId: string, field: string, value: any) => {
-    setBreeds((prev) =>
-      prev.map((breed) => {
-        if (breed.breedId === breedId) {
-          return {...breed, [field]: value};
-        }
-        return breed;
-      })
-    );
   };
 
   const handleContinue = async () => {
@@ -103,15 +83,15 @@ const BreedsScreen = () => {
     try {
       const userData = {
         ...currentUser,
-        breeding: {
-          ...currentUser?.breeding,
-          breeds,
+        kennel: {
+          ...currentUser.kennel,
+          primaryBreeds: breeds,
         },
       };
 
       await updateUser(currentUser?.id, userData);
       dispatch(setUserData(userData));
-      router.push('/(onboarding)/(breeder)/facilities');
+      router.replace('/(onboarding)/(breeder)/image-upload');
     } catch (error) {
       console.error('Error updating user:', error);
     } finally {
@@ -120,98 +100,92 @@ const BreedsScreen = () => {
   };
 
   return (
-    <View
-      alignItems='center'
-      justifyContent='center'
-      // backgroundColor={colorSet.primaryBackground}
-      flex={1}
-    >
-      {loading ? (
-        <Spinner size='large' color={colorSet.primaryForeground} />
-      ) : (
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            justifyContent: 'center',
-            // backgroundColor: colorSet.primaryBackground,
-          }}
-        >
-          <YStack padding='$4' gap='$4'>
-            <YStack gap='$2' padding='$4'>
-              <Text style={styles.stepIndicator}>
-                {localized('Step')} {CURRENT_STEP} {localized('of')}{' '}
-                {TOTAL_STEPS}
-              </Text>
+    <View alignItems='center' justifyContent='center' flex={1}>
+      <ParallaxScrollView
+        headerImage={
+          <Image
+            source={require('../../../assets/images/doggo.png')}
+            objectFit='contain'
+          />
+        }
+        headerBackgroundColor={{
+          dark: colorSet.primaryBackground,
+          light: colorSet.primaryBackground,
+        }}
+      >
+        <YStack padding='$4' gap='$4'>
+          <YStack gap='$2' padding='$4'>
+            <Text style={styles.stepIndicator}>
+              {localized('Step')} {CURRENT_STEP} {localized('of')} {TOTAL_STEPS}
+            </Text>
 
-              <Text style={styles.title}>
-                {localized('Select Your Breeds')}
-              </Text>
+            <Text style={styles.title}>{localized('Select Your Breeds')}</Text>
 
-              <Text style={styles.caption}>
-                {localized('Tell us about the breeds you work with')}
-              </Text>
-            </YStack>
-
-            <YStack gap='$4'>
-              {breeds.length === 0 && (
-                <EmptyStateCard
-                  title={localized('No Breeds Selected')}
-                  description={localized('Add the breeds you work with')}
-                  buttonText={localized('Add Breed')}
-                  headerIcon={<Dog size={48} color='$gray9' />}
-                  buttonIcon={<Plus size={20} color='$gray9' />}
-                  headerAlign='center'
-                  buttonAlign='center'
-                  color='$gray9'
-                  backgroundColor={colorSet.background}
-                  gap='$6'
-                  padding='$6'
-                  onPress={() => setSelectorOpen(true)}
-                />
-              )}
-
-              <BreedSelector
-                onSelectBreed={handleAddBreed}
-                open={selectorOpen}
-                onOpenChange={setSelectorOpen}
-              />
-
-              <FlatList
-                data={breeds}
-                renderItem={({item, index}) => (
-                  <XStack flex={1} key={index}>
-                    <UserBreedCard
-                      key={item.id}
-                      userBreed={item}
-                      handleRemoveBreed={handleRemoveBreed}
-                    />
-                  </XStack>
-                )}
-                keyExtractor={(item) => item.breedId}
-              />
-
-              {breeds.length > 0 && (
-                <Button onPress={() => setSelectorOpen(true)} theme='active'>
-                  {localized('Add Another Breed')}
-                </Button>
-              )}
-              <Button
-                backgroundColor={colorSet.secondaryForeground}
-                color={colorSet.primaryForeground}
-                onPress={handleContinue}
-                disabled={loading}
-                iconAfter={
-                  saving ? (
-                    <Spinner color={colorSet.primaryForeground} />
-                  ) : undefined
-                }
-              >
-                {saving ? localized('Please wait...') : localized('Continue')}
-              </Button>
-            </YStack>
+            <Text style={styles.caption}>
+              {localized('Tell us about the breeds you work with')}
+            </Text>
           </YStack>
-        </ScrollView>
-      )}
+
+          <YStack gap='$4'>
+            {breeds.length === 0 && (
+              <TouchableOpacity
+                onPress={() => setSelectorOpen(true)}
+                style={[
+                  dynamicStyles(theme, appearance).breedCard,
+                  {
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: '#ffffff',
+                  },
+                ]}
+              >
+                <Plus size={48} color='$gray9' />
+              </TouchableOpacity>
+            )}
+
+            <FlatList
+              data={breeds}
+              numColumns={2}
+              renderItem={({item, index}) => (
+                <XStack flex={1} key={index}>
+                  <UserBreedCard
+                    key={index}
+                    userBreed={item}
+                    handleRemoveBreed={handleRemoveBreed}
+                  />
+                </XStack>
+              )}
+              keyExtractor={(item) => item.breedId}
+            />
+
+            {breeds.length > 0 && breeds.length < 2 && (
+              <Button onPress={() => setSelectorOpen(true)} theme='active'>
+                {localized('Add Another Breed')}
+              </Button>
+            )}
+            <Button
+              backgroundColor={colorSet.secondaryForeground}
+              color={colorSet.primaryForeground}
+              onPress={handleContinue}
+              disabled={loading}
+              iconAfter={
+                saving ? (
+                  <Spinner color={colorSet.primaryForeground} />
+                ) : undefined
+              }
+            >
+              {saving ? localized('Please wait...') : localized('Continue')}
+            </Button>
+          </YStack>
+        </YStack>
+      </ParallaxScrollView>
+
+      <BreedSelector
+        onSelectBreed={handleAddBreed}
+        userBreeds={breeds}
+        open={selectorOpen}
+        onOpenChange={setSelectorOpen}
+      />
     </View>
   );
 };
@@ -238,6 +212,15 @@ const dynamicStyles = (theme, colorScheme) => {
       color: colorSet.primaryForeground,
       textAlign: 'center',
       opacity: 0.8,
+    },
+    breedCard: {
+      backgroundColor: colorSet.background,
+      padding: 16,
+      borderRadius: 8,
+      shadowColor: colorSet.shadowColor,
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      shadowOffset: {width: 0, height: 2},
     },
   });
 };

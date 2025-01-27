@@ -126,7 +126,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
       setPredictions([]);
       return;
     }
-
+    console.log(input);
     try {
       const response = await fetch(
         `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
@@ -136,6 +136,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
         }&sessiontoken=${sessionToken.current}`
       );
       const data = await response.json();
+      console.log(data);
       if (data.predictions) {
         setPredictions(data.predictions);
       }
@@ -244,6 +245,8 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
     }
   };
 
+  const searchInputRef = useRef('' as any);
+
   return (
     <Sheet
       open={isLocationSheetOpen}
@@ -258,6 +261,7 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
           <XGroup borderRadius='$4' style={{zIndex: 2}}>
             <XGroup.Item>
               <Input
+                ref={searchInputRef}
                 value={searchInput}
                 onChangeText={(text) => {
                   setSearchInput(text);
@@ -271,6 +275,12 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({
                 borderRightWidth={0}
                 focusStyle={{
                   borderRightWidth: 0,
+                }}
+                onLayout={() => {
+                  isLocationSheetOpen && searchInputRef.current?.focus();
+                  setTimeout(() => {
+                    isLocationSheetOpen && searchInputRef.current?.focus();
+                  }, 100);
                 }}
               />
             </XGroup.Item>

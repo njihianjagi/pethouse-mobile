@@ -57,6 +57,26 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
     hasMore,
   } = useBreedSearch();
 
+  const [availableBreeds, setAvailableBreeds] = useState<Breed[]>([]);
+
+  useEffect(() => {
+    if (userBreeds && filteredBreeds) {
+      // Create a set of user breed names for efficient lookup
+      const userBreedNames = new Set(
+        userBreeds.map((breed) => breed.breedName)
+      );
+
+      // Filter out breeds that are already in user's breeds
+      const filteredAvailableBreeds = filteredBreeds.filter(
+        (breed) => !userBreedNames.has(breed.name)
+      );
+
+      setAvailableBreeds(filteredAvailableBreeds);
+    } else {
+      setAvailableBreeds(filteredBreeds);
+    }
+  }, [userBreeds, filteredBreeds]);
+
   const handleSearchTextChange = (text: string) => {
     updateFilter('searchText', text);
   };
@@ -122,7 +142,7 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
             <YStack gap='$2'>
               <Text>{localized('All Breeds')}</Text>
               <FlatList
-                data={filteredBreeds}
+                data={availableBreeds}
                 renderItem={({item, index}) => (
                   <ListItem
                     key={index}

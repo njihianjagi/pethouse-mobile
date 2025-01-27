@@ -23,7 +23,7 @@ const getStepBackPath = (currentScreen: string) => {
       return '/(onboarding)';
     case 'breeds':
       return '/(onboarding)/(breeder)/basic-info';
-    case 'facilities':
+    case 'image-upload':
       return '/(onboarding)/(breeder)/breeds';
     default:
       return '/(onboarding)/(breeder)';
@@ -35,7 +35,6 @@ export default function BreederOnboardingLayout() {
   const {theme, appearance} = useTheme();
   const router = useRouter();
   const colorSet = theme.colors[appearance];
-  const TOTAL_STEPS = 3;
 
   const handleBack = (currentScreen: string) => {
     if (currentScreen === 'basic-info') {
@@ -70,7 +69,6 @@ export default function BreederOnboardingLayout() {
         name='basic-info'
         options={{
           title: localized('Basic Info'),
-          // headerRight: () => <StepIndicator current={1} total={TOTAL_STEPS} />,
           headerLeft: (props) => (
             <HeaderBackButton
               {...props}
@@ -83,21 +81,19 @@ export default function BreederOnboardingLayout() {
         name='breeds'
         options={{
           title: localized('Breeds'),
-          // headerRight: () => <StepIndicator current={2} total={TOTAL_STEPS} />,
           headerLeft: (props) => (
             <HeaderBackButton {...props} onPress={() => handleBack('breeds')} />
           ),
         }}
       />
       <Stack.Screen
-        name='facilities'
+        name='image-upload'
         options={{
-          title: localized('Facilities'),
-          // headerRight: () => <StepIndicator current={3} total={TOTAL_STEPS} />,
+          title: localized('Image Upload'),
           headerLeft: (props) => (
             <HeaderBackButton
               {...props}
-              onPress={() => handleBack('facilities')}
+              onPress={() => handleBack('image-upload')}
             />
           ),
         }}

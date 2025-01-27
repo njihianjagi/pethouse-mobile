@@ -227,7 +227,7 @@ const loginOrSignUpWithGoogle = (appConfig) => {
               newResponse.user,
               response.accountCreated
             ).then((response: any) => {
-              resolve(response);
+              resolve(newResponse);
               // resolve({
               //   ...response,
               // });
