@@ -34,7 +34,7 @@ const BreederOnboardingScreen = () => {
       return;
     }
 
-    if (!currentUser.images || currentUser.images.length === 0) {
+    if (!currentUser.kennel?.images || currentUser.kennel.images.length === 0) {
       router.push('/(onboarding)/(breeder)/image-upload');
       return;
     }

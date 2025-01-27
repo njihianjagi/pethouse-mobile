@@ -22,19 +22,12 @@ export interface BaseUser {
   updatedAt: Date;
   status: 'active' | 'inactive' | 'suspended';
   profileComplete: boolean;
+  rating?: number;
+  reviewCount?: number;
 }
 
 export interface BreederProfile extends BaseUser {
   role: 'breeder';
-
-  rating?: number;
-  reviewCount?: number;
-
-  images: {
-    id: string;
-    url: string;
-    type: 'profile' | 'dogs';
-  }[];
 
   kennel: {
     name: string;
@@ -54,19 +47,19 @@ export interface BreederProfile extends BaseUser {
         longitude: number;
       };
     };
-  };
-
-  breeding: {
-    healthTestingCompleted: boolean;
+    images: {
+      id: string;
+      url: string;
+      type: 'profile' | 'dogs';
+    }[];
     registrationStatus: 'pending' | 'verified';
-  };
-
-  contact: {
-    socialMedia?: {
-      instagram?: string;
-      facebook?: string;
+    contact: {
+      socialMedia?: {
+        instagram?: string;
+        facebook?: string;
+      };
+      primaryVetContact?: string;
     };
-    primaryVetContact?: string;
   };
 }
 
@@ -153,7 +146,10 @@ export interface SeekerProfile extends BaseUser {
 
 export const usersRef = db.collection('users');
 
-export const updateUser = async (userID, newData) => {
+export const updateUser = async (
+  userID,
+  newData: BaseUser | BreederProfile | SeekerProfile
+) => {
   const dataWithOnlineStatus = {
     ...newData,
     lastOnlineTimestamp: getUnixTimeStamp(),

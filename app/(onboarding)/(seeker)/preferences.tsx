@@ -37,7 +37,8 @@ export const PreferencesTab = ({formData, onChange}: PreferencesTabProps) => {
         <Text fontWeight='bold'>{localized('Preferred Breeds')}*</Text>
         <BreedSelector
           onSelectBreed={handleAddBreedPreference}
-          buttonText={localized('Add Breed Preference')}
+          onOpenChange={(open) => {}}
+          open={false}
         />
 
         <YStack gap='$2'>

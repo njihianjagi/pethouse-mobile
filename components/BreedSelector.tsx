@@ -146,9 +146,9 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
                 renderItem={({item, index}) => (
                   <ListItem
                     key={index}
-                    title={item.name}
+                    title={<Text>{item.name}</Text>}
                     onPress={() => handleSelectBreed(item)}
-                  ></ListItem>
+                  />
                 )}
                 keyExtractor={(item) => item.name}
                 numColumns={2}

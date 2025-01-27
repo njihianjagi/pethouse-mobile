@@ -1,22 +1,28 @@
-import React from 'react';
-import {XStack, Image, Button, ScrollView} from 'tamagui';
+import React, {useRef} from 'react';
+import {FlatList, Dimensions} from 'react-native';
+import {XStack, Image, Button, View, Spinner} from 'tamagui';
 import {Upload, Trash} from '@tamagui/lucide-icons';
 import * as ImagePicker from 'expo-image-picker';
-import {storageAPI} from '../api/firebase/media';
 
 interface ImageSelectorProps {
-  images: {downloadURL: string; thumbnailURL: string}[];
-  onSelectImage: (imageUri: string) => void; // Changed to pass URI only
+  images: {downloadURL?: string; thumbnailURL?: string; uploading?: boolean}[];
+  onSelectImage: (imageUri: string) => void;
   onRemoveImage: (index: number) => void;
   maxImages?: number;
+  cardSize?: number;
+  uploading?: boolean;
 }
 
 const ImageSelector: React.FC<ImageSelectorProps> = ({
   images,
   onSelectImage,
   onRemoveImage,
-  maxImages = Infinity, // Default to unlimited if not specified
+  maxImages = Infinity,
+  cardSize = 100,
+  uploading = false,
 }) => {
+  const flatListRef = useRef<FlatList>(null);
+
   const handleSelectImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -27,48 +33,112 @@ const ImageSelector: React.FC<ImageSelectorProps> = ({
 
     if (!result.canceled) {
       onSelectImage(result.assets[0].uri);
+
+      // Scroll to end after a short delay to ensure new item is rendered
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({animated: true});
+      }, 100);
     }
   };
 
+  const screenWidth = Dimensions.get('window').width;
+  const itemWidth = (screenWidth - 32) / 3.5; // Accounting for padding
+
+  const renderImageItem = ({
+    item,
+    index,
+  }: {
+    item: {
+      downloadURL?: string;
+      thumbnailURL?: string;
+      uploading?: boolean;
+    };
+    index: number;
+  }) => (
+    <View
+      style={{
+        width: itemWidth,
+        padding: 8,
+        alignItems: 'center',
+        position: 'relative',
+      }}
+    >
+      <Image
+        source={{uri: item.downloadURL || item.thumbnailURL}}
+        width={itemWidth - 16}
+        height={itemWidth - 16}
+        borderRadius='$2'
+        opacity={item.uploading ? 0.5 : 1}
+      />
+      {item.uploading && (
+        <Spinner
+          position='absolute'
+          top='50%'
+          left='50%'
+          marginTop={-20}
+          marginLeft={-20}
+        />
+      )}
+      <Button
+        onPress={() => onRemoveImage(index)}
+        icon={<Trash size='$1' />}
+        size='$2'
+        circular
+        position='absolute'
+        top={8}
+        right={8}
+      />
+    </View>
+  );
+
+  const renderUploadButton = () => (
+    <View
+      style={{
+        width: itemWidth,
+        padding: 8,
+        alignItems: 'center',
+      }}
+    >
+      <Button
+        onPress={handleSelectImage}
+        icon={<Upload size='$1' />}
+        width={itemWidth - 16}
+        height={itemWidth - 16}
+        borderRadius='$2'
+        backgroundColor='$gray5'
+        disabled={
+          images.length >= maxImages || images.some((img) => img.uploading)
+        }
+      />
+    </View>
+  );
+
+  // Dynamically create data with upload button and refresh uploading state
+  const dataWithUploadButton = [
+    ...images,
+    ...(images.length < maxImages && !images.some((img) => img.uploading)
+      ? [{isUploadButton: true}]
+      : []),
+  ];
+
   return (
-    <ScrollView
+    <FlatList
+      ref={flatListRef}
+      data={dataWithUploadButton}
+      renderItem={({item, index}) =>
+        'isUploadButton' in item
+          ? renderUploadButton()
+          : renderImageItem({item, index})
+      }
+      keyExtractor={(item, index) =>
+        'isUploadButton' in item ? 'upload-button' : index.toString()
+      }
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{flex: 1}}
-    >
-      <XStack gap='$2' p='$2'>
-        {images.map((image, index) => (
-          <XStack key={index}>
-            <Image
-              source={{uri: image.downloadURL}}
-              width={100}
-              height={100}
-              borderRadius='$2'
-            />
-            <Button
-              onPress={() => onRemoveImage(index)}
-              icon={<Trash size='$1' />}
-              size='$2'
-              circular
-              position='absolute'
-              top={0}
-              right={0}
-            />
-          </XStack>
-        ))}
-        {/* Only show upload button if we haven't reached maxImages */}
-        {images.length < maxImages && (
-          <Button
-            onPress={handleSelectImage}
-            icon={<Upload size='$1' />}
-            width={100}
-            height={100}
-            borderRadius='$2'
-            backgroundColor='$gray5'
-          />
-        )}
-      </XStack>
-    </ScrollView>
+      contentContainerStyle={{
+        paddingHorizontal: 8,
+      }}
+    />
   );
 };
 
