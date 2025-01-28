@@ -26,6 +26,9 @@ export default function ParallaxScrollView({
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
 
+  const {theme, appearance} = useTheme();
+  const colorSet = theme?.colors[appearance];
+
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -49,7 +52,12 @@ export default function ParallaxScrollView({
 
   return (
     <ThemedView style={styles.container}>
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
+      <Animated.ScrollView
+        ref={scrollRef}
+        scrollEventThrottle={16}
+        contentContainerStyle={styles.scrollView}
+        keyboardShouldPersistTaps='handled'
+      >
         <Animated.View
           style={[
             styles.header,
@@ -59,7 +67,13 @@ export default function ParallaxScrollView({
         >
           {headerImage}
         </Animated.View>
-        <ThemedView style={styles.content}>{children}</ThemedView>
+        <ThemedView
+          style={styles.content}
+          lightColor={colorSet.primaryBackground}
+          darkColor={colorSet.primaryBackground}
+        >
+          {children}
+        </ThemedView>
       </Animated.ScrollView>
     </ThemedView>
   );
@@ -69,14 +83,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  scrollView: {
+    flex: 0,
+  },
   header: {
-    height: 250,
+    height: HEADER_HEIGHT,
     overflow: 'hidden',
   },
   content: {
     flex: 1,
-    padding: 16,
+    minHeight: '100%',
     gap: 16,
-    overflow: 'hidden',
+    overflow: 'visible',
   },
 });

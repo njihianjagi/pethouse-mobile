@@ -2,7 +2,7 @@ import React from 'react';
 import {Stack} from 'expo-router';
 import {useTheme} from '../../dopebase';
 
-export default function KennelsLayout() {
+export default function BreedersLayout() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 

@@ -1,117 +1,178 @@
 import React, {useState} from 'react';
 import {useRouter} from 'expo-router';
-import {YStack, Text, Button, XStack, View, Spinner} from 'tamagui';
+import {
+  YStack,
+  Text,
+  Button,
+  View,
+  Spinner,
+  YGroup,
+  ListItem,
+  Separator,
+} from 'tamagui';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import {useTheme, useTranslations} from '../../dopebase';
-import {useConfig} from '../../config';
-import {Image, StyleSheet} from 'react-native';
+import {Image} from 'react-native';
 import {updateUser} from '../../api/firebase/users/userClient';
+import {Dog, UserRound, Circle, CircleCheck} from '@tamagui/lucide-icons';
+import {useDispatch} from 'react-redux';
+import {setUserData} from '../../redux/reducers/auth';
 
 export default function RoleSelectionScreen() {
   const router = useRouter();
-
   const currentUser = useCurrentUser();
-
   const {localized} = useTranslations();
-
   const {theme, appearance} = useTheme();
-  const styles = dynamicStyles(theme, appearance);
   const colorSet = theme?.colors[appearance];
+  const dispatch = useDispatch();
 
   const [loading, setLoading] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'breeder' | 'seeker' | null>(
+    null
+  );
 
-  const handleRoleSelection = async (role: 'breeder' | 'seeker') => {
+  const handleContinue = async () => {
+    if (!selectedRole) return;
+
     try {
       setLoading(true);
-      await updateUser(currentUser?.id, {role});
-      router.push(role === 'breeder' ? '/breeder' : '/seeker');
+      const userData = {
+        ...currentUser,
+        role: selectedRole,
+      };
+
+      await updateUser(currentUser?.id, userData);
+      dispatch(setUserData(userData));
+
+      console.log('selected role: ', selectedRole);
+      router.push(
+        selectedRole === 'breeder'
+          ? '/(onboarding)/(breeder)'
+          : '/(onboarding)/(seeker)'
+      );
       setLoading(false);
     } catch (error) {
       setLoading(false);
       console.error('Error updating user role:', error);
-      // Handle error (e.g., show an error message to the user)
     }
   };
+
+  const roles = [
+    {
+      id: 'breeder',
+      title: localized('Breeder'),
+      subtitle: localized('I want to list my puppies'),
+      icon: Dog,
+    },
+    {
+      id: 'seeker',
+      title: localized('Seeker'),
+      subtitle: localized('I want to find a puppy'),
+      icon: UserRound,
+    },
+  ];
 
   return (
     <View
       flex={1}
+      backgroundColor={colorSet.primaryBackground}
       alignItems='center'
       justifyContent='center'
-      backgroundColor={colorSet.primaryBackground}
     >
-      <YStack padding='$8' gap='$4'>
-        <View style={styles?.logo}>
-          <Image style={styles.logoImage} source={theme.icons?.logo} />
+      <YStack
+        padding='$8'
+        gap='$4'
+        maxWidth={500}
+        width='100%'
+        alignItems='center'
+      >
+        <View
+          width='auto'
+          height='auto'
+          justifyContent='center'
+          alignItems='center'
+        >
+          <Image
+            source={theme.icons?.logo}
+            style={{
+              width: 200,
+              height: 150,
+              resizeMode: 'contain',
+            }}
+          />
         </View>
 
-        <Text style={styles.title}>Let's Get Started!</Text>
-        <Text style={styles.caption}>
-          Before you continue, please tell us whether you are searching for a
-          new dog or you would like to rehome your current dog.
-        </Text>
-      </YStack>
-
-      <YStack gap='$4' w='100%' paddingHorizontal='$8'>
-        <Button
-          theme='active'
-          backgroundColor={colorSet.secondaryForeground}
+        <Text
+          fontSize={40}
+          fontWeight='bold'
           color={colorSet.primaryForeground}
-          onPress={() => handleRoleSelection('seeker')}
+          textAlign='center'
+          marginTop={0}
+          marginBottom={0}
         >
-          {localized('I am looking for a new dog')}
-        </Button>
+          {localized("Let's Get Started!")}
+        </Text>
+
+        <Text
+          fontSize={16}
+          lineHeight={24}
+          textAlign='center'
+          color={colorSet.primaryForeground}
+        >
+          {localized(
+            'Before you continue, please tell us whether you are searching for a new dog or you would like to rehome your current dog.'
+          )}
+        </Text>
+
+        <YGroup
+          backgroundColor={colorSet.secondaryBackground}
+          width='100%'
+          overflow='hidden'
+          borderRadius='$4'
+          bordered
+        >
+          {roles.map((role) => (
+            <YGroup.Item key={role.id}>
+              <ListItem
+                hoverTheme
+                pressTheme
+                title={role.title}
+                subTitle={role.subtitle}
+                icon={role.icon}
+                iconAfter={
+                  selectedRole === role.id ? (
+                    <CircleCheck color={colorSet.primaryForeground} size={24} />
+                  ) : (
+                    <Circle color='$gray6' size={24} />
+                  )
+                }
+                onPress={() => setSelectedRole(role.id as 'breeder' | 'seeker')}
+                backgroundColor={
+                  selectedRole === role.id
+                    ? colorSet.grey0
+                    : colorSet.secondaryBackground
+                }
+              />
+              <Separator />
+            </YGroup.Item>
+          ))}
+        </YGroup>
 
         <Button
+          marginTop='$4'
           theme='active'
-          backgroundColor={colorSet.primaryForeground}
-          color={colorSet.secondaryForeground}
-          onPress={() => handleRoleSelection('breeder')}
-          disabled={loading}
-          iconAfter={loading ? <Spinner /> : <></>}
+          disabled={!selectedRole || loading}
+          onPress={handleContinue}
+          width='100%'
+          backgroundColor={colorSet.secondaryForeground}
         >
-          {localized('I want to rehome my dog(s)')}
+          {loading ? (
+            <Spinner color={colorSet.primaryForeground} />
+          ) : (
+            localized('Continue')
+          )}
         </Button>
       </YStack>
     </View>
   );
 }
-
-const dynamicStyles = (theme, colorScheme) => {
-  const colorSet = theme.colors[colorScheme];
-  return StyleSheet.create({
-    title: {
-      fontSize: 40,
-      fontWeight: 'bold',
-      color: colorSet.primaryForeground,
-      marginTop: 0,
-      marginBottom: 0,
-      textAlign: 'center',
-    },
-    caption: {
-      fontSize: 16,
-      lineHeight: 24,
-      textAlign: 'center',
-      color: colorSet.primaryForeground,
-    },
-    logo: {
-      width: 'auto',
-      height: 'auto',
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    logoImage: {
-      width: 200,
-      height: 150,
-      resizeMode: 'contain',
-      tintColor: '',
-    },
-    alreadyHaveAnAccountContainer: {
-      alignItems: 'center',
-      marginTop: 8,
-    },
-    alreadyHaveAnAccountText: {
-      color: colorSet.secondaryText,
-    },
-  });
-};

@@ -1,9 +1,8 @@
 import {User} from '../api/firebase/auth/authClient';
 import {Breed} from '../api/firebase/breeds/useBreedData';
 import {Listing} from '../api/firebase/listings/useListingData';
-import {Litter} from '../api/firebase/litters/useLitterData';
 import {BreedFilters} from '../hooks/useBreedSearch';
-import {authStore, breedStore, listingStore, litterStore} from './index';
+import {authStore, breedStore, listingStore} from './index';
 
 // Auth actions
 export const authActions = {
@@ -52,15 +51,5 @@ export const listingActions = {
 
   setLoading: (loading: boolean) => {
     listingStore.loading.set(loading);
-  },
-};
-
-export const litterActions = {
-  setLitters: (litters: Litter[]) => {
-    litterStore.litters.set(litters);
-  },
-
-  setLoading: (loading: boolean) => {
-    litterStore.loading.set(loading);
   },
 };

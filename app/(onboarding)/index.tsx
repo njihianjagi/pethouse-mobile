@@ -1,291 +1,81 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useRouter} from 'expo-router';
-import {Alert, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {
   YStack,
-  XStack,
   Button,
   Text,
   View,
   Image,
   ScrollView,
   Spinner,
-  Tabs,
-  Separator,
   YGroup,
   ListItem,
-  Input,
-  Select,
-  ToggleGroup,
-  XGroup,
+  Separator,
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../dopebase';
 import useCurrentUser from '../../hooks/useCurrentUser';
-import {
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  Trash,
-  Circle,
-  Home,
-} from '@tamagui/lucide-icons';
-import BreedSelector from '../../components/BreedSelector';
+import {CheckCircle, Circle} from '@tamagui/lucide-icons';
 import {updateUser} from '../../api/firebase/users/userClient';
-import useBreedData, {
-  Breed,
-  UserBreed,
-} from '../../api/firebase/breeds/useBreedData';
 import {setUserData} from '../../redux/reducers/auth';
 import {useDispatch} from 'react-redux';
-import LocationSelector from '../../components/LocationSelector';
-
-const OnboardingSteps = {
-  tab1: {
-    title: 'Profile',
-    description: () => 'Tell us a bit about yourself to get started',
-    cta: () => 'Continue',
-  },
-  tab2: {
-    title: 'Breeds',
-    description: () => 'Select breeds you are interested in.',
-    cta: () => 'Continue',
-  },
-  tab3: {
-    title: 'Listing',
-    description: (isBreeder) =>
-      isBreeder
-        ? 'List your first pet for adoption.'
-        : 'Tell us about your ideal pet companion',
-    cta: () => 'Complete Setup',
-  },
-};
 
 const OnboardingScreen = () => {
   const router = useRouter();
   const currentUser = useCurrentUser();
-  const [loading, setLoading] = useState(false);
-
-  const [formData, setFormData] = useState({
-    role: '',
-    name: currentUser?.firstName || currentUser?.username || '',
-    location: '',
-    selectedBreeds: [] as UserBreed[],
-  });
-
-  const [isLocationSheetOpen, setIsLocationSheetOpen] = useState(false);
-
-  const {addUserBreed} = useBreedData(currentUser?.id);
+  const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState('');
 
   const {localized} = useTranslations();
   const {theme, appearance} = useTheme();
-
   const colorSet = theme?.colors[appearance];
   const styles = dynamicStyles(theme, appearance);
-
   const dispatch = useDispatch();
 
-  const tabs = ['tab1', 'tab2'];
-  const [activeTab, setActiveTab] = useState('tab1');
-  const currentIndex = tabs.indexOf(activeTab);
+  useEffect(() => {
+    setLoading(true);
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({...prev, [field]: value}));
-  };
+    if (!currentUser) return;
 
-  const handleSelectBreed = (breed: Breed) => {
-    // Check if breed is already selected
-    const isBreedAlreadySelected = formData.selectedBreeds.some(
-      (selectedBreed) => selectedBreed.breedId === breed.id
-    );
+    console.log('currentUser: ', currentUser);
+    // If user already has a role, redirect to appropriate screen
+    if (currentUser.role) {
+      if (currentUser.role === 'breeder') {
+        router.replace('/(onboarding)/(breeder)');
+      } else if (currentUser.role === 'seeker') {
+        router.replace('/(onboarding)/(seeker)');
+      }
+    }
 
-    if (isBreedAlreadySelected) {
-      Alert.alert('Error', 'You have already selected this breed');
+    setLoading(false);
+  }, [currentUser, router]);
+
+  const handleContinue = async () => {
+    if (!role) {
       return;
     }
 
-    const userBreed = {
-      breedName: breed.name,
-      breedId: breed.id,
-      breedGroup: breed.breedGroup,
-      userId: currentUser.id,
-      isOwner: formData.role === 'breeder',
-    } as UserBreed;
-
-    setFormData((prev) => ({
-      ...prev,
-      selectedBreeds: [...prev.selectedBreeds, userBreed],
-    }));
-  };
-
-  const handleRemoveBreed = (breedId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      selectedBreeds: prev.selectedBreeds.filter(
-        (breed) => breed.breedId !== breedId
-      ),
-    }));
-  };
-
-  const handleBack = () => {
-    if (currentIndex > 0) {
-      setActiveTab(tabs[currentIndex - 1]);
-    }
-  };
-
-  const handleNext = () => {
-    if (currentIndex < tabs.length - 1) {
-      // Step 1: Check role selection
-      if (activeTab === 'tab1' && !formData.role) {
-        Alert.alert('Error', 'Please select your role');
-        return;
-      }
-
-      if (activeTab === 'tab1' && !formData.location) {
-        Alert.alert('Error', 'Please enter your location');
-        return;
-      }
-      // Step 3: Check breed selection for breeders
-      if (activeTab === 'tab2' && formData.selectedBreeds.length === 0) {
-        Alert.alert('Error', 'Please select at least one breed');
-        return;
-      }
-
-      setActiveTab(tabs[currentIndex + 1]);
-    } else {
-      handleSave();
-    }
-  };
-
-  useEffect(() => {
-    if (!currentUser) return;
-    console.log(currentUser);
-    const hasCompletedOnboarding =
-      currentUser.role && currentUser.userBreeds?.length > 0;
-
-    if (hasCompletedOnboarding) {
-      router.replace('/(tabs)/(home)');
-    }
-  }, [currentUser, router]);
-
-  const handleSave = async () => {
     setLoading(true);
     try {
-      const userBreeds = (
-        await Promise.all(
-          formData.selectedBreeds.map((breed) => addUserBreed(breed))
-        )
-      ).filter(Boolean);
+      const userData = {
+        ...currentUser,
+        role,
+        onboardingComplete: false,
+      };
 
-      const response: any = updateUser(currentUser.id, {
-        role: formData.role,
-        userBreeds,
-        location: {...currentUser.location, address: formData.location},
-      });
+      await updateUser(currentUser?.id, userData);
+      dispatch(setUserData(userData));
 
-      await dispatch(
-        setUserData({
-          user: response.user,
-        })
-      );
-
-      return router.replace('/(tabs)/(home)');
+      // Redirect to the index page of the appropriate role
+      if (role === 'breeder') {
+        router.push('/(onboarding)/(breeder)');
+      } else {
+        router.push('/(onboarding)/(seeker)');
+      }
     } catch (error) {
-      console.error('Error saving preferences:', error);
+      console.error('Error updating user:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const renderStepContent = () => {
-    switch (activeTab) {
-      case 'tab1':
-        return (
-          <YStack gap='$4'>
-            <XGroup>
-              <XGroup.Item>
-                <Button theme='active' icon={<Home />} />
-              </XGroup.Item>
-
-              <XGroup.Item>
-                <Input
-                  flex={1}
-                  placeholder='Location'
-                  value={formData.location}
-                  onPressIn={() => setIsLocationSheetOpen(true)}
-                />
-              </XGroup.Item>
-            </XGroup>
-
-            <YGroup bordered>
-              <YGroup.Item>
-                <ListItem
-                  pressTheme
-                  padding='$4'
-                  theme='active'
-                  onPress={() => handleInputChange('role', 'seeker')}
-                  title='Dog Seeker'
-                  subTitle='I am looking for a new dog'
-                  iconAfter={
-                    formData.role === 'seeker' ? (
-                      <CheckCircle color={colorSet.primaryForeground} />
-                    ) : (
-                      <Circle color='$gray9' />
-                    )
-                  }
-                />
-              </YGroup.Item>
-              <Separator />
-              <YGroup.Item>
-                <ListItem
-                  pressTheme
-                  padding='$4'
-                  theme='active'
-                  onPress={() => handleInputChange('role', 'breeder')}
-                  title='Dog Breeder'
-                  subTitle='I want to rehome my dog(s)'
-                  iconAfter={
-                    formData.role === 'breeder' ? (
-                      <CheckCircle color={colorSet.primaryForeground} />
-                    ) : (
-                      <Circle color='$gray9' />
-                    )
-                  }
-                />
-              </YGroup.Item>
-            </YGroup>
-          </YStack>
-        );
-
-      case 'tab2':
-        return (
-          <YStack gap='$4'>
-            <YGroup>
-              {formData.selectedBreeds.map((breed) => (
-                <YGroup.Item key={breed.breedName}>
-                  <ListItem
-                    title={
-                      <Text textTransform='capitalize'>{breed.breedName}</Text>
-                    }
-                    subTitle={`${breed.breedGroup} group`}
-                    onPress={() => handleRemoveBreed(breed.breedId!)}
-                    iconAfter={Trash}
-                  />
-                  <Separator />
-                </YGroup.Item>
-              ))}
-            </YGroup>
-
-            <BreedSelector
-              onSelectBreed={handleSelectBreed}
-              userBreeds={formData.selectedBreeds}
-              buttonText={
-                formData.selectedBreeds?.length
-                  ? localized('Add Another Breed')
-                  : localized('Select Breed')
-              }
-            />
-          </YStack>
-        );
     }
   };
 
@@ -294,6 +84,7 @@ const OnboardingScreen = () => {
       alignItems='center'
       justifyContent='center'
       backgroundColor={colorSet.primaryBackground}
+      flex={1}
     >
       {loading ? (
         <Spinner size='large' color={colorSet.primaryForeground} />
@@ -307,97 +98,74 @@ const OnboardingScreen = () => {
           }}
         >
           <YStack padding='$4' gap='$4'>
-            <YStack gap='$4' padding='$4'>
-              <View style={styles?.logo}>
+            <YStack gap='$2' padding='$4'>
+              <View style={styles.logo}>
                 <Image style={styles.logoImage} source={theme.icons?.logo} />
               </View>
 
-              <Text style={styles.title}>
-                Hey, {currentUser?.firstName || currentUser?.username}
-              </Text>
+              <YStack gap='$2'>
+                <Text style={styles.title}>
+                  Hey, {currentUser?.firstName || currentUser?.username}
+                </Text>
 
-              <Text style={styles.caption}>
-                {OnboardingSteps[activeTab].description(
-                  formData.role === 'breeder'
-                )}
-              </Text>
+                <Text style={styles.caption}>
+                  Tell us a bit about yourself to get started
+                </Text>
+              </YStack>
             </YStack>
 
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              flexDirection='column'
-              gap='$4'
+            <YGroup bordered>
+              <YGroup.Item>
+                <ListItem
+                  pressTheme
+                  padding='$4'
+                  theme='active'
+                  onPress={() => setRole('seeker')}
+                  title='Dog Seeker'
+                  subTitle='I am looking for a new dog'
+                  iconAfter={
+                    role === 'seeker' ? (
+                      <CheckCircle color={colorSet.primaryForeground} />
+                    ) : (
+                      <Circle color='$gray9' />
+                    )
+                  }
+                />
+              </YGroup.Item>
+              <Separator />
+              <YGroup.Item>
+                <ListItem
+                  pressTheme
+                  padding='$4'
+                  theme='active'
+                  onPress={() => setRole('breeder')}
+                  title='Dog Breeder'
+                  subTitle='I want to rehome my dog(s)'
+                  iconAfter={
+                    role === 'breeder' ? (
+                      <CheckCircle color={colorSet.primaryForeground} />
+                    ) : (
+                      <Circle color='$gray9' />
+                    )
+                  }
+                />
+              </YGroup.Item>
+            </YGroup>
+
+            <Button
+              backgroundColor={colorSet.secondaryForeground}
+              color={colorSet.primaryForeground}
+              onPress={handleContinue}
+              disabled={!role || loading}
             >
-              <Tabs.List>
-                {tabs.map((tab, index) => (
-                  <Tabs.Tab
-                    key={tab}
-                    value={tab}
-                    flex={1}
-                    backgroundColor={
-                      activeTab === tab
-                        ? colorSet.secondaryForeground
-                        : colorSet.grey0
-                    }
-                    bordered
-                  >
-                    <Text>{OnboardingSteps[tab].title}</Text>
-                  </Tabs.Tab>
-                ))}
-              </Tabs.List>
-
-              <Tabs.Content value={activeTab}>
-                {renderStepContent()}
-              </Tabs.Content>
-            </Tabs>
-
-            <XStack justifyContent='space-between'>
-              <Button
-                onPress={handleBack}
-                chromeless
-                icon={<ChevronLeft />}
-                disabled={currentIndex === 0 || loading}
-                opacity={currentIndex === 0 ? 0.5 : 1}
-              >
-                Back
-              </Button>
-
-              {currentIndex !== tabs.length - 1 && (
-                <Button
-                  onPress={handleNext}
-                  disabled={currentIndex === tabs.length - 1}
-                  opacity={currentIndex === tabs.length - 1 ? 0.5 : 1}
-                  iconAfter={<ChevronRight />}
-                >
-                  {OnboardingSteps[activeTab].cta(formData.role)}
-                </Button>
-              )}
-
-              {currentIndex === tabs.length - 1 && (
-                <Button
-                  onPress={handleSave}
-                  disabled={loading}
-                  iconAfter={loading ? <Spinner /> : <ChevronRight />}
-                >
-                  {loading ? '' : 'Save'}
-                </Button>
-              )}
-            </XStack>
+              {loading ? localized('Please wait...') : localized('Continue')}
+            </Button>
           </YStack>
         </ScrollView>
       )}
-
-      <LocationSelector
-        isLocationSheetOpen={isLocationSheetOpen}
-        setIsLocationSheetOpen={setIsLocationSheetOpen}
-        handleInputChange={handleInputChange}
-      />
     </View>
   );
 };
-
-export default OnboardingScreen;
 
 const dynamicStyles = (theme, colorScheme) => {
   const colorSet = theme.colors[colorScheme];
@@ -436,3 +204,5 @@ const dynamicStyles = (theme, colorScheme) => {
     },
   });
 };
+
+export default OnboardingScreen;

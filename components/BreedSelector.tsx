@@ -24,21 +24,20 @@ import useCurrentUser from '../hooks/useCurrentUser';
 interface BreedSelectorProps {
   onSelectBreed: (breed: Breed) => void;
   userBreeds?: UserBreed[];
-  buttonText?: string;
-  maxHeight?: number | string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 const BreedSelector: React.FC<BreedSelectorProps> = ({
   onSelectBreed,
   userBreeds,
-  buttonText = 'Select Breed',
+  open,
+  onOpenChange,
 }) => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
   const currentUser = useCurrentUser();
-
-  const [open, setOpen] = useState(false);
   const {localized} = useTranslations();
 
   const searchInputRef = useRef('' as any);
@@ -58,6 +57,26 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
     hasMore,
   } = useBreedSearch();
 
+  const [availableBreeds, setAvailableBreeds] = useState<Breed[]>([]);
+
+  useEffect(() => {
+    if (userBreeds && filteredBreeds) {
+      // Create a set of user breed names for efficient lookup
+      const userBreedNames = new Set(
+        userBreeds.map((breed) => breed.breedName)
+      );
+
+      // Filter out breeds that are already in user's breeds
+      const filteredAvailableBreeds = filteredBreeds.filter(
+        (breed) => !userBreedNames.has(breed.name)
+      );
+
+      setAvailableBreeds(filteredAvailableBreeds);
+    } else {
+      setAvailableBreeds(filteredBreeds);
+    }
+  }, [userBreeds, filteredBreeds]);
+
   const handleSearchTextChange = (text: string) => {
     updateFilter('searchText', text);
   };
@@ -67,7 +86,7 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
     const breedDoc = await fetchBreedByName(breedName);
 
     if (!loading && breedDoc) {
-      setOpen(false);
+      onOpenChange(false);
       onSelectBreed({...breedDoc, ...breed});
     }
 
@@ -77,94 +96,75 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
   };
 
   return (
-    <>
-      <Button
-        onPress={() => setOpen(true)}
-        disabled={loading}
-        themeShallow
-        theme='active'
-      >
-        {loading ? (
-          <Spinner color={colorSet.primaryForeground} />
-        ) : (
-          localized(buttonText)
-        )}
-      </Button>
-      <Sheet
-        modal
-        open={open}
-        onOpenChange={setOpen}
-        snapPoints={[60, 80]}
-        snapPointsMode='percent'
-        dismissOnSnapToBottom
-      >
-        <Sheet.Overlay />
-        <Sheet.Frame>
-          <Sheet.Handle />
-          <YStack padding='$4' gap='$4'>
-            {/* <Text fontSize='$6' fontWeight='bold' marginBottom='$4'>
-              {localized('Select a Breed')}
-            </Text> */}
-            <Input
-              ref={searchInputRef}
-              placeholder={localized('Search breeds')}
-              value={searchText}
-              onChangeText={handleSearchTextChange}
-              marginBottom='$4'
-              onLayout={() => {
+    <Sheet
+      modal
+      open={open}
+      onOpenChange={onOpenChange}
+      snapPoints={[60, 80]}
+      snapPointsMode='percent'
+      dismissOnSnapToBottom
+      zIndex={100000}
+      animation='medium'
+    >
+      <Sheet.Overlay />
+      <Sheet.Frame>
+        <Sheet.Handle />
+        <YStack padding='$4' gap='$4'>
+          <Input
+            ref={searchInputRef}
+            placeholder={localized('Search breeds')}
+            value={searchText}
+            onChangeText={handleSearchTextChange}
+            marginBottom='$4'
+            onLayout={() => {
+              open && searchInputRef.current?.focus();
+              setTimeout(() => {
                 open && searchInputRef.current?.focus();
-                Keyboard.dismiss();
-                setTimeout(() => {
-                  open && searchInputRef.current?.focus();
-                }, 100);
-              }}
-            />
+              }, 100);
+            }}
+          />
 
-            <YStack gap='$4'>
-              {userBreeds && userBreeds.length > 0 && (
-                <YStack gap='$2'>
-                  <Text>{localized('Your Breeds')}</Text>
-                  {userBreeds.map((breed) => (
-                    <ListItem
-                      key={breed.id}
-                      title={breed.breedName}
-                      onPress={() => handleSelectBreed(breed)}
-                      iconAfter={<Star />}
-                    />
-                  ))}
-                </YStack>
-              )}
-
+          <YStack gap='$4'>
+            {userBreeds && userBreeds.length > 0 && (
               <YStack gap='$2'>
-                <Text>{localized('All Breeds')}</Text>
-                <FlatList
-                  data={filteredBreeds}
-                  renderItem={({item, index}) => (
-                    <ListItem
-                      key={index}
-                      title={item.name}
-                      onPress={() => handleSelectBreed(item)}
-                    ></ListItem>
-                  )}
-                  keyExtractor={(item) => item.name}
-                  numColumns={2}
-                  onEndReached={loadMoreBreeds}
-                  onEndReachedThreshold={0.1}
-                  ListFooterComponent={() =>
-                    hasMore && loading ? (
-                      <Spinner
-                        size='large'
-                        color={colorSet.primaryForeground}
-                      />
-                    ) : null
-                  }
-                />
+                <Text>{localized('Your Breeds')}</Text>
+                {userBreeds.map((breed) => (
+                  <ListItem
+                    key={breed.id}
+                    title={breed.breedName}
+                    onPress={() => handleSelectBreed(breed)}
+                    iconAfter={<Star />}
+                  />
+                ))}
               </YStack>
+            )}
+
+            <YStack gap='$2'>
+              <Text>{localized('All Breeds')}</Text>
+              <FlatList
+                data={availableBreeds}
+                renderItem={({item, index}) => (
+                  <ListItem
+                    key={index}
+                    title={<Text>{item.name}</Text>}
+                    onPress={() => handleSelectBreed(item)}
+                  />
+                )}
+                keyExtractor={(item) => item.name}
+                numColumns={2}
+                onEndReached={loadMoreBreeds}
+                onEndReachedThreshold={0.1}
+                ListFooterComponent={() =>
+                  hasMore && loading ? (
+                    <Spinner size='large' color={colorSet.primaryForeground} />
+                  ) : null
+                }
+              />
             </YStack>
           </YStack>
-        </Sheet.Frame>
-      </Sheet>
-    </>
+        </YStack>
+      </Sheet.Frame>
+    </Sheet>
   );
 };
 
