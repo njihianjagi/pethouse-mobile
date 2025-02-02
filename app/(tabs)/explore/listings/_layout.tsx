@@ -1,21 +1,21 @@
 import React from 'react';
-import { Stack } from 'expo-router';
-import { useTheme } from '../../../../dopebase';
+import {Stack} from 'expo-router';
+import {useTheme} from '../../../../dopebase';
 
 export default function ListingsLayout() {
-  const { theme, appearance } = useTheme();
+  const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
   return (
     <Stack>
       <Stack.Screen
-        name="index"
+        name='index'
         options={{
-          headerShown: false
+          headerShown: false,
         }}
       />
       <Stack.Screen
-        name="[listingId]"
+        name='[id]'
         options={{
           title: 'Listing Details',
           headerTitleStyle: {

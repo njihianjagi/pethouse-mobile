@@ -1,11 +1,11 @@
 import React from 'react';
-import { Stack } from 'expo-router';
-import { Button } from 'tamagui';
-import { Bell } from '@tamagui/lucide-icons';
-import { useTheme } from '../../../dopebase';
+import {Stack} from 'expo-router';
+import {Button} from 'tamagui';
+import {Bell} from '@tamagui/lucide-icons';
+import {useTheme} from '../../../dopebase';
 
 export default function ExploreLayout() {
-  const { theme, appearance } = useTheme();
+  const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
   return (
@@ -28,29 +28,52 @@ export default function ExploreLayout() {
             size='$4'
           />
         ),
-      }}>
+      }}
+    >
       <Stack.Screen
-        name="index"
+        name='index'
         options={{
           title: 'Explore',
         }}
       />
+      {/* Breeds routes */}
       <Stack.Screen
-        name="breeds"
+        name='breeds/index'
         options={{
           title: 'Breeds',
         }}
       />
       <Stack.Screen
-        name="breeders"
+        name='breeds/[name]'
+        options={{
+          title: 'Breed Details',
+          // headerTitle: ({params}) => params?.name || 'Breed Details',
+        }}
+      />
+      {/* Breeders routes */}
+      <Stack.Screen
+        name='breeders/index'
         options={{
           title: 'Breeders',
         }}
       />
       <Stack.Screen
-        name="listings"
+        name='breeders/[id]'
+        options={{
+          title: 'Breeder Profile',
+        }}
+      />
+      {/* Listings routes */}
+      <Stack.Screen
+        name='listings/index'
         options={{
           title: 'Listings',
+        }}
+      />
+      <Stack.Screen
+        name='listings/[id]'
+        options={{
+          title: 'Listing Details',
         }}
       />
     </Stack>
