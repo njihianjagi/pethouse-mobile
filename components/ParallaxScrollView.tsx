@@ -83,10 +83,10 @@ export default function ParallaxScrollView({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    height: '100%',
-    flexDirection: 'column',
-    borderColor: 'red',
-    overflow: 'scroll',
+    // height: '100%',
+    // flexDirection: 'column',
+    // borderColor: 'red',
+    // overflow: 'scroll',
   },
   scrollView: {
     flex: 1,
@@ -99,6 +99,6 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: '30%',
     gap: 16,
-    overflow: 'visible',
+    overflow: 'scroll',
   },
 });

@@ -66,67 +66,19 @@ export interface BreederProfile extends BaseUser {
 
 export interface SeekerProfile extends BaseUser {
   role: 'seeker';
-  housing: {
-    type: 'own' | 'rent' | 'live_with_parents';
-    hasLandlordApproval?: boolean;
-    landlordContact?: string;
-    propertyType: 'house' | 'apartment' | 'condo' | 'other';
-    yard: {
-      hasYard: boolean;
-      isFenced?: boolean;
-      fenceHeight?: number;
-      yardSize?: 'small' | 'medium' | 'large';
-    };
-    // movingPlans: boolean;
-    // movingTimeframe?: string;
-  };
-  household: {
-    adults: number;
-    children: number;
-    childrenAges?: number[];
-    hasAllergies: boolean;
-    allergyDetails?: string;
-    familyAgreement: boolean;
-  };
-  lifestyle: {
-    workSchedule: 'work_from_home' | 'part_time' | 'full_time';
-    hoursAlonePerDay: number;
-    activityLevel: 'sedentary' | 'moderate' | 'active' | 'very_active';
-    travelFrequency: 'rarely' | 'occasionally' | 'frequently';
-  };
-  experience: {
-    currentPets: {
-      type: string;
-      breed?: string;
-      age: number;
-      spayedNeutered: boolean;
-      upToDateVaccinations: boolean;
-    }[];
-    previousPets: {
-      type: string;
-      yearsOwned: number;
-      whatHappened: string;
-    }[];
-    dogExperience: 'first_time' | 'some_experience' | 'experienced';
-    breedExperience?: string[];
-    trainingExperience?: string[];
-  };
   preferredBreeds: UserBreed[];
-  veterinary: {
-    hasVeterinarian: boolean;
-    veterinarian?: {
-      name: string;
-      clinic: string;
-      phone: string;
-      email?: string;
-    };
+  experience: {
+    dogExperience: 'first_time' | 'some_experience' | 'experienced';
+    breedingExperience?: boolean;
+    trainingExperience?: boolean;
   };
-  references: {
-    name: string;
-    relationship: string;
-    phone: string;
-    email?: string;
-  }[];
+  housing: {
+    // hasLandlordApproval?: boolean;
+    // landlordContact?: string;
+    propertyType: 'house' | 'apartment' | 'condo' | 'other';
+    yard: 'none' | 'small' | 'medium' | 'large';
+    children: string;
+  };
 }
 
 export const usersRef = db.collection('users');

@@ -54,13 +54,6 @@ export const PreferredBreedsScreen = () => {
     }
   }, [currentUser]);
 
-  const handleChange = (field: string, value: any) => {
-    setBreeds((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
   const handleAddBreed = (breed: any) => {
     const newBreed: UserBreed = {
       userId: currentUser.id,
@@ -101,12 +94,12 @@ export const PreferredBreedsScreen = () => {
         preferredBreeds: breeds,
       });
       dispatch(setUserData(updatedUser));
+      router.push('/(onboarding)/(seeker)/experience');
     } catch (error) {
       console.error('Error updating user:', error);
       alert(localized('Error updating profile. Please try again.'));
     } finally {
       setSaving(false);
-      router.push('/(onboarding)/(seeker)/experience');
     }
   };
 

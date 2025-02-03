@@ -9,14 +9,21 @@ import {
   Input,
   Button,
   Spinner,
+  View,
+  Image,
+  Adapt,
+  Sheet,
+  Label,
+  Spacer,
 } from 'tamagui';
-import {useTranslations} from '../../../dopebase';
+import {useTheme, useTranslations} from '../../../dopebase';
 import {SeekerProfile} from '../../../api/firebase/users/userClient';
 import {useRouter} from 'expo-router';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
+import ParallaxScrollView from '../../../components/ParallaxScrollView';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 3;
@@ -27,17 +34,17 @@ export const HousingScreen = () => {
   const currentUser = useCurrentUser();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const {theme, appearance} = useTheme();
+  const colorSet = theme?.colors[appearance];
 
   const [formData, setFormData] = useState<SeekerProfile['housing']>({
-    type: 'own',
     propertyType: 'house',
-    hasLandlordApproval: false,
-    landlordContact: '',
-    yard: {
-      hasYard: false,
-      yardSize: 'small',
-      isFenced: false,
-    },
+    // hasLandlordApproval: false,
+    // landlordContact: '',
+    yard: 'none',
+    children: 'none',
   });
 
   useEffect(() => {
@@ -61,24 +68,22 @@ export const HousingScreen = () => {
   ];
 
   const yardSizes = [
+    {value: 'none', label: 'No Yard'},
     {value: 'small', label: 'Small'},
     {value: 'medium', label: 'Medium'},
     {value: 'large', label: 'Large'},
   ];
 
+  const childrenOptions = [
+    {value: 'none', label: 'No Children'},
+    {value: 'toddlers', label: 'Toddlers (0-3 years)'},
+    {value: 'young', label: 'Young Children (4-12 years)'},
+    {value: 'teens', label: 'Teenagers (13+ years)'},
+    {value: 'mixed', label: 'Mixed Ages'},
+  ];
+
   const handleSubmit = async () => {
-    // Basic validation
-    if (!formData.type || !formData.propertyType) {
-      alert(localized('Please fill in all required fields'));
-      return;
-    }
-
-    if (formData.type === 'rent' && !formData.hasLandlordApproval) {
-      alert(localized('Please confirm landlord approval'));
-      return;
-    }
-
-    setLoading(true);
+    setSaving(true);
     try {
       const updatedUser = await updateUser(currentUser.id, {
         ...currentUser,
@@ -91,151 +96,280 @@ export const HousingScreen = () => {
       console.error('Error updating user:', error);
       alert(localized('Error updating profile. Please try again.'));
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
   return (
-    <YStack flex={1}>
-      <YStack gap='$4' px='$4' pb='$4'>
-        <Text textAlign='center' fontSize='$6' fontWeight='bold'>
-          {localized('Tell us about your housing')}
-        </Text>
-        <Text textAlign='center' color='$gray11'>
-          {localized('Step')} {CURRENT_STEP} {localized('of')} {TOTAL_STEPS}
-        </Text>
-
-        {/* Housing Type */}
-        <YStack gap='$2'>
-          <Text fontWeight='bold'>{localized('Housing Type')}*</Text>
-          <RadioGroup
-            value={formData.type}
-            onValueChange={(value) =>
-              handleChange('type', value as SeekerProfile['housing']['type'])
-            }
-          >
-            <XStack gap='$4'>
-              <RadioGroup.Item value='own' size='$4'>
-                <RadioGroup.Indicator />
-                <Text ml='$2'>{localized('Own')}</Text>
-              </RadioGroup.Item>
-              <RadioGroup.Item value='rent' size='$4'>
-                <RadioGroup.Indicator />
-                <Text ml='$2'>{localized('Rent')}</Text>
-              </RadioGroup.Item>
-              <RadioGroup.Item value='live_with_parents' size='$4'>
-                <RadioGroup.Indicator />
-                <Text ml='$2'>{localized('Live with Parents')}</Text>
-              </RadioGroup.Item>
-            </XStack>
-          </RadioGroup>
-        </YStack>
-
-        {/* Property Type */}
-        <YStack gap='$2'>
-          <Text fontWeight='bold'>{localized('Property Type')}*</Text>
-          <Select
-            value={formData.propertyType}
-            onValueChange={(value) => handleChange('propertyType', value)}
-          >
-            <Select.Trigger>
-              <Select.Value placeholder={localized('Select property type')} />
-            </Select.Trigger>
-            <Select.Content>
-              {propertyTypes.map((type, index) => (
-                <Select.Item index={index} key={type.value} value={type.value}>
-                  <Select.ItemText>{localized(type.label)}</Select.ItemText>
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select>
-        </YStack>
-
-        {/* Landlord Approval (if renting) */}
-        {formData.type === 'rent' && (
+    <View alignItems='center' justifyContent='center' flex={1}>
+      <ParallaxScrollView
+        headerImage={
+          <Image
+            source={require('../../../assets/images/doggo.png')}
+            objectFit='contain'
+          />
+        }
+        headerBackgroundColor={{
+          dark: colorSet.primaryBackground,
+          light: colorSet.primaryBackground,
+        }}
+      >
+        <YStack gap='$4' padding='$4' flex={1}>
           <YStack gap='$2'>
-            <XStack gap='$2' ai='center'>
-              <Switch
-                checked={formData.hasLandlordApproval}
-                onCheckedChange={(checked) =>
-                  handleChange('hasLandlordApproval', checked)
-                }
-              />
-              <Text>{localized('Have Landlord Approval')}</Text>
-            </XStack>
-            {formData.hasLandlordApproval && (
-              <Input
-                value={formData.landlordContact}
-                onChangeText={(value) => handleChange('landlordContact', value)}
-                placeholder={localized('Landlord contact information')}
-              />
-            )}
+            <Text
+              style={{
+                fontSize: 14,
+                color: colorSet.primaryForeground,
+                textAlign: 'center',
+                opacity: 0.8,
+              }}
+            >
+              {localized('Step')} {CURRENT_STEP} {localized('of')} {TOTAL_STEPS}
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 40,
+                fontWeight: 'bold',
+                color: colorSet.primaryForeground,
+                marginTop: 0,
+                marginBottom: 0,
+                textAlign: 'center',
+              }}
+            >
+              {localized('Tell us about your living situation')}
+            </Text>
+
+            <Text
+              style={{
+                fontSize: 16,
+                lineHeight: 24,
+                textAlign: 'center',
+                color: colorSet.primaryForeground,
+              }}
+            >
+              {localized(
+                'This information will be shown to breeders looking to rehome their dogs'
+              )}
+            </Text>
           </YStack>
-        )}
 
-        {/* Yard Information */}
-        <YStack gap='$2'>
-          <XStack gap='$2' ai='center'>
-            <Switch
-              checked={formData.yard.hasYard}
-              onCheckedChange={(checked) =>
-                handleChange('yard', {...formData.yard, hasYard: checked})
-              }
-            />
-            <Text>{localized('Has Yard')}</Text>
-          </XStack>
-
-          {formData.yard.hasYard && (
+          <YStack gap='$4'>
+            {/* Property Type */}
             <YStack gap='$2'>
-              <Text fontWeight='bold'>{localized('Yard Size')}</Text>
+              <Text fontWeight='bold'>{localized('Property Type')}*</Text>
               <Select
-                value={formData.yard.yardSize}
-                onValueChange={(value) =>
-                  handleChange('yard', {...formData.yard, size: value})
-                }
+                value={formData.propertyType}
+                onValueChange={(value) => handleChange('propertyType', value)}
               >
-                <Select.Trigger>
-                  <Select.Value placeholder={localized('Select yard size')} />
+                <Select.Trigger w='100%' p='$3'>
+                  <Select.Value
+                    placeholder={localized('Select property type')}
+                  />
                 </Select.Trigger>
-                <Select.Content>
-                  {yardSizes.map((size, index) => (
-                    <Select.Item
-                      index={index}
-                      key={size.value}
-                      value={size.value}
-                    >
-                      <Select.ItemText>{localized(size.label)}</Select.ItemText>
-                    </Select.Item>
-                  ))}
+
+                <Adapt when='sm' platform='touch'>
+                  <Sheet modal dismissOnSnapToBottom snapPointsMode='fit'>
+                    <Sheet.Frame>
+                      <Sheet.ScrollView>
+                        <Adapt.Contents />
+                      </Sheet.ScrollView>
+                    </Sheet.Frame>
+                    <Sheet.Overlay />
+                  </Sheet>
+                </Adapt>
+
+                <Select.Content zIndex={200000}>
+                  <Select.ScrollUpButton
+                    ai='center'
+                    jc='center'
+                    pos='relative'
+                    w='100%'
+                    h='$3'
+                  >
+                    <YStack zi={10} />
+                  </Select.ScrollUpButton>
+
+                  <Select.Viewport minWidth={200}>
+                    <Select.Group>
+                      {propertyTypes.map((type, index) => (
+                        <Select.Item
+                          index={index}
+                          key={type.value}
+                          value={type.value}
+                        >
+                          <Select.ItemText>
+                            {localized(type.label)}
+                          </Select.ItemText>
+                        </Select.Item>
+                      ))}
+                    </Select.Group>
+                  </Select.Viewport>
+
+                  <Select.ScrollDownButton
+                    ai='center'
+                    jc='center'
+                    pos='relative'
+                    w='100%'
+                    h='$3'
+                  >
+                    <YStack zi={10} />
+                  </Select.ScrollDownButton>
                 </Select.Content>
               </Select>
-
-              <XStack gap='$2' ai='center'>
-                <Switch
-                  checked={formData.yard.isFenced}
-                  onCheckedChange={(checked) =>
-                    handleChange('yard', {...formData.yard, isFenced: checked})
-                  }
-                />
-                <Text>{localized('Yard is Fenced')}</Text>
-              </XStack>
             </YStack>
-          )}
-        </YStack>
-      </YStack>
 
-      <YStack position='absolute' bottom={0} width='100%' p='$4'>
-        <Button
-          size='$6'
-          theme='blue'
-          onPress={handleSubmit}
-          disabled={loading}
-          iconAfter={loading ? () => <Spinner /> : undefined}
-        >
-          {localized('Continue')}
-        </Button>
-      </YStack>
-    </YStack>
+            {/* Yard Information */}
+            <YStack gap='$2'>
+              <YStack gap='$2'>
+                <Text fontWeight='bold'>{localized('Yard Size')}</Text>
+                <Select
+                  value={formData.yard}
+                  onValueChange={(value) =>
+                    handleChange('yard', {...formData, yard: value})
+                  }
+                >
+                  <Select.Trigger w='100%' p='$3'>
+                    <Select.Value placeholder={localized('Select yard size')} />
+                  </Select.Trigger>
+
+                  <Adapt when='sm' platform='touch'>
+                    <Sheet modal dismissOnSnapToBottom snapPointsMode='fit'>
+                      <Sheet.Frame>
+                        <Sheet.ScrollView>
+                          <Adapt.Contents />
+                        </Sheet.ScrollView>
+                      </Sheet.Frame>
+                      <Sheet.Overlay />
+                    </Sheet>
+                  </Adapt>
+
+                  <Select.Content zIndex={200000}>
+                    <Select.ScrollUpButton
+                      ai='center'
+                      jc='center'
+                      pos='relative'
+                      w='100%'
+                      h='$3'
+                    >
+                      <YStack zi={10} />
+                    </Select.ScrollUpButton>
+
+                    <Select.Viewport minWidth={200}>
+                      <Select.Group>
+                        {yardSizes.map((size, index) => (
+                          <Select.Item
+                            index={index}
+                            key={size.value}
+                            value={size.value}
+                          >
+                            <Select.ItemText>
+                              {localized(size.label)}
+                            </Select.ItemText>
+                          </Select.Item>
+                        ))}
+                      </Select.Group>
+                    </Select.Viewport>
+
+                    <Select.ScrollDownButton
+                      ai='center'
+                      jc='center'
+                      pos='relative'
+                      w='100%'
+                      h='$3'
+                    >
+                      <YStack zi={10} />
+                    </Select.ScrollDownButton>
+                  </Select.Content>
+                </Select>
+              </YStack>
+            </YStack>
+
+            {/* Children */}
+            <YStack gap='$2'>
+              <Text fontWeight='bold'>
+                {localized('Children in Household')}
+              </Text>
+              <Select
+                value={formData.children}
+                onValueChange={(value) => handleChange('children', value)}
+              >
+                <Select.Trigger w='100%' p='$3'>
+                  <Select.Value
+                    placeholder={localized('Select children age group')}
+                  />
+                </Select.Trigger>
+
+                <Adapt when='sm' platform='touch'>
+                  <Sheet modal dismissOnSnapToBottom snapPointsMode='fit'>
+                    <Sheet.Frame>
+                      <Sheet.ScrollView>
+                        <Adapt.Contents />
+                      </Sheet.ScrollView>
+                    </Sheet.Frame>
+                    <Sheet.Overlay />
+                  </Sheet>
+                </Adapt>
+
+                <Select.Content zIndex={200000}>
+                  <Select.ScrollUpButton
+                    ai='center'
+                    jc='center'
+                    pos='relative'
+                    w='100%'
+                    h='$3'
+                  >
+                    <YStack zi={10} />
+                  </Select.ScrollUpButton>
+
+                  <Select.Viewport minWidth={200}>
+                    <Select.Group>
+                      {childrenOptions.map((option, index) => (
+                        <Select.Item
+                          index={index}
+                          key={option.value}
+                          value={option.value}
+                        >
+                          <Select.ItemText>
+                            {localized(option.label)}
+                          </Select.ItemText>
+                        </Select.Item>
+                      ))}
+                    </Select.Group>
+                  </Select.Viewport>
+
+                  <Select.ScrollDownButton
+                    ai='center'
+                    jc='center'
+                    pos='relative'
+                    w='100%'
+                    h='$3'
+                  >
+                    <YStack zi={10} />
+                  </Select.ScrollDownButton>
+                </Select.Content>
+              </Select>
+            </YStack>
+          </YStack>
+
+          <Spacer flex={1} />
+
+          <Button
+            backgroundColor={colorSet.secondaryForeground}
+            color={colorSet.primaryForeground}
+            onPress={handleSubmit}
+            disabled={loading}
+            iconAfter={
+              saving ? (
+                <Spinner color={colorSet.primaryForeground} />
+              ) : undefined
+            }
+          >
+            {saving ? <></> : localized('Complete Profile')}
+          </Button>
+        </YStack>
+      </ParallaxScrollView>
+    </View>
   );
 };
 

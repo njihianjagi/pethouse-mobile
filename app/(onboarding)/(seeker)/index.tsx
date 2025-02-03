@@ -18,7 +18,7 @@ const SeekerOnboardingScreen = () => {
       return;
     }
 
-    if (!currentUser.preferences) {
+    if (!currentUser.preferredBreeds?.length) {
       router.replace('/(onboarding)/(seeker)/breeds');
       return;
     }
