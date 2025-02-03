@@ -27,12 +27,6 @@ export default function SeekerOnboardingLayout() {
         }}
       />
       <Stack.Screen
-        name='household'
-        options={{
-          title: localized('Household'),
-        }}
-      />
-      <Stack.Screen
         name='housing'
         options={{
           title: localized('Housing'),

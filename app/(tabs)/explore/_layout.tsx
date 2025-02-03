@@ -22,6 +22,7 @@ export default function ExploreLayout() {
           headerStyle: {
             backgroundColor: colorSet.primaryBackground,
           },
+          headerLeft: () => null,
           headerRight: () => (
             <Button
               onPress={() => {}}
@@ -38,6 +39,7 @@ export default function ExploreLayout() {
         name='breeds'
         options={{
           title: 'Breeds',
+          headerShown: false,
         }}
       />
       {/* Breeders routes */}
@@ -45,6 +47,7 @@ export default function ExploreLayout() {
         name='breeders'
         options={{
           title: 'Breeders',
+          headerShown: false,
         }}
       />
       {/* Listings routes */}
@@ -52,6 +55,7 @@ export default function ExploreLayout() {
         name='listings'
         options={{
           title: 'Listings',
+          headerShown: false,
         }}
       />
     </Stack>

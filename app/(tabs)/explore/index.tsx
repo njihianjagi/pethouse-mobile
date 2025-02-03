@@ -21,8 +21,16 @@ import {
   Spinner,
   Checkbox,
   XGroup,
+  SelectProps,
 } from 'tamagui';
-import {Dog, Users, ShoppingBag, Filter} from '@tamagui/lucide-icons';
+import {
+  Dog,
+  Users,
+  ShoppingBag,
+  Filter,
+  Settings2,
+  Search,
+} from '@tamagui/lucide-icons';
 
 import {useTheme} from '../../../dopebase';
 import {Breed} from '../../../api/firebase/breeds/useBreedData';
@@ -57,15 +65,36 @@ type SearchType = 'breed' | 'breeder' | 'listing';
 // Custom SearchBox component using Tamagui Input
 function CustomSearchBox() {
   const {query, refine} = useSearchBox();
+
   return (
-    <Input
-      f={1}
-      placeholder='Search...'
-      value={query}
-      onChangeText={refine}
-      autoCapitalize='none'
-      autoCorrect={false}
-    />
+    <XGroup>
+      <XGroup.Item>
+        <Button
+          chromeless
+          icon={<Search size='$1' />}
+          pr='0'
+          pl='$3'
+          theme='active'
+          themeShallow
+          backgroundColor='$gray2'
+          borderColor='$gray3'
+          borderRightWidth={0}
+          color='$gray10'
+        />
+      </XGroup.Item>
+      <XGroup.Item>
+        <Input
+          f={1}
+          placeholder='Search...'
+          value={query}
+          onChangeText={refine}
+          autoCapitalize='none'
+          autoCorrect={false}
+          autoFocus
+          borderLeftWidth={0}
+        />
+      </XGroup.Item>
+    </XGroup>
   );
 }
 
@@ -129,6 +158,69 @@ function getFilterAttribute(type: SearchType) {
   }
 }
 
+// Sort Sheet Component
+function SortSheet({
+  isOpen,
+  onClose,
+  sortBy,
+  onSortChange,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  sortBy: string;
+  onSortChange: (sort: string) => void;
+}) {
+  return (
+    <Sheet
+      modal
+      open={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+      snapPoints={[40]}
+      position={0}
+      dismissOnSnapToBottom
+    >
+      <Sheet.Overlay />
+      <Sheet.Frame padding='$4' space>
+        <Sheet.Handle />
+        <H4>Sort By</H4>
+        <YStack space>
+          <XStack space alignItems='center'>
+            <Select value={sortBy} onValueChange={onSortChange}>
+              <Select.Trigger width='100%' iconAfter={Settings2}>
+                <Select.Value placeholder='Sort by...' />
+              </Select.Trigger>
+
+              <Select.Content>
+                <Select.ScrollUpButton />
+                <Select.Viewport>
+                  <Select.Group>
+                    <Select.Item index={0} value='relevance'>
+                      <Select.ItemText>Relevance</Select.ItemText>
+                    </Select.Item>
+                    <Select.Item index={1} value='created_at:desc'>
+                      <Select.ItemText>Newest</Select.ItemText>
+                    </Select.Item>
+                    <Select.Item index={2} value='created_at:asc'>
+                      <Select.ItemText>Oldest</Select.ItemText>
+                    </Select.Item>
+                    <Select.Item index={3} value='name:asc'>
+                      <Select.ItemText>Name A-Z</Select.ItemText>
+                    </Select.Item>
+                    <Select.Item index={4} value='name:desc'>
+                      <Select.ItemText>Name Z-A</Select.ItemText>
+                    </Select.Item>
+                  </Select.Group>
+                </Select.Viewport>
+                <Select.ScrollDownButton />
+              </Select.Content>
+            </Select>
+          </XStack>
+        </YStack>
+      </Sheet.Frame>
+    </Sheet>
+  );
+}
+
 function SearchResults(isLoading) {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
@@ -187,10 +279,71 @@ function SearchLoader({
   return <Spinner color={colorSet.primaryForeground} />;
 }
 
+// Results Info Component
+function ResultsInfo({onSortPress}: {onSortPress: () => void}) {
+  const {results} = useInstantSearch();
+  const {items} = useInfiniteHits<SearchHit>();
+  const totalHits = results?.nbHits ?? 0;
+
+  return (
+    <XStack justifyContent='space-between' alignItems='center'>
+      <Text color='$gray11'>
+        Showing {items?.length ?? 0} of {totalHits} results
+      </Text>
+      <Button
+        chromeless
+        icon={<Settings2 size='$1' />}
+        onPress={onSortPress}
+        theme='gray'
+      >
+        Sort
+      </Button>
+    </XStack>
+  );
+}
+
+const SearchTypeToggle = ({
+  searchType,
+  setSearchType,
+}: {
+  searchType: SearchType;
+  setSearchType: (searchType: SearchType) => void;
+}) => {
+  return (
+    <XStack gap='$2'>
+      <Button
+        theme={searchType === 'breed' ? 'active' : 'gray'}
+        onPress={() => setSearchType('breed')}
+        icon={<Dog />}
+        flex={1}
+      >
+        Breeds
+      </Button>
+      <Button
+        theme={searchType === 'breeder' ? 'active' : 'gray'}
+        onPress={() => setSearchType('breeder')}
+        icon={<Users />}
+        flex={1}
+      >
+        Breeders
+      </Button>
+      <Button
+        theme={searchType === 'listing' ? 'active' : 'gray'}
+        onPress={() => setSearchType('listing')}
+        icon={<ShoppingBag />}
+        flex={1}
+      >
+        Listings
+      </Button>
+    </XStack>
+  );
+};
+
 export default function ExploreScreen() {
   const router = useRouter();
   const [searchType, setSearchType] = useState<SearchType>('breed');
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -205,51 +358,53 @@ export default function ExploreScreen() {
         stalledSearchDelay={500}
         initialUiState={{search: {hitsPerPage: 20}}}
       >
-        <XGroup alignItems='center'>
-          <XGroup.Item>
-            <Button
-              theme='active'
-              icon={<Filter />}
-              onPress={() => setFilterSheetOpen(true)}
-            />
-          </XGroup.Item>
-          <XGroup.Item>
-            <CustomSearchBox />
-          </XGroup.Item>
-        </XGroup>
-
         {/* Search Type Toggle */}
-        <XStack gap='$2'>
-          <Button
-            theme={searchType === 'breed' ? 'active' : 'gray'}
-            onPress={() => setSearchType('breed')}
-            icon={<Dog />}
-          >
-            Breeds
-          </Button>
-          <Button
-            theme={searchType === 'breeder' ? 'active' : 'gray'}
-            onPress={() => setSearchType('breeder')}
-            icon={<Users />}
-          >
-            Breeders
-          </Button>
-          <Button
-            theme={searchType === 'listing' ? 'active' : 'gray'}
-            onPress={() => setSearchType('listing')}
-            icon={<ShoppingBag />}
-          >
-            Listings
-          </Button>
-        </XStack>
+        <SearchTypeToggle
+          searchType={searchType}
+          setSearchType={setSearchType}
+        />
+
+        <YStack gap='$2'>
+          <XGroup alignItems='center' gap='$2'>
+            <XGroup.Item>
+              <CustomSearchBox />
+            </XGroup.Item>
+
+            <XGroup.Item>
+              <Button
+                theme='active'
+                icon={<Settings2 size='$1' />}
+                onPress={() => setFilterSheetOpen(true)}
+              />
+            </XGroup.Item>
+          </XGroup>
+
+          {/* Results Counter and Sort */}
+          <ResultsInfo onSortPress={() => setSortSheetOpen(true)} />
+        </YStack>
 
         {isLoading && <SearchLoader onLoadingChange={setIsLoading} />}
-        <SearchResults />
+        <SearchResults isLoading={isLoading} />
 
         <FilterSheet
           isOpen={filterSheetOpen}
           onClose={() => setFilterSheetOpen(false)}
           type={searchType}
+        />
+
+        <SortSheet
+          isOpen={sortSheetOpen}
+          onClose={() => setSortSheetOpen(false)}
+          sortBy={sortBy}
+          onSortChange={(value) => {
+            setSortBy(value);
+            setSortSheetOpen(false);
+          }}
+        />
+
+        <Configure
+          hitsPerPage={20}
+          // sortBy={sortBy === 'relevance' ? undefined : [sortBy]}
         />
       </InstantSearch>
     </YStack>

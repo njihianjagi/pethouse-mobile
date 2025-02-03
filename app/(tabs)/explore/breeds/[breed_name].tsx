@@ -168,12 +168,7 @@ function BreedDetailScreen() {
       }}
     >
       <YStack>
-        {breed && (
-          <Image
-            source={{uri: breed.image ? breed.image : ''}}
-            aspectRatio={3 / 2}
-          />
-        )}
+        {breed?.id && <Image source={{uri: breed.image}} aspectRatio={3 / 2} />}
         <YStack padding='$4' gap='$4'>
           <XStack justifyContent='space-between' alignItems='center'>
             <YStack>
