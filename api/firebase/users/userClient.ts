@@ -1,5 +1,6 @@
 import {db} from '../../../firebase/config';
 import {getUnixTimeStamp} from '../../../helpers/timeFormat';
+import {UserBreed} from '../breeds/useBreedData';
 
 export interface BaseUser {
   id: string;
@@ -34,7 +35,7 @@ export interface BreederProfile extends BaseUser {
     yearsOfExperience: number;
     website?: string;
     description?: string;
-    primaryBreeds: string[];
+    primaryBreeds: UserBreed[];
     facilityType: 'home' | 'dedicated_facility';
     location?: {
       name: string;
@@ -76,8 +77,8 @@ export interface SeekerProfile extends BaseUser {
       fenceHeight?: number;
       yardSize?: 'small' | 'medium' | 'large';
     };
-    movingPlans: boolean;
-    movingTimeframe?: string;
+    // movingPlans: boolean;
+    // movingTimeframe?: string;
   };
   household: {
     adults: number;
@@ -110,23 +111,7 @@ export interface SeekerProfile extends BaseUser {
     breedExperience?: string[];
     trainingExperience?: string[];
   };
-  preferences: {
-    breedPreferences: {
-      breedId: string;
-      breedName: string;
-      isRequired: boolean;
-    }[];
-    ageRange: {
-      min: number;
-      max: number;
-    };
-    gender: 'male' | 'female' | 'either';
-    timeline: 'immediate' | '1-3_months' | '3-6_months' | '6+_months';
-    priceRange: {
-      min: number;
-      max: number;
-    };
-  };
+  preferredBreeds: UserBreed[];
   veterinary: {
     hasVeterinarian: boolean;
     veterinarian?: {

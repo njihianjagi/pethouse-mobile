@@ -45,9 +45,9 @@ export default function SeekerOnboardingLayout() {
         }}
       />
       <Stack.Screen
-        name='preferences'
+        name='breeds'
         options={{
-          title: localized('Preferences'),
+          title: localized('Preferred Breeds'),
         }}
       />
     </Stack>

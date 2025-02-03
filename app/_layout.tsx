@@ -102,18 +102,7 @@ export default function RootLayout() {
                                 name='(tabs)'
                                 options={{headerShown: false}}
                               />
-                              <Stack.Screen
-                                name='(kennels)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(listings)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(litters)'
-                                options={{headerShown: false}}
-                              />
+
                               <Stack.Screen name='+not-found' />
                             </Stack>
                           </SafeAreaProvider>

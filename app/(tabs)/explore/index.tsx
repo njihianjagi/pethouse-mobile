@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {FlatList} from 'react-native';
 import {
   InstantSearch,
@@ -129,82 +129,83 @@ function getFilterAttribute(type: SearchType) {
   }
 }
 
-function SearchResults() {
-  const {items, isLastPage, showMore, sendEvent} = useInfiniteHits<SearchHit>();
+function SearchResults(isLoading) {
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
 
-  console.log('items', items);
+  const {items, isFirstPage, isLastPage, showMore, sendEvent} =
+    useInfiniteHits<SearchHit>();
+
   const renderHit = ({item}: {item: SearchHit}) => {
-    switch (item.type) {
-      case 'breed':
-        return <BreedCard breed={item as BreedHit} index={0} />;
-      case 'kennel':
-        return <BreederCard breeder={item as KennelHit} index={0} />;
-      default:
-        return null;
-    }
+    // switch (item.type) {
+    //   case 'breed':
+    return <BreedCard breed={item as BreedHit} index={0} />;
+    //   case 'kennel':
+    //     return <BreederCard breeder={item as KennelHit} index={0} />;
+    //   default:
+    //     return null;
+    // }
   };
 
   return (
     <FlatList
       data={items}
+      numColumns={2}
       renderItem={renderHit}
       keyExtractor={(item) => item.objectID}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{gap: 10}}
-      onEndReached={() => !isLastPage && showMore()}
       onEndReachedThreshold={0.5}
+      onEndReached={() => {
+        if (!isLastPage) {
+          showMore();
+        }
+      }}
+      ListFooterComponent={() =>
+        !isLastPage && isLoading ? (
+          <Spinner size='small' color={colorSet.primaryForeground} />
+        ) : null
+      }
     />
   );
 }
 
 function SearchLoader({
-  children,
   onLoadingChange,
 }: {
-  children: React.ReactNode;
   onLoadingChange: (isLoading: boolean) => void;
 }) {
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
   const {status} = useInstantSearch();
   const isLoading = status === 'loading' || status === 'stalled';
-  console.log(isLoading);
+
   useEffect(() => {
     onLoadingChange(isLoading);
   }, [isLoading, onLoadingChange]);
 
-  return <>{children}</>;
+  return <Spinner color={colorSet.primaryForeground} />;
 }
 
 export default function ExploreScreen() {
   const router = useRouter();
-  const theme = useTheme();
   const [searchType, setSearchType] = useState<SearchType>('breed');
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [sortBy, setSortBy] = useState('relevance');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Effect to handle loading state when searchType changes
-  useEffect(() => {
-    setIsLoading(true);
-    // Simulate async operation
-    const timeout = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timeout);
-  }, [searchType]);
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
 
   return (
     <YStack f={1} padding='$4' gap='$4'>
       <InstantSearch
         searchClient={searchClient}
         indexName={`${searchType}s`}
-        stalledSearchDelay={500} // Show loading after 500ms of stalled search
+        stalledSearchDelay={500}
+        initialUiState={{search: {hitsPerPage: 20}}}
       >
-        {/* <Configure
-          hitsPerPage={20}
-          distinct={true}
-          filters={`type:${searchType}`}
-        /> */}
-
-        {/* Search Bar with Type Toggle */}
-        <XGroup gap='$2' alignItems='center'>
+        <XGroup alignItems='center'>
           <XGroup.Item>
             <Button
               theme='active'
@@ -242,13 +243,9 @@ export default function ExploreScreen() {
           </Button>
         </XStack>
 
-        <SearchLoader onLoadingChange={setIsLoading}>
-          {/* Existing UI components */}
-          {isLoading && <Spinner />}
-          {!isLoading && <SearchResults />}
-        </SearchLoader>
+        {isLoading && <SearchLoader onLoadingChange={setIsLoading} />}
+        <SearchResults />
 
-        {/* Filter Sheet */}
         <FilterSheet
           isOpen={filterSheetOpen}
           onClose={() => setFilterSheetOpen(false)}

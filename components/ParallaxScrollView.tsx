@@ -9,6 +9,7 @@ import Animated, {
 
 import {ThemedView} from '@/components/ThemedView';
 import {useTheme} from '../dopebase';
+import {View} from 'tamagui';
 
 const HEADER_HEIGHT = 250;
 
@@ -51,7 +52,7 @@ export default function ParallaxScrollView({
   });
 
   return (
-    <ThemedView style={styles.container}>
+    <View style={styles.container} flex={1}>
       <Animated.ScrollView
         ref={scrollRef}
         scrollEventThrottle={16}
@@ -75,16 +76,20 @@ export default function ParallaxScrollView({
           {children}
         </ThemedView>
       </Animated.ScrollView>
-    </ThemedView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    height: '100%',
+    flexDirection: 'column',
+    borderColor: 'red',
+    overflow: 'scroll',
   },
   scrollView: {
-    flex: 0,
+    flex: 1,
   },
   header: {
     height: HEADER_HEIGHT,
@@ -92,7 +97,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    minHeight: '100%',
+    minHeight: '30%',
     gap: 16,
     overflow: 'visible',
   },

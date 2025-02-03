@@ -9,71 +9,49 @@ export default function ExploreLayout() {
   const colorSet = theme.colors[appearance];
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: true,
-        headerShadowVisible: false,
-        headerTitleStyle: {
-          color: colorSet.primaryText,
-        },
-        headerStyle: {
-          backgroundColor: colorSet.primaryBackground,
-        },
-        headerRight: () => (
-          <Button
-            onPress={() => {}}
-            chromeless
-            icon={<Bell size='$1' />}
-            color={colorSet.primaryForeground}
-            size='$4'
-          />
-        ),
-      }}
-    >
+    <Stack>
       <Stack.Screen
         name='index'
         options={{
           title: 'Explore',
+          headerShown: true,
+          headerShadowVisible: false,
+          headerTitleStyle: {
+            color: colorSet.primaryText,
+          },
+          headerStyle: {
+            backgroundColor: colorSet.primaryBackground,
+          },
+          headerRight: () => (
+            <Button
+              onPress={() => {}}
+              chromeless
+              icon={<Bell size='$1' />}
+              color={colorSet.primaryForeground}
+              size='$4'
+            />
+          ),
         }}
       />
       {/* Breeds routes */}
       <Stack.Screen
-        name='breeds/index'
+        name='breeds'
         options={{
           title: 'Breeds',
         }}
       />
-      <Stack.Screen
-        name='breeds/[name]'
-        options={{
-          title: 'Breed Details',
-          // headerTitle: ({params}) => params?.name || 'Breed Details',
-        }}
-      />
       {/* Breeders routes */}
       <Stack.Screen
-        name='breeders/index'
+        name='breeders'
         options={{
           title: 'Breeders',
         }}
       />
-      <Stack.Screen
-        name='breeders/[id]'
-        options={{
-          title: 'Breeder Profile',
-        }}
-      />
       {/* Listings routes */}
       <Stack.Screen
-        name='listings/index'
+        name='listings'
         options={{
           title: 'Listings',
-        }}
-      />
-      <Stack.Screen
-        name='listings/[id]'
-        options={{
-          title: 'Listing Details',
         }}
       />
     </Stack>

@@ -2,12 +2,12 @@ import {liteClient} from 'algoliasearch/lite';
 
 // Check if environment variables are set
 if (!process.env.EXPO_PUBLIC_ALGOLIA_APP_ID) {
-  console.error(
+  throw new Error(
     'EXPO_PUBLIC_ALGOLIA_APP_ID is not set in environment variables'
   );
 }
 if (!process.env.EXPO_PUBLIC_ALGOLIA_API_KEY) {
-  console.error(
+  throw new Error(
     'EXPO_PUBLIC_ALGOLIA_API_KEY is not set in environment variables'
   );
 }

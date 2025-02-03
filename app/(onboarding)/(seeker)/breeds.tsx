@@ -1,23 +1,36 @@
 import React, {useState, useEffect} from 'react';
-import {TouchableOpacity, Alert, FlatList, StyleSheet} from 'react-native';
-import {YStack, Text, Button, XStack, View, Spinner, Image} from 'tamagui';
+import {
+  YStack,
+  XStack,
+  Text,
+  RadioGroup,
+  Input,
+  Button,
+  Spinner,
+  View,
+  Image,
+  Spacer,
+} from 'tamagui';
+import {useTheme, useTranslations} from '../../../dopebase';
+import {SeekerProfile} from '../../../api/firebase/users/userClient';
 import BreedSelector from '../../../components/BreedSelector';
-import {useTranslations} from '../../../dopebase';
 import {useRouter} from 'expo-router';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
-import {useTheme} from '../../../dopebase';
-import {Plus} from '@tamagui/lucide-icons';
-import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
-import UserBreedCard from './user-breed-card';
 import ParallaxScrollView from '../../../components/ParallaxScrollView';
+import UserBreedCard from '../(breeder)/user-breed-card';
+import {Plus} from '@tamagui/lucide-icons';
+import {TouchableOpacity, FlatList} from 'react-native';
+import breeds from '../(breeder)/breeds';
+import dynamicStyles from '../../../dopebase/core/components/advanced/TouchableIcon/styles';
+import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
 
 const TOTAL_STEPS = 3;
-const CURRENT_STEP = 2;
+const CURRENT_STEP = 1;
 
-const BreedsScreen = () => {
+export const PreferredBreedsScreen = () => {
   const {localized} = useTranslations();
   const router = useRouter();
   const currentUser = useCurrentUser();
@@ -27,21 +40,26 @@ const BreedsScreen = () => {
 
   const {theme, appearance} = useTheme();
   const colorSet = theme?.colors[appearance];
-  const styles = dynamicStyles(theme, appearance);
 
-  const [breeds, setBreeds] = useState<UserBreed[]>([]);
   const [selectorOpen, setSelectorOpen] = useState(false);
 
+  const [breeds, setBreeds] = useState<SeekerProfile['preferredBreeds']>([]);
+
   useEffect(() => {
-    if (!currentUser) {
-      router.replace('/');
+    if (!currentUser?.id) {
+      return router.replace('/');
     }
-    if (currentUser?.kennel?.breeds) {
-      setBreeds(currentUser.kennel.breeds);
+    if (currentUser?.preferences) {
+      setBreeds(currentUser.preferences);
     }
   }, [currentUser]);
 
-  const healthTests = ['dna', 'hips', 'eyes', 'heart'];
+  const handleChange = (field: string, value: any) => {
+    setBreeds((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const handleAddBreed = (breed: any) => {
     const newBreed: UserBreed = {
@@ -65,37 +83,30 @@ const BreedsScreen = () => {
       setBreeds((prev) => [...prev, newBreed]);
     }
   };
-
   const handleRemoveBreed = (breedId: string) => {
     setBreeds((prev) => prev.filter((b) => b.breedId !== breedId));
   };
 
-  const handleContinue = async () => {
+  const handleSubmit = async () => {
+    // Basic validation
     if (breeds.length === 0) {
-      Alert.alert(
-        localized('Error'),
-        localized('Please add at least one breed to continue')
-      );
+      alert(localized('Please select at least one breed preference'));
       return;
     }
 
     setSaving(true);
     try {
-      const userData = {
+      const updatedUser = await updateUser(currentUser.id, {
         ...currentUser,
-        kennel: {
-          ...currentUser.kennel,
-          primaryBreeds: breeds,
-        },
-      };
-
-      await updateUser(currentUser?.id, userData);
-      dispatch(setUserData(userData));
-      router.replace('/(onboarding)/(breeder)/image-upload');
+        preferredBreeds: breeds,
+      });
+      dispatch(setUserData(updatedUser));
     } catch (error) {
       console.error('Error updating user:', error);
+      alert(localized('Error updating profile. Please try again.'));
     } finally {
       setSaving(false);
+      router.push('/(onboarding)/(seeker)/experience');
     }
   };
 
@@ -113,16 +124,43 @@ const BreedsScreen = () => {
           light: colorSet.primaryBackground,
         }}
       >
-        <YStack padding='$4' gap='$4'>
-          <YStack gap='$2' padding='$4'>
-            <Text style={styles.stepIndicator}>
+        <YStack flex={1} gap='$4' padding='$4'>
+          <YStack gap='$2'>
+            <Text
+              style={{
+                fontSize: 14,
+                color: colorSet.primaryForeground,
+                textAlign: 'center',
+                opacity: 0.8,
+              }}
+            >
               {localized('Step')} {CURRENT_STEP} {localized('of')} {TOTAL_STEPS}
             </Text>
 
-            <Text style={styles.title}>{localized('Select Your Breeds')}</Text>
+            <Text
+              style={{
+                fontSize: 40,
+                fontWeight: 'bold',
+                color: colorSet.primaryForeground,
+                marginTop: 0,
+                marginBottom: 0,
+                textAlign: 'center',
+              }}
+            >
+              {localized('Tell us about your ideal dog')}
+            </Text>
 
-            <Text style={styles.caption}>
-              {localized('Tell us about the breeds you work with')}
+            <Text
+              style={{
+                fontSize: 16,
+                lineHeight: 24,
+                textAlign: 'center',
+                color: colorSet.primaryForeground,
+              }}
+            >
+              {localized(
+                'This information will be shown to potential adopters'
+              )}
             </Text>
           </YStack>
 
@@ -131,7 +169,6 @@ const BreedsScreen = () => {
               <TouchableOpacity
                 onPress={() => setSelectorOpen(true)}
                 style={[
-                  dynamicStyles(theme, appearance).breedCard,
                   {
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -149,7 +186,6 @@ const BreedsScreen = () => {
               renderItem={({item, index}) => (
                 <XStack flex={1} key={index}>
                   <UserBreedCard
-                    key={index}
                     userBreed={item}
                     handleRemoveBreed={handleRemoveBreed}
                   />
@@ -163,20 +199,23 @@ const BreedsScreen = () => {
                 {localized('Add Another Breed')}
               </Button>
             )}
-            <Button
-              backgroundColor={colorSet.secondaryForeground}
-              color={colorSet.primaryForeground}
-              onPress={handleContinue}
-              disabled={loading}
-              iconAfter={
-                saving ? (
-                  <Spinner color={colorSet.primaryForeground} />
-                ) : undefined
-              }
-            >
-              {saving ? localized('Please wait...') : localized('Continue')}
-            </Button>
           </YStack>
+
+          <Spacer flex={1} />
+
+          <Button
+            backgroundColor={colorSet.secondaryForeground}
+            color={colorSet.primaryForeground}
+            onPress={handleSubmit}
+            disabled={loading}
+            iconAfter={
+              saving ? (
+                <Spinner color={colorSet.primaryForeground} />
+              ) : undefined
+            }
+          >
+            {saving ? <></> : localized('Continue')}
+          </Button>
         </YStack>
       </ParallaxScrollView>
 
@@ -190,39 +229,4 @@ const BreedsScreen = () => {
   );
 };
 
-const dynamicStyles = (theme, colorScheme) => {
-  const colorSet = theme.colors[colorScheme];
-  return StyleSheet.create({
-    title: {
-      fontSize: 36,
-      fontWeight: 'bold',
-      color: colorSet.primaryForeground,
-      marginTop: 0,
-      marginBottom: 0,
-      textAlign: 'center',
-    },
-    caption: {
-      fontSize: 16,
-      lineHeight: 24,
-      textAlign: 'center',
-      color: colorSet.primaryForeground,
-    },
-    stepIndicator: {
-      fontSize: 14,
-      color: colorSet.primaryForeground,
-      textAlign: 'center',
-      opacity: 0.8,
-    },
-    breedCard: {
-      backgroundColor: colorSet.background,
-      padding: 16,
-      borderRadius: 8,
-      shadowColor: colorSet.shadowColor,
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-      shadowOffset: {width: 0, height: 2},
-    },
-  });
-};
-
-export default BreedsScreen;
+export default PreferredBreedsScreen;
