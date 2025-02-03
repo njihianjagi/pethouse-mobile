@@ -17,6 +17,7 @@ export default function BreedsLayout() {
       <Stack.Screen
         name='[breed_name]'
         options={{
+          // headerShown: false,
           title: 'Breed Details',
           headerTitleStyle: {
             color: colorSet.primaryText,

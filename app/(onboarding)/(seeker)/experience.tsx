@@ -1,194 +1,244 @@
-import React from 'react';
-import {YStack, XStack, Text, RadioGroup, Button, Input, Card} from 'tamagui';
-import {useTranslations} from '../../../dopebase';
+import React, {useState, useEffect} from 'react';
+import {
+  YStack,
+  XStack,
+  Text,
+  RadioGroup,
+  Button,
+  Input,
+  Card,
+  Spinner,
+  Switch,
+  View,
+  Image,
+  Label,
+} from 'tamagui';
+import {useTheme, useTranslations} from '../../../dopebase';
 import {Plus, X} from '@tamagui/lucide-icons';
 import {SeekerProfile} from '../../../api/firebase/users/userClient';
+import {useRouter} from 'expo-router';
+import useCurrentUser from '../../../hooks/useCurrentUser';
+import {updateUser} from '../../../api/firebase/users/userClient';
+import {useDispatch} from 'react-redux';
+import {setUserData} from '../../../redux/reducers/auth';
+import ParallaxScrollView from '../../../components/ParallaxScrollView';
 
-interface ExperienceTabProps {
-  formData: SeekerProfile['experience'];
-  onChange: (field: string, value: any) => void;
-}
+const TOTAL_STEPS = 3;
+const CURRENT_STEP = 2;
 
-export const ExperienceTab = ({formData, onChange}: ExperienceTabProps) => {
+export const ExperienceScreen = () => {
   const {localized} = useTranslations();
+  const router = useRouter();
+  const currentUser = useCurrentUser();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleAddCurrentPet = () => {
-    onChange('currentPets', [
-      ...formData.currentPets,
-      {type: '', breed: '', age: 0, spayedNeutered: false},
-    ]);
+  const {theme, appearance} = useTheme();
+  const colorSet = theme?.colors[appearance];
+
+  const [formData, setFormData] = useState<SeekerProfile['experience']>({
+    dogExperience: 'first_time',
+    breedingExperience: false,
+    trainingExperience: false,
+  });
+
+  useEffect(() => {
+    if (currentUser?.experience) {
+      setFormData(currentUser.experience);
+    }
+  }, [currentUser]);
+
+  const handleChange = (field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const handleAddPreviousPet = () => {
-    onChange('previousPets', [
-      ...formData.previousPets,
-      {type: '', yearsOwned: 0, whatHappened: ''},
-    ]);
+  const handleSubmit = async () => {
+    // Basic validation
+    if (!formData.dogExperience) {
+      alert(localized('Please select your dog experience level'));
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const updatedUser = await updateUser(currentUser.id, {
+        ...currentUser,
+        experience: formData,
+      });
+      dispatch(setUserData(updatedUser));
+      router.push('/(onboarding)/(seeker)/housing');
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert(localized('Error updating profile. Please try again.'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <YStack gap='$4' px='$4'>
-      {/* Dog Experience Level */}
-      <YStack gap='$2'>
-        <Text fontWeight='bold'>{localized('Dog Experience Level')}*</Text>
-        <RadioGroup
-          value={formData.dogExperience}
-          onValueChange={(value) => onChange('dogExperience', value)}
-        >
-          <YStack gap='$2'>
-            <RadioGroup.Item value='first_time' size='$4'>
-              <RadioGroup.Indicator />
-              <Text ml='$2'>{localized('First-time Dog Owner')}</Text>
-            </RadioGroup.Item>
-            <RadioGroup.Item value='some_experience' size='$4'>
-              <RadioGroup.Indicator />
-              <Text ml='$2'>{localized('Some Experience')}</Text>
-            </RadioGroup.Item>
-            <RadioGroup.Item value='experienced' size='$4'>
-              <RadioGroup.Indicator />
-              <Text ml='$2'>{localized('Experienced Dog Owner')}</Text>
-            </RadioGroup.Item>
+    <View alignItems='center' justifyContent='center' flex={1}>
+      <ParallaxScrollView
+        headerImage={
+          <Image
+            source={require('../../../assets/images/doggo.png')}
+            objectFit='contain'
+          />
+        }
+        headerBackgroundColor={{
+          dark: colorSet.primaryBackground,
+          light: colorSet.primaryBackground,
+        }}
+      >
+        <YStack flex={1} gap='$4' padding='$4'>
+          <YStack gap='$4' padding='$4'>
+            <YStack gap='$2'>
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: colorSet.primaryForeground,
+                  textAlign: 'center',
+                  opacity: 0.8,
+                }}
+              >
+                {localized('Step')} {CURRENT_STEP} {localized('of')}{' '}
+                {TOTAL_STEPS}
+              </Text>
+
+              <Text
+                style={{
+                  fontSize: 40,
+                  fontWeight: 'bold',
+                  color: colorSet.primaryForeground,
+                  marginTop: 0,
+                  marginBottom: 0,
+                  textAlign: 'center',
+                }}
+              >
+                {localized('Tell us about your pet experience')}
+              </Text>
+
+              <Text
+                style={{
+                  fontSize: 16,
+                  lineHeight: 24,
+                  textAlign: 'center',
+                  color: colorSet.primaryForeground,
+                }}
+              >
+                {localized(
+                  'This information will be shown to breeders and potential adopters'
+                )}
+              </Text>
+            </YStack>
+
+            <YStack gap='$2'>
+              <Text>{localized('Experience Level')}*</Text>
+              <RadioGroup
+                value={formData.dogExperience}
+                onValueChange={(value) => handleChange('dogExperience', value)}
+              >
+                <YStack gap='$2' width='100%'>
+                  <XStack width={300} alignItems='center' space='$4'>
+                    <RadioGroup.Item value='first_time'>
+                      <RadioGroup.Indicator />
+                    </RadioGroup.Item>
+                    <Label htmlFor='first_time'>
+                      {localized('First-time Dog Owner')}
+                    </Label>
+                  </XStack>
+                  <XStack width={300} alignItems='center' space='$4'>
+                    <RadioGroup.Item value='some_experience'>
+                      <RadioGroup.Indicator />
+                    </RadioGroup.Item>
+                    <Label htmlFor='some_experience'>
+                      {localized('Some Experience')}
+                    </Label>
+                  </XStack>
+
+                  <XStack width={300} alignItems='center' space='$4'>
+                    <RadioGroup.Item value='experienced'>
+                      <RadioGroup.Indicator />
+                    </RadioGroup.Item>
+                    <Label htmlFor='experienced'>
+                      {localized('Experienced Dog Owner')}
+                    </Label>
+                  </XStack>
+                </YStack>
+              </RadioGroup>
+            </YStack>
+
+            <XStack gap='$2' ai='center' jc='space-between'>
+              <Text>{localized('Dog Breeding Experience')}</Text>
+
+              <Switch
+                checked={formData.breedingExperience}
+                onCheckedChange={(checked) =>
+                  handleChange('breedingExperience', checked)
+                }
+                backgroundColor={
+                  formData.breedingExperience
+                    ? colorSet.secondaryForeground
+                    : '$gray3'
+                }
+              >
+                <Switch.Thumb
+                  animation='quicker'
+                  backgroundColor={
+                    formData.breedingExperience
+                      ? colorSet.primaryForeground
+                      : '$gray6'
+                  }
+                />
+              </Switch>
+            </XStack>
+
+            <XStack gap='$2' ai='center' jc='space-between'>
+              <Text>{localized('Dog Training Experience')}</Text>
+
+              <Switch
+                checked={formData.trainingExperience}
+                onCheckedChange={(checked) =>
+                  handleChange('trainingExperience', checked)
+                }
+                backgroundColor={
+                  formData.trainingExperience
+                    ? colorSet.secondaryForeground
+                    : '$gray3'
+                }
+              >
+                <Switch.Thumb
+                  animation='quicker'
+                  backgroundColor={
+                    formData.trainingExperience
+                      ? colorSet.primaryForeground
+                      : '$gray6'
+                  }
+                />
+              </Switch>
+            </XStack>
+
+            <Button
+              backgroundColor={colorSet.secondaryForeground}
+              color={colorSet.primaryForeground}
+              onPress={handleSubmit}
+              disabled={loading}
+              iconAfter={
+                saving ? (
+                  <Spinner color={colorSet.primaryForeground} />
+                ) : undefined
+              }
+            >
+              {saving ? <></> : localized('Continue')}
+            </Button>
           </YStack>
-        </RadioGroup>
-      </YStack>
-
-      {/* Current Pets */}
-      <YStack gap='$2'>
-        <XStack jc='space-between' ai='center'>
-          <Text fontWeight='bold'>{localized('Current Pets')}</Text>
-          <Button
-            icon={Plus}
-            size='$3'
-            theme='active'
-            onPress={handleAddCurrentPet}
-          >
-            {localized('Add Pet')}
-          </Button>
-        </XStack>
-
-        {formData.currentPets.map((pet, index) => (
-          <Card key={index} p='$4' bordered>
-            <YStack gap='$2'>
-              <XStack jc='space-between' ai='center'>
-                <Text fontSize='$6'>
-                  {localized('Pet')} #{index + 1}
-                </Text>
-                <Button
-                  icon={X}
-                  size='$3'
-                  theme='red'
-                  onPress={() => {
-                    const newPets = [...formData.currentPets];
-                    newPets.splice(index, 1);
-                    onChange('currentPets', newPets);
-                  }}
-                />
-              </XStack>
-
-              <Input
-                value={pet.type}
-                onChangeText={(value) => {
-                  const newPets = [...formData.currentPets];
-                  newPets[index] = {...pet, type: value};
-                  onChange('currentPets', newPets);
-                }}
-                placeholder={localized('Type of pet')}
-              />
-
-              <Input
-                value={pet.breed}
-                onChangeText={(value) => {
-                  const newPets = [...formData.currentPets];
-                  newPets[index] = {...pet, breed: value};
-                  onChange('currentPets', newPets);
-                }}
-                placeholder={localized('Breed (if applicable)')}
-              />
-
-              <Input
-                value={pet.age.toString()}
-                onChangeText={(value) => {
-                  const newPets = [...formData.currentPets];
-                  newPets[index] = {...pet, age: parseInt(value) || 0};
-                  onChange('currentPets', newPets);
-                }}
-                keyboardType='numeric'
-                placeholder={localized('Age')}
-              />
-            </YStack>
-          </Card>
-        ))}
-      </YStack>
-
-      {/* Previous Pets */}
-      <YStack gap='$2'>
-        <XStack jc='space-between' ai='center'>
-          <Text fontWeight='bold'>{localized('Previous Pets')}</Text>
-          <Button
-            icon={Plus}
-            size='$3'
-            theme='active'
-            onPress={handleAddPreviousPet}
-          >
-            {localized('Add Previous Pet')}
-          </Button>
-        </XStack>
-
-        {formData.previousPets.map((pet, index) => (
-          <Card key={index} p='$4' bordered>
-            <YStack gap='$2'>
-              <XStack jc='space-between' ai='center'>
-                <Text fontSize='$6'>
-                  {localized('Previous Pet')} #{index + 1}
-                </Text>
-                <Button
-                  icon={X}
-                  size='$3'
-                  theme='red'
-                  onPress={() => {
-                    const newPets = [...formData.previousPets];
-                    newPets.splice(index, 1);
-                    onChange('previousPets', newPets);
-                  }}
-                />
-              </XStack>
-
-              <Input
-                value={pet.type}
-                onChangeText={(value) => {
-                  const newPets = [...formData.previousPets];
-                  newPets[index] = {...pet, type: value};
-                  onChange('previousPets', newPets);
-                }}
-                placeholder={localized('Type of pet')}
-              />
-
-              <Input
-                value={pet.yearsOwned.toString()}
-                onChangeText={(value) => {
-                  const newPets = [...formData.previousPets];
-                  newPets[index] = {...pet, yearsOwned: parseInt(value) || 0};
-                  onChange('previousPets', newPets);
-                }}
-                keyboardType='numeric'
-                placeholder={localized('Years owned')}
-              />
-
-              <Input
-                value={pet.whatHappened}
-                onChangeText={(value) => {
-                  const newPets = [...formData.previousPets];
-                  newPets[index] = {...pet, whatHappened: value};
-                  onChange('previousPets', newPets);
-                }}
-                placeholder={localized('What happened to this pet?')}
-                multiline
-                numberOfLines={2}
-              />
-            </YStack>
-          </Card>
-        ))}
-      </YStack>
-    </YStack>
+        </YStack>
+      </ParallaxScrollView>
+    </View>
   );
 };
+
+export default ExperienceScreen;

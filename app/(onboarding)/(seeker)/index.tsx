@@ -1,48 +1,45 @@
 import React, {useEffect} from 'react';
 import {useRouter} from 'expo-router';
-import {View, Spinner} from 'tamagui';
+import {View, Spinner, Text} from 'tamagui';
 import useCurrentUser from '../../../hooks/useCurrentUser';
+import authManager from '../../../api/firebase/auth/firebaseAuthManager';
 
 const SeekerOnboardingScreen = () => {
   const router = useRouter();
   const currentUser = useCurrentUser();
 
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUser) {
+      return router.replace('/(auth)/welcome');
+    }
 
-    console.log('currentUser: ', currentUser);
-    const {household, preferences, experience, housing} = currentUser;
-
-    if (currentUser?.profileComplete) {
+    if (currentUser?.onboardingComplete) {
       router.replace('/(tabs)');
       return;
     }
 
-    if (!household) {
-      router.replace('/(onboarding)/(seeker)/household');
+    if (!currentUser.preferredBreeds?.length) {
+      router.replace('/(onboarding)/(seeker)/breeds');
       return;
     }
 
-    if (!housing) {
-      router.replace('/(onboarding)/(seeker)/housing');
-      return;
-    }
-
-    if (!experience) {
+    if (!currentUser.experience) {
       router.replace('/(onboarding)/(seeker)/experience');
       return;
     }
 
-    if (!preferences) {
-      router.replace('/(onboarding)/(seeker)/preferences');
+    if (!currentUser.housing) {
+      router.replace('/(onboarding)/(seeker)/housing');
       return;
     }
 
-    router.replace('/(onboarding)/(seeker)/household');
+    // If we have all data but onboarding is not complete, go to preferences
+    router.replace('/(onboarding)/(seeker)/breeds');
   }, [currentUser, router]);
 
   return (
     <View flex={1} alignItems='center' justifyContent='center'>
+      <Text>Seeker Onboarding</Text>
       <Spinner size='large' />
     </View>
   );

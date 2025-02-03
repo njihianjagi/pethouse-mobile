@@ -1,5 +1,6 @@
 import {db} from '../../../firebase/config';
 import {getUnixTimeStamp} from '../../../helpers/timeFormat';
+import {UserBreed} from '../breeds/useBreedData';
 
 export interface BaseUser {
   id: string;
@@ -34,7 +35,7 @@ export interface BreederProfile extends BaseUser {
     yearsOfExperience: number;
     website?: string;
     description?: string;
-    primaryBreeds: string[];
+    primaryBreeds: UserBreed[];
     facilityType: 'home' | 'dedicated_facility';
     location?: {
       name: string;
@@ -65,83 +66,19 @@ export interface BreederProfile extends BaseUser {
 
 export interface SeekerProfile extends BaseUser {
   role: 'seeker';
-  housing: {
-    type: 'own' | 'rent' | 'live_with_parents';
-    hasLandlordApproval?: boolean;
-    landlordContact?: string;
-    propertyType: 'house' | 'apartment' | 'condo' | 'other';
-    yard: {
-      hasYard: boolean;
-      isFenced?: boolean;
-      fenceHeight?: number;
-      yardSize?: 'small' | 'medium' | 'large';
-    };
-    movingPlans: boolean;
-    movingTimeframe?: string;
-  };
-  household: {
-    adults: number;
-    children: number;
-    childrenAges?: number[];
-    hasAllergies: boolean;
-    allergyDetails?: string;
-    familyAgreement: boolean;
-  };
-  lifestyle: {
-    workSchedule: 'work_from_home' | 'part_time' | 'full_time';
-    hoursAlonePerDay: number;
-    activityLevel: 'sedentary' | 'moderate' | 'active' | 'very_active';
-    travelFrequency: 'rarely' | 'occasionally' | 'frequently';
-  };
+  preferredBreeds: UserBreed[];
   experience: {
-    currentPets: {
-      type: string;
-      breed?: string;
-      age: number;
-      spayedNeutered: boolean;
-      upToDateVaccinations: boolean;
-    }[];
-    previousPets: {
-      type: string;
-      yearsOwned: number;
-      whatHappened: string;
-    }[];
     dogExperience: 'first_time' | 'some_experience' | 'experienced';
-    breedExperience?: string[];
-    trainingExperience?: string[];
+    breedingExperience?: boolean;
+    trainingExperience?: boolean;
   };
-  preferences: {
-    breedPreferences: {
-      breedId: string;
-      breedName: string;
-      isRequired: boolean;
-    }[];
-    ageRange: {
-      min: number;
-      max: number;
-    };
-    gender: 'male' | 'female' | 'either';
-    timeline: 'immediate' | '1-3_months' | '3-6_months' | '6+_months';
-    priceRange: {
-      min: number;
-      max: number;
-    };
+  housing: {
+    // hasLandlordApproval?: boolean;
+    // landlordContact?: string;
+    propertyType: 'house' | 'apartment' | 'condo' | 'other';
+    yard: 'none' | 'small' | 'medium' | 'large';
+    children: string;
   };
-  veterinary: {
-    hasVeterinarian: boolean;
-    veterinarian?: {
-      name: string;
-      clinic: string;
-      phone: string;
-      email?: string;
-    };
-  };
-  references: {
-    name: string;
-    relationship: string;
-    phone: string;
-    email?: string;
-  }[];
 }
 
 export const usersRef = db.collection('users');

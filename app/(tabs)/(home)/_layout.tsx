@@ -10,6 +10,7 @@ export default function HomeLayout() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
+  const currentUser = useCurrentUser();
   return (
     <Stack initialRouteName='index'>
       <Stack.Screen
@@ -17,7 +18,7 @@ export default function HomeLayout() {
         options={{
           headerShown: true,
           headerShadowVisible: false,
-          title: 'Home',
+          title: 'Hi, ' + currentUser?.firstName,
           headerTitleStyle: {
             color: colorSet.primaryText,
           },

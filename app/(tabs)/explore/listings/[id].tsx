@@ -1,12 +1,12 @@
 import {View, Text} from 'react-native';
 import React from 'react';
 
-const KennelsPage = () => {
+const ListingDetailScreen = () => {
   return (
     <View>
-      <Text>index</Text>
+      <Text>ListingDetailScreen</Text>
     </View>
   );
 };
 
-export default KennelsPage;
+export default ListingDetailScreen;
