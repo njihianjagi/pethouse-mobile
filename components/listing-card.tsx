@@ -1,7 +1,7 @@
 import React from 'react';
 import {Card, YStack, XStack, Text, Image} from 'tamagui';
-import {useTranslations} from '../../dopebase';
-import {Listing} from '../../api/firebase/listings/useListingData';
+import {useTranslations} from '../dopebase';
+import {Listing} from '../api/firebase/listings/useListingData';
 
 interface ListingCardProps {
   listing: Listing;

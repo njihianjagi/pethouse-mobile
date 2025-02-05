@@ -9,12 +9,6 @@ export default function BreedsLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name='index'
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
         name='[breed_name]'
         options={{
           // headerShown: false,

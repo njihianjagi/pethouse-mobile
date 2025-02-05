@@ -20,12 +20,12 @@ import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
 import ParallaxScrollView from '../../../components/ParallaxScrollView';
-import UserBreedCard from '../(breeder)/user-breed-card';
 import {Plus} from '@tamagui/lucide-icons';
 import {TouchableOpacity, FlatList} from 'react-native';
 import breeds from '../(breeder)/breeds';
 import dynamicStyles from '../../../dopebase/core/components/advanced/TouchableIcon/styles';
 import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
+import UserBreedCard from '../../../components/user-breed-card';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 1;

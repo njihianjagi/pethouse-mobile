@@ -11,8 +11,8 @@ import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
 import {Plus} from '@tamagui/lucide-icons';
 import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
-import UserBreedCard from './user-breed-card';
 import ParallaxScrollView from '../../../components/ParallaxScrollView';
+import UserBreedCard from '../../../components/user-breed-card';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;

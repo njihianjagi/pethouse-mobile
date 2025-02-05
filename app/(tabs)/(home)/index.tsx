@@ -18,11 +18,11 @@ import {
 } from 'tamagui';
 import {ArrowRight, MapPin, Search} from '@tamagui/lucide-icons';
 import {useListingData} from '../../../api/firebase/listings/useListingData';
-import {RecommendedBreeds} from '../explore/breeds/recommended-breeds';
+import {RecommendedBreeds} from '../../../components/recommended-breeds';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
 import {EmptyStateCard} from '../../../components/EmptyStateCard';
 import {TraitSelector} from '../../../components/TraitSelector';
-import {MatchingBreeders} from '../explore/breeders/matching-breeders';
+import {MatchingBreeders} from '../../../components/matching-breeders';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -30,9 +30,6 @@ export default function HomeScreen() {
   const {localized} = useTranslations();
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
-
-  const [isTraitSelectorOpen, setIsTraitSelectorOpen] = useState(false);
-  const [userPreferencesSet, setUserPreferencesSet] = useState(false);
 
   return (
     <View backgroundColor={colorSet.primaryBackground} flex={1}>
@@ -67,8 +64,6 @@ export default function HomeScreen() {
               />
             </XGroup.Item>
           </XGroup>
-
-          <MatchingBreeders userBreeds={currentUser.preferredBreeds} />
         </YStack>
       </ScrollView>
     </View>

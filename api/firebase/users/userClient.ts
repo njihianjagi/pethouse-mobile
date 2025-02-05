@@ -22,21 +22,24 @@ export interface BaseUser {
   createdAt: Date;
   updatedAt: Date;
   status: 'active' | 'inactive' | 'suspended';
+  onboardingComplete: boolean;
   profileComplete: boolean;
   rating?: number;
   reviewCount?: number;
+  pushToken?: string;
+  pushKitToken?: string;
+  badgeCount: number;
 }
 
 export interface BreederProfile extends BaseUser {
   role: 'breeder';
-
-  kennel: {
-    name: string;
-    yearsOfExperience: number;
+  kennel?: {
+    name?: string;
+    yearsOfExperience?: number;
     website?: string;
     description?: string;
-    primaryBreeds: UserBreed[];
-    facilityType: 'home' | 'dedicated_facility';
+    primaryBreeds?: UserBreed[];
+    facilityType?: 'home' | 'dedicated_facility';
     location?: {
       name: string;
       address: string;
@@ -48,13 +51,14 @@ export interface BreederProfile extends BaseUser {
         longitude: number;
       };
     };
-    images: {
+    images?: {
       id: string;
-      url: string;
+      downloadURL: string;
+      thumbnailURL: string;
       type: 'profile' | 'dogs';
     }[];
-    registrationStatus: 'pending' | 'verified';
-    contact: {
+    registrationStatus?: 'pending' | 'verified';
+    contact?: {
       socialMedia?: {
         instagram?: string;
         facebook?: string;
@@ -67,6 +71,7 @@ export interface BreederProfile extends BaseUser {
 export interface SeekerProfile extends BaseUser {
   role: 'seeker';
   preferredBreeds: UserBreed[];
+  traitPreferences: any;
   experience: {
     dogExperience: 'first_time' | 'some_experience' | 'experienced';
     breedingExperience?: boolean;

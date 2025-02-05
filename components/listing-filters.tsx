@@ -1,8 +1,7 @@
 import React from 'react';
 import {YStack, XStack, Text, Select, Input, Switch, Button} from 'tamagui';
-import {useTranslations} from '../../dopebase';
+import {useTranslations} from '../dopebase';
 import {Filter} from '@tamagui/lucide-icons';
-import BreedSelector from '../../components/BreedSelector';
 
 interface ListingFiltersProps {
   filters: {
@@ -68,10 +67,6 @@ export const ListingFilters = ({
               {localized('Wanted')}
             </Select.Item>
           </Select>
-
-          <BreedSelector
-            onSelectBreed={(breed) => onFiltersChange({...filters, breed})}
-          />
 
           <YStack gap='$2'>
             <Text>{localized('Price Range')}</Text>

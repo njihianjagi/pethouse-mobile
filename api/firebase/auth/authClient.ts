@@ -6,16 +6,6 @@ import {UserBreed} from '../breeds/useBreedData';
 
 const usersRef = db.collection('users');
 
-export interface User {
-  id: string;
-  firstName?: string;
-  username?: string;
-  role?: 'breeder' | 'seeker';
-  traitPreferences?: Record<string, any>;
-  location?: string;
-  userBreeds?: UserBreed[];
-}
-
 const handleUserFromAuthStateChanged = (user, resolve) => {
   if (user) {
     usersRef
@@ -446,6 +436,7 @@ export const fetchAndStorePushTokenIfPossible = async (user) => {
     if (settings) {
       const token = await messaging().getToken();
       updateUser(user.id || user.userID, {
+        ...user,
         pushToken: token,
         pushKitToken: '',
         badgeCount: 0,

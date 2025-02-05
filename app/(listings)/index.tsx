@@ -2,9 +2,10 @@ import React from 'react';
 import {FlatList} from 'react-native';
 import {YStack, Spinner} from 'tamagui';
 import {useListingSearch} from '../../hooks/useListingSearch';
-import {ListingFilters} from './listing-filters';
-import {ListingCard} from './listing-card';
+
 import {useRouter} from 'expo-router';
+import {ListingCard} from '../../components/listing-card';
+import {ListingFilters} from '../../components/listing-filters';
 
 export const ListingsFeed = () => {
   const router = useRouter();
@@ -36,7 +37,7 @@ export const ListingsFeed = () => {
         renderItem={({item}) => (
           <ListingCard
             listing={item}
-            onPress={() => router.push(`/listings/${item.id}`)}
+            onPress={() => router.push(`/explore/listings/${item.id}`)}
           />
         )}
         keyExtractor={(item) => item.id!}

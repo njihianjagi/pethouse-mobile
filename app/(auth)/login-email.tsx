@@ -26,7 +26,7 @@ import {setUserData} from '../../redux/reducers/auth';
 import {localizedErrorMessage} from '../../utils/ErrorCode';
 import {useAuth} from '../../hooks/useAuth';
 import {useConfig} from '../../config';
-import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton';
+// import IMGoogleSignInButton from '../../components/IMGoogleSignInButton/IMGoogleSignInButton';
 import {ScrollView} from 'tamagui';
 
 const LoginScreen = () => {
@@ -268,12 +268,12 @@ const LoginScreen = () => {
             </TouchableOpacity>
           </>
         )}
-        {config.isGoogleAuthEnabled && (
-          <IMGoogleSignInButton
-            containerStyle={styles.googleButtonStyle}
-            onPress={onGoogleButtonPress}
-          />
-        )}
+        {/* {config.isGoogleAuthEnabled && (
+          // <IMGoogleSignInButton
+          //   containerStyle={styles.googleButtonStyle}
+          //   onPress={onGoogleButtonPress}
+          // />
+        )} */}
         {config.isAppleAuthEnabled && appleAuth.isSupported && (
           <AppleButton
             cornerRadius={25}

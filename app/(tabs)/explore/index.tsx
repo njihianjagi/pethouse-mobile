@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect} from 'react';
 import {FlatList} from 'react-native';
 import {
   InstantSearch,
@@ -15,31 +15,28 @@ import {
   XStack,
   Button,
   Input,
-  Sheet,
   H4,
-  Select,
   Spinner,
   Checkbox,
   XGroup,
-  SelectProps,
+  Sheet,
 } from 'tamagui';
 import {
   Dog,
   Users,
   ShoppingBag,
-  Filter,
   Settings2,
   Search,
 } from '@tamagui/lucide-icons';
 
 import {useTheme} from '../../../dopebase';
 import {Breed} from '../../../api/firebase/breeds/useBreedData';
-import {Kennel} from '../../../api/firebase/kennels/useKennelData';
 
 import {searchClient} from '../../../api/algoliasearch/client';
-import BreedCard from './breeds/breed-card';
-import BreederCard from './breeders/breeder-card';
 import {BreederProfile} from '../../../api/firebase/users/userClient';
+import BreedCard from '../../../components/breed-card';
+import {SortPopover} from '../../../components/sort-popover';
+import {SortSheet} from '../../../components/Sort-sheet';
 
 // Types for search hits
 type BreedHit = Breed & {
@@ -156,69 +153,6 @@ function getFilterAttribute(type: SearchType) {
     default:
       return '';
   }
-}
-
-// Sort Sheet Component
-function SortSheet({
-  isOpen,
-  onClose,
-  sortBy,
-  onSortChange,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  sortBy: string;
-  onSortChange: (sort: string) => void;
-}) {
-  return (
-    <Sheet
-      modal
-      open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
-      snapPoints={[40]}
-      position={0}
-      dismissOnSnapToBottom
-    >
-      <Sheet.Overlay />
-      <Sheet.Frame padding='$4' space>
-        <Sheet.Handle />
-        <H4>Sort By</H4>
-        <YStack space>
-          <XStack space alignItems='center'>
-            <Select value={sortBy} onValueChange={onSortChange}>
-              <Select.Trigger width='100%' iconAfter={Settings2}>
-                <Select.Value placeholder='Sort by...' />
-              </Select.Trigger>
-
-              <Select.Content>
-                <Select.ScrollUpButton />
-                <Select.Viewport>
-                  <Select.Group>
-                    <Select.Item index={0} value='relevance'>
-                      <Select.ItemText>Relevance</Select.ItemText>
-                    </Select.Item>
-                    <Select.Item index={1} value='created_at:desc'>
-                      <Select.ItemText>Newest</Select.ItemText>
-                    </Select.Item>
-                    <Select.Item index={2} value='created_at:asc'>
-                      <Select.ItemText>Oldest</Select.ItemText>
-                    </Select.Item>
-                    <Select.Item index={3} value='name:asc'>
-                      <Select.ItemText>Name A-Z</Select.ItemText>
-                    </Select.Item>
-                    <Select.Item index={4} value='name:desc'>
-                      <Select.ItemText>Name Z-A</Select.ItemText>
-                    </Select.Item>
-                  </Select.Group>
-                </Select.Viewport>
-                <Select.ScrollDownButton />
-              </Select.Content>
-            </Select>
-          </XStack>
-        </YStack>
-      </Sheet.Frame>
-    </Sheet>
-  );
 }
 
 function SearchResults(isLoading) {
@@ -395,8 +329,8 @@ export default function ExploreScreen() {
         <SortSheet
           isOpen={sortSheetOpen}
           onClose={() => setSortSheetOpen(false)}
-          sortBy={sortBy}
-          onSortChange={(value) => {
+          value={sortBy}
+          onChange={(value) => {
             setSortBy(value);
             setSortSheetOpen(false);
           }}

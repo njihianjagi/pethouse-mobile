@@ -3,9 +3,9 @@ import {ArrowRight} from '@tamagui/lucide-icons';
 import {router, Href} from 'expo-router';
 import {LinearGradient} from 'tamagui/linear-gradient';
 import {View, Text, Button, Card, XStack, Image, YStack, YGroup} from 'tamagui';
-import {useTheme} from '../../../../dopebase';
-import {useBreedMatch} from '../../../../hooks/useBreedMatch';
-import {Breed} from '../../../../api/firebase/breeds/useBreedData';
+import {useTheme} from '../dopebase';
+import {useBreedMatch} from '../hooks/useBreedMatch';
+import {Breed} from '../api/firebase/breeds/useBreedData';
 
 interface BreedCardProps {
   breed: Breed;
