@@ -120,8 +120,8 @@ const ImageUploadScreen = () => {
         onboardingComplete: true,
       };
 
-      await updateUser(currentUser?.id, userData);
-      dispatch(setUserData(userData));
+      const updatedUser = await updateUser(currentUser?.id, userData);
+      dispatch(setUserData({user: updatedUser}));
       router.replace('/(tabs)');
     } catch (error) {
       console.error('Error updating user:', error);

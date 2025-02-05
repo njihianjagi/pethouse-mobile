@@ -108,7 +108,7 @@ export const BasicInfoScreen = () => {
       };
 
       await updateUser(currentUser?.id, userData);
-      dispatch(setUserData(userData));
+      dispatch(setUserData({user: userData}));
       router.replace('/(onboarding)/(breeder)/breeds');
     } catch (error) {
       alert(localized('Failed to update profile. Please try again.'));

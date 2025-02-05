@@ -20,6 +20,10 @@ import {
   Checkbox,
   XGroup,
   Sheet,
+  View,
+  ScrollView,
+  H5,
+  Label,
 } from 'tamagui';
 import {
   Dog,
@@ -27,16 +31,17 @@ import {
   ShoppingBag,
   Settings2,
   Search,
+  ChevronDown,
 } from '@tamagui/lucide-icons';
-
+import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useTheme} from '../../../dopebase';
 import {Breed} from '../../../api/firebase/breeds/useBreedData';
 
 import {searchClient} from '../../../api/algoliasearch/client';
 import {BreederProfile} from '../../../api/firebase/users/userClient';
 import BreedCard from '../../../components/breed-card';
-import {SortPopover} from '../../../components/sort-popover';
-import {SortSheet} from '../../../components/Sort-sheet';
+import {SortSheet} from '../../../components/sort-sheet';
+import {useBreedSearch} from '../../../hooks/useBreedSearch';
 
 // Types for search hits
 type BreedHit = Breed & {
@@ -87,7 +92,7 @@ function CustomSearchBox() {
           onChangeText={refine}
           autoCapitalize='none'
           autoCorrect={false}
-          autoFocus
+          autoFocus={false}
           borderLeftWidth={0}
         />
       </XGroup.Item>
@@ -105,47 +110,154 @@ function FilterSheet({
   onClose: () => void;
   type: SearchType;
 }) {
-  const {items, refine} = useRefinementList({
-    attribute: getFilterAttribute(type),
+  const {traitGroups} = useBreedSearch();
+
+  const breedGroupItems = useRefinementList({
+    attribute: 'breedGroup',
+    limit: 50,
+    sortBy: ['count:desc'],
   });
+
+  const traitGroupItems = useRefinementList({
+    attribute: 'traits.name',
+    limit: 50,
+    sortBy: ['count:desc'],
+  });
+
+  const traitItems = useRefinementList({
+    attribute: 'traits.traits.name',
+    limit: 50,
+    sortBy: ['count:desc'],
+  });
+
+  const onFilterPress = (value: string, attributeType: string) => {
+    switch (attributeType) {
+      case 'breedGroup':
+        breedGroupItems.refine(value);
+        break;
+      case 'trait_group':
+        traitGroupItems.refine(value);
+        break;
+      case 'trait':
+        traitItems.refine(value);
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <Sheet
       modal
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      snapPoints={[60]}
+      snapPoints={[80]}
       position={0}
       dismissOnSnapToBottom
     >
       <Sheet.Overlay />
       <Sheet.Frame padding='$4' space>
         <Sheet.Handle />
-        <H4>Filter {type}s</H4>
-        <YStack space>
-          {items.map((item) => (
-            <XStack key={item.label} space alignItems='center'>
-              <Checkbox
-                checked={item.isRefined}
-                onCheckedChange={() => refine(item.value)}
-              >
-                <Checkbox.Indicator>
+
+        <ScrollView>
+          <H4>Filter {type}s</H4>
+
+          <YStack gap='$2'>
+            <YStack gap='$2'>
+              <Label>Breed Group</Label>
+
+              {breedGroupItems.items.map((item) => (
+                <XStack key={item.label} space alignItems='center'>
+                  <Checkbox
+                    checked={item.isRefined}
+                    onCheckedChange={() =>
+                      onFilterPress(item.value, 'breedGroup')
+                    }
+                  >
+                    <Checkbox.Indicator />
+                  </Checkbox>
+                  <Text textTransform='capitalize'>{item.label} group</Text>
+
+                  <Text>({item.count})</Text>
+                </XStack>
+              ))}
+            </YStack>
+
+            <YStack gap='$2'>
+              {traitGroups.map((group) => {
+                const groupItem: any = traitGroupItems.items.find(
+                  (t) => t.label === group.name
+                );
+                const groupTraits = traitItems.items.filter((t) =>
+                  group.traits.some((gt) => gt.name === t.label)
+                );
+
+                return (
+                  <YStack key={group.name} gap='$2'>
+                    <XStack alignItems='center' gap='$2'>
+                      {/* <Checkbox
+                        checked={groupItem?.isRefined}
+                        onCheckedChange={() =>
+                          traitGroupItems?.refine(groupItem.value)
+                        }
+                      >
+                        <Checkbox.Indicator />
+                      </Checkbox> */}
+                      <Label>{group.name}</Label>
+
+                      <Text>({groupItem?.count || 0})</Text>
+                    </XStack>
+
+                    <YStack pl='$4' gap='$2'>
+                      {groupTraits.map((trait) => (
+                        <XStack key={trait.label} gap='$2' alignItems='center'>
+                          <Checkbox
+                            checked={trait.isRefined}
+                            onCheckedChange={() =>
+                              traitItems.refine(trait.value)
+                            }
+                          >
+                            <Checkbox.Indicator />
+                          </Checkbox>
+                          <Text>{trait.label}</Text>
+                          <Text>({trait.count})</Text>
+                        </XStack>
+                      ))}
+                    </YStack>
+                  </YStack>
+                );
+              })}
+              {/* {traitItems.items.map((item) => (
+                <XStack key={item.label} space alignItems='center'>
+                  <Checkbox
+                    checked={item.isRefined}
+                    onCheckedChange={() => onFilterPress(item.value, 'trait')}
+                  >
+                    <Checkbox.Indicator />
+                  </Checkbox>
                   <Text>{item.label}</Text>
-                </Checkbox.Indicator>
-              </Checkbox>
-              <Text>({item.count})</Text>
-            </XStack>
-          ))}
-        </YStack>
+
+                  <Text>({item.count})</Text>
+                </XStack>
+              ))} */}
+            </YStack>
+          </YStack>
+        </ScrollView>
       </Sheet.Frame>
     </Sheet>
   );
 }
 
-function getFilterAttribute(type: SearchType) {
+function getFilterAttribute(
+  type: SearchType,
+  attributeType?: 'breedGroup' | 'trait_group' | 'trait'
+) {
   switch (type) {
     case 'breed':
-      return 'breed_group';
+      if (attributeType === 'breedGroup') return 'breedGroup';
+      if (attributeType === 'trait_group') return 'traits.name';
+      if (attributeType === 'trait') return 'traits.traits.name';
+      return ['breed_group', 'traits.name', 'traits.traits.name'];
     case 'breeder':
       return 'specialties';
     case 'listing':
@@ -155,24 +267,118 @@ function getFilterAttribute(type: SearchType) {
   }
 }
 
-function SearchResults(isLoading) {
+// Filter Buttons Component
+function FilterButtons({
+  setFilterSheetOpen,
+}: {
+  setFilterSheetOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
+  const breedGroupItems = useRefinementList({
+    attribute: 'breedGroup',
+    limit: 50,
+    sortBy: ['count:desc'],
+  });
+
+  const traitGroupItems = useRefinementList({
+    attribute: 'traits.name',
+    limit: 50,
+    sortBy: ['count:desc'],
+  });
+
+  const allItems = [
+    ...(breedGroupItems.items || []).map((item) => ({
+      ...item,
+      attributeType: 'breedGroup',
+    })),
+    ...(traitGroupItems.items || []).map((item) => ({
+      ...item,
+      attributeType: 'trait_group',
+    })),
+  ];
+
+  const onFilterPress = (value: string, attributeType: string) => {
+    switch (attributeType) {
+      case 'breedGroup':
+        console.log('breedGroup', value);
+        breedGroupItems.refine(value);
+        break;
+      case 'trait_group':
+        traitGroupItems.refine(value);
+        break;
+      default:
+        break;
+    }
+  };
+
+  // console.log('allItems', allItems);
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <XStack gap='$2' paddingRight='$4'>
+        <Button
+          key={33}
+          onPress={() => setFilterSheetOpen(true)}
+          theme='active'
+          size='$3'
+          icon={<MaterialCommunityIcons name='filter-variant' size={20} />}
+        ></Button>
+
+        {allItems.map((item) => (
+          <Button
+            key={`${item.attributeType}-${item.label}`}
+            onPress={() => onFilterPress(item.value, item.attributeType)}
+            theme={item.isRefined ? 'active' : 'gray'}
+            backgroundColor={item.isRefined ? '$blue10' : '$gray2'}
+            size='$3'
+            // iconAfter={<ChevronDown />}
+          >
+            <Text textTransform='capitalize'>{item.label}</Text>
+          </Button>
+        ))}
+      </XStack>
+    </ScrollView>
+  );
+}
+
+function SearchResults() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
+  const [hasInitialData, setHasInitialData] = React.useState(false);
 
   const {items, isFirstPage, isLastPage, showMore, sendEvent} =
     useInfiniteHits<SearchHit>();
 
+  useEffect(() => {
+    if (items.length > 0 && !hasInitialData) {
+      setHasInitialData(true);
+    }
+  }, [items, hasInitialData]);
+
+  const {results} = useInstantSearch();
+  // Add this debug log
+  // useEffect(() => {
+  //   if (results) {
+  //     console.log('Algolia Results Metadata:', {
+  //       facets: results.facets,
+  //       // params: results.params,
+  //       queryID: results.queryID,
+  //     });
+  //   }
+  // }, [results]);
+
   const renderHit = ({item}: {item: SearchHit}) => {
-    // switch (item.type) {
-    //   case 'breed':
     return <BreedCard breed={item as BreedHit} index={0} />;
-    //   case 'kennel':
-    //     return <BreederCard breeder={item as KennelHit} index={0} />;
-    //   default:
-    //     return null;
-    // }
   };
 
+  const {status} = useInstantSearch();
+  const isLoading = status === 'loading' || status === 'stalled';
+
+  if (isLoading && !hasInitialData) {
+    return (
+      <View flex={1} justifyContent='center' alignItems='center'>
+        <Spinner size='large' color={colorSet.primaryForeground} />
+      </View>
+    );
+  }
   return (
     <FlatList
       data={items}
@@ -196,82 +402,28 @@ function SearchResults(isLoading) {
   );
 }
 
-function SearchLoader({
-  onLoadingChange,
-}: {
-  onLoadingChange: (isLoading: boolean) => void;
-}) {
-  const {theme, appearance} = useTheme();
-  const colorSet = theme.colors[appearance];
-  const {status} = useInstantSearch();
-  const isLoading = status === 'loading' || status === 'stalled';
-
-  useEffect(() => {
-    onLoadingChange(isLoading);
-  }, [isLoading, onLoadingChange]);
-
-  return <Spinner color={colorSet.primaryForeground} />;
-}
-
 // Results Info Component
-function ResultsInfo({onSortPress}: {onSortPress: () => void}) {
+function ResultsInfo({onSortPress}: {onSortPress: any}) {
   const {results} = useInstantSearch();
   const {items} = useInfiniteHits<SearchHit>();
   const totalHits = results?.nbHits ?? 0;
 
   return (
     <XStack justifyContent='space-between' alignItems='center'>
-      <Text color='$gray11'>
+      <Text color='$gray11' fontSize='$2'>
         Showing {items?.length ?? 0} of {totalHits} results
       </Text>
       <Button
         chromeless
-        icon={<Settings2 size='$1' />}
+        iconAfter={<MaterialCommunityIcons name='sort' size={16} />}
         onPress={onSortPress}
         theme='gray'
       >
-        Sort
+        <Text fontSize='$2'>Sort</Text>
       </Button>
     </XStack>
   );
 }
-
-const SearchTypeToggle = ({
-  searchType,
-  setSearchType,
-}: {
-  searchType: SearchType;
-  setSearchType: (searchType: SearchType) => void;
-}) => {
-  return (
-    <XStack gap='$2'>
-      <Button
-        theme={searchType === 'breed' ? 'active' : 'gray'}
-        onPress={() => setSearchType('breed')}
-        icon={<Dog />}
-        flex={1}
-      >
-        Breeds
-      </Button>
-      <Button
-        theme={searchType === 'breeder' ? 'active' : 'gray'}
-        onPress={() => setSearchType('breeder')}
-        icon={<Users />}
-        flex={1}
-      >
-        Breeders
-      </Button>
-      <Button
-        theme={searchType === 'listing' ? 'active' : 'gray'}
-        onPress={() => setSearchType('listing')}
-        icon={<ShoppingBag />}
-        flex={1}
-      >
-        Listings
-      </Button>
-    </XStack>
-  );
-};
 
 export default function ExploreScreen() {
   const router = useRouter();
@@ -293,17 +445,16 @@ export default function ExploreScreen() {
         initialUiState={{search: {hitsPerPage: 20}}}
       >
         {/* Search Type Toggle */}
-        <SearchTypeToggle
+        {/* <SearchTypeToggle
           searchType={searchType}
           setSearchType={setSearchType}
-        />
+        /> */}
 
         <YStack gap='$2'>
-          <XGroup alignItems='center' gap='$2'>
+          {/* <XGroup alignItems='center' gap='$2'>
             <XGroup.Item>
-              <CustomSearchBox />
+            
             </XGroup.Item>
-
             <XGroup.Item>
               <Button
                 theme='active'
@@ -311,33 +462,34 @@ export default function ExploreScreen() {
                 onPress={() => setFilterSheetOpen(true)}
               />
             </XGroup.Item>
-          </XGroup>
+          </XGroup> */}
 
-          {/* Results Counter and Sort */}
-          <ResultsInfo onSortPress={() => setSortSheetOpen(true)} />
+          <CustomSearchBox />
+          {/* Horizontal Filter Buttons */}
+          <FilterButtons setFilterSheetOpen={setFilterSheetOpen} />
+
+          <ResultsInfo onSortPress={setSortSheetOpen} />
         </YStack>
 
-        {isLoading && <SearchLoader onLoadingChange={setIsLoading} />}
-        <SearchResults isLoading={isLoading} />
+        <SearchResults />
 
+        {/* Filter Sheet */}
         <FilterSheet
           isOpen={filterSheetOpen}
           onClose={() => setFilterSheetOpen(false)}
           type={searchType}
         />
 
+        {/* Sort Sheet */}
         <SortSheet
-          isOpen={sortSheetOpen}
-          onClose={() => setSortSheetOpen(false)}
-          value={sortBy}
-          onChange={(value) => {
-            setSortBy(value);
-            setSortSheetOpen(false);
-          }}
+          open={sortSheetOpen}
+          onOpenChange={setSortSheetOpen}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
         />
-
         <Configure
           hitsPerPage={20}
+          facets={['breedGroup', 'traits.name']}
           // sortBy={sortBy === 'relevance' ? undefined : [sortBy]}
         />
       </InstantSearch>

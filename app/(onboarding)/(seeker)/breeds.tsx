@@ -93,7 +93,7 @@ export const PreferredBreedsScreen = () => {
         ...currentUser,
         preferredBreeds: breeds,
       });
-      dispatch(setUserData(updatedUser));
+      dispatch(setUserData({user: updatedUser}));
       router.push('/(onboarding)/(seeker)/experience');
     } catch (error) {
       console.error('Error updating user:', error);

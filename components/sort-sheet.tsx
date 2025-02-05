@@ -7,11 +7,11 @@ export interface SortOption {
 }
 
 export interface SortPopoverProps {
-  isOpen: boolean;
-  onClose: () => void;
-  value: string;
-  onChange: (value: string) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSortChange: (value: string) => void;
   options?: SortOption[];
+  sortBy?: string;
 }
 
 const defaultOptions: SortOption[] = [
@@ -23,17 +23,17 @@ const defaultOptions: SortOption[] = [
 ];
 
 export function SortSheet({
-  isOpen,
-  onClose,
-  value,
-  onChange,
+  open,
+  onOpenChange,
+  sortBy,
+  onSortChange,
   options = defaultOptions,
 }: SortPopoverProps) {
   return (
     <Sheet
       modal
-      open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
+      open={open}
+      onOpenChange={onOpenChange}
       snapPoints={[40]}
       position={0}
       dismissOnSnapToBottom
@@ -44,7 +44,7 @@ export function SortSheet({
         <H4>Sort By</H4>
         <YStack space>
           <XStack space alignItems='center'>
-            <Select value={value} onValueChange={onChange}>
+            <Select value={sortBy} onValueChange={onSortChange}>
               <Select.Trigger width='100%' iconAfter={Settings2}>
                 <Select.Value placeholder='Sort by...' />
               </Select.Trigger>

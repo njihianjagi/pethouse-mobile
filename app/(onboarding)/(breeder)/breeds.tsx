@@ -90,7 +90,7 @@ const BreedsScreen = () => {
       };
 
       await updateUser(currentUser?.id, userData);
-      dispatch(setUserData(userData));
+      dispatch(setUserData({user: userData}));
       router.replace('/(onboarding)/(breeder)/image-upload');
     } catch (error) {
       console.error('Error updating user:', error);

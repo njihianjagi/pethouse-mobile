@@ -51,7 +51,7 @@ const BreederCard = ({breeder, index}: BreederCardProps) => {
       </Card.Background>
 
       <Card.Footer padding='$4'>
-        <YStack space='$2'>
+        <YStack gap='$2'>
           <Text
             color='$color.foregroundContrast'
             fontSize={24}
@@ -62,14 +62,14 @@ const BreederCard = ({breeder, index}: BreederCardProps) => {
               : breeder.firstName + ' ' + breeder.lastName}
           </Text>
 
-          <XStack space='$2' alignItems='center'>
+          <XStack gap='$2' alignItems='center'>
             <MapPin size={16} color='$color.foregroundContrast' />
             <Text color='$color.foregroundContrast' fontSize={16}>
               {location}
             </Text>
           </XStack>
 
-          <XStack space='$2' alignItems='center'>
+          <XStack gap='$2' alignItems='center'>
             <Star size={16} color='$color.foregroundContrast' />
             <Text color='$color.foregroundContrast' fontSize={16}>
               {rating.toFixed(1)} ({reviewCount})
