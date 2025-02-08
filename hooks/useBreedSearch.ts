@@ -136,7 +136,6 @@ export const useBreedSearch = () => {
             });
           });
 
-          console.log('filtered breeds: ', filtered.length);
           // Pagination logic
           const start = (currentPage - 1) * breedsPerPage;
           const end = start + breedsPerPage;

@@ -24,6 +24,7 @@ import {
   ScrollView,
   H5,
   Label,
+  RadioGroup,
 } from 'tamagui';
 import {
   Dog,
@@ -32,6 +33,8 @@ import {
   Settings2,
   Search,
   ChevronDown,
+  Filter,
+  X,
 } from '@tamagui/lucide-icons';
 import {MaterialCommunityIcons} from '@expo/vector-icons';
 import {useTheme} from '../../../dopebase';
@@ -102,11 +105,11 @@ function CustomSearchBox() {
 
 // Filter Sheet Component
 function FilterSheet({
-  isOpen,
+  open,
   onClose,
   type,
 }: {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
   type: SearchType;
 }) {
@@ -130,81 +133,225 @@ function FilterSheet({
     sortBy: ['count:desc'],
   });
 
-  const onFilterPress = (value: string, attributeType: string) => {
-    switch (attributeType) {
-      case 'breedGroup':
-        breedGroupItems.refine(value);
-        break;
-      case 'trait_group':
-        traitGroupItems.refine(value);
-        break;
-      case 'trait':
-        traitItems.refine(value);
-        break;
-      default:
-        break;
+  const {status} = useInstantSearch();
+  // Track temporary selections
+  const [tempSelections, setTempSelections] = useState<{
+    breedGroup?: string;
+    traitGroups: string[];
+    traits: string[];
+  }>(() => ({
+    breedGroup: breedGroupItems.items.find((item) => item.isRefined)?.value,
+    traitGroups: traitGroupItems.items
+      .filter((item) => item.isRefined)
+      .map((item) => item.value),
+    traits: traitItems.items
+      .filter((item) => item.isRefined)
+      .map((item) => item.value),
+  }));
+
+  // Update temp selections when sheet opens
+  useEffect(() => {
+    if (open) {
+      setTempSelections({
+        breedGroup: breedGroupItems.items.find((item) => item.isRefined)?.value,
+        traitGroups: traitGroupItems.items
+          .filter((item) => item.isRefined)
+          .map((item) => item.value),
+        traits: traitItems.items
+          .filter((item) => item.isRefined)
+          .map((item) => item.value),
+      });
     }
+  }, [open]);
+
+  const toggleSelection = (
+    value: string,
+    type: 'breedGroup' | 'traitGroups' | 'traits'
+  ) => {
+    setTempSelections((prev) => {
+      if (type === 'breedGroup') {
+        // For breed groups, just set the single value
+        return {
+          ...prev,
+          breedGroup: value === prev.breedGroup ? undefined : value,
+        };
+      }
+
+      // For other types, toggle in array
+      const current = prev[type];
+      const updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      return {...prev, [type]: updated};
+    });
   };
+
+  const isSelected = (
+    value: string,
+    type: 'breedGroup' | 'traitGroups' | 'traits'
+  ) => {
+    if (type === 'breedGroup') {
+      return tempSelections.breedGroup === value;
+    }
+    return tempSelections[type].includes(value);
+  };
+
+  // const removeSelection = (
+  //   value: string,
+  //   type: 'breedGroup' | 'traitGroups' | 'traits'
+  // ) => {
+  //   setTempSelections((prev) => {
+  //     if (type === 'breedGroup') {
+  //       return {...prev, breedGroup: undefined};
+  //     }
+  //     return {
+  //       ...prev,
+  //       [type]: prev[type].filter((v) => v !== value),
+  //     };
+  //   });
+  // };
+
+  const applyFilters = () => {
+    // Apply breed group filter
+    breedGroupItems.items.forEach((item) => {
+      const shouldBeRefined = tempSelections.breedGroup === item.value;
+      if (shouldBeRefined !== item.isRefined) {
+        breedGroupItems.refine(item.value);
+      }
+    });
+
+    // Apply trait filters
+    traitItems.items.forEach((item) => {
+      const shouldBeRefined = tempSelections.traits.includes(item.value);
+      if (shouldBeRefined !== item.isRefined) {
+        traitItems.refine(item.value);
+      }
+    });
+
+    onClose();
+  };
+
+  const clearAll = () => {
+    setTempSelections({
+      breedGroup: undefined,
+      traitGroups: [],
+      traits: [],
+    });
+  };
+
+  // Get selected items for display
+  const selectedBreedGroup = breedGroupItems.items.find(
+    (item) => item.value === tempSelections.breedGroup
+  );
+  const selectedTraits = traitItems.items.filter((item) =>
+    tempSelections.traits.includes(item.value)
+  );
 
   return (
     <Sheet
       modal
-      open={isOpen}
-      onOpenChange={(open) => !open && onClose()}
-      snapPoints={[80]}
+      open={open}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
+      snapPoints={[85]}
       position={0}
       dismissOnSnapToBottom
     >
       <Sheet.Overlay />
-      <Sheet.Frame padding='$4' space>
-        <Sheet.Handle />
+      <Sheet.Frame>
+        <YStack f={1}>
+          {/* Fixed Header */}
+          <YStack
+            padding='$4'
+            borderBottomColor='$gray5'
+            borderBottomWidth={1}
+            backgroundColor='$background'
+          >
+            <Sheet.Handle />
+            <H4 paddingTop='$2'>Filter {type}s</H4>
 
-        <ScrollView>
-          <H4>Filter {type}s</H4>
-
-          <YStack gap='$2'>
-            <YStack gap='$2'>
-              <Label>Breed Group</Label>
-
-              {breedGroupItems.items.map((item) => (
-                <XStack key={item.label} space alignItems='center'>
-                  <Checkbox
-                    checked={item.isRefined}
-                    onCheckedChange={() =>
-                      onFilterPress(item.value, 'breedGroup')
-                    }
-                  >
-                    <Checkbox.Indicator />
-                  </Checkbox>
-                  <Text textTransform='capitalize'>{item.label} group</Text>
-
-                  <Text>({item.count})</Text>
+            {/* Current Refinements */}
+            {/* {(selectedBreedGroup || selectedTraits.length > 0) && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                marginTop='$2'
+              >
+                <XStack gap='$2' paddingVertical='$2'>
+                  {selectedBreedGroup && (
+                    <Button
+                      size='$3'
+                      theme='active'
+                      backgroundColor='$blue10'
+                      onPress={() =>
+                        removeSelection(selectedBreedGroup.value, 'breedGroup')
+                      }
+                      iconAfter={<X size={14} />}
+                    >
+                      <Text textTransform='capitalize'>
+                        {selectedBreedGroup.label}
+                      </Text>
+                    </Button>
+                  )}
+                  {selectedTraits.map((trait) => (
+                    <Button
+                      key={trait.value}
+                      size='$3'
+                      theme='active'
+                      backgroundColor='$blue10'
+                      onPress={() => removeSelection(trait.value, 'traits')}
+                      iconAfter={<X size={14} />}
+                    >
+                      <Text>{trait.label}</Text>
+                    </Button>
+                  ))}
                 </XStack>
-              ))}
-            </YStack>
+              </ScrollView>
+            )} */}
+          </YStack>
 
-            <YStack gap='$2'>
+          {/* Scrollable Content */}
+          <ScrollView>
+            <YStack padding='$4' gap='$4'>
+              <YStack gap='$2'>
+                <Label>Breed Group</Label>
+                <RadioGroup
+                  value={tempSelections.breedGroup}
+                  onValueChange={(value) =>
+                    toggleSelection(value, 'breedGroup')
+                  }
+                >
+                  <YStack gap='$2'>
+                    {breedGroupItems.items.map((item) => (
+                      <XStack key={item.label} space alignItems='center'>
+                        <RadioGroup.Item value={item.value}>
+                          <RadioGroup.Indicator />
+                        </RadioGroup.Item>
+                        <Text textTransform='capitalize'>
+                          {item.label} group
+                        </Text>
+                        <Text>({item.count})</Text>
+                      </XStack>
+                    ))}
+                  </YStack>
+                </RadioGroup>
+              </YStack>
+
               {traitGroups.map((group) => {
-                const groupItem: any = traitGroupItems.items.find(
+                const groupItem = traitGroupItems.items.find(
                   (t) => t.label === group.name
                 );
                 const groupTraits = traitItems.items.filter((t) =>
                   group.traits.some((gt) => gt.name === t.label)
                 );
 
+                if (groupTraits.length === 0) return null;
+
                 return (
                   <YStack key={group.name} gap='$2'>
                     <XStack alignItems='center' gap='$2'>
-                      {/* <Checkbox
-                        checked={groupItem?.isRefined}
-                        onCheckedChange={() =>
-                          traitGroupItems?.refine(groupItem.value)
-                        }
-                      >
-                        <Checkbox.Indicator />
-                      </Checkbox> */}
                       <Label>{group.name}</Label>
-
                       <Text>({groupItem?.count || 0})</Text>
                     </XStack>
 
@@ -212,9 +359,9 @@ function FilterSheet({
                       {groupTraits.map((trait) => (
                         <XStack key={trait.label} gap='$2' alignItems='center'>
                           <Checkbox
-                            checked={trait.isRefined}
+                            checked={isSelected(trait.value, 'traits')}
                             onCheckedChange={() =>
-                              traitItems.refine(trait.value)
+                              toggleSelection(trait.value, 'traits')
                             }
                           >
                             <Checkbox.Indicator />
@@ -227,44 +374,46 @@ function FilterSheet({
                   </YStack>
                 );
               })}
-              {/* {traitItems.items.map((item) => (
-                <XStack key={item.label} space alignItems='center'>
-                  <Checkbox
-                    checked={item.isRefined}
-                    onCheckedChange={() => onFilterPress(item.value, 'trait')}
-                  >
-                    <Checkbox.Indicator />
-                  </Checkbox>
-                  <Text>{item.label}</Text>
-
-                  <Text>({item.count})</Text>
-                </XStack>
-              ))} */}
             </YStack>
+          </ScrollView>
+
+          {/* Fixed Footer */}
+          <YStack
+            padding='$4'
+            borderTopColor='$gray5'
+            borderTopWidth={1}
+            backgroundColor='$background'
+          >
+            <XStack gap='$2'>
+              <Button
+                size='$4'
+                theme='gray'
+                onPress={clearAll}
+                flex={1}
+                disabled={status === 'loading' || status === 'stalled'}
+              >
+                Clear All
+              </Button>
+              <Button
+                size='$4'
+                theme='active'
+                onPress={applyFilters}
+                flex={1}
+                disabled={status === 'loading' || status === 'stalled'}
+                icon={
+                  status === 'loading' || status === 'stalled' ? (
+                    <Spinner size='small' />
+                  ) : undefined
+                }
+              >
+                Apply Filters
+              </Button>
+            </XStack>
           </YStack>
-        </ScrollView>
+        </YStack>
       </Sheet.Frame>
     </Sheet>
   );
-}
-
-function getFilterAttribute(
-  type: SearchType,
-  attributeType?: 'breedGroup' | 'trait_group' | 'trait'
-) {
-  switch (type) {
-    case 'breed':
-      if (attributeType === 'breedGroup') return 'breedGroup';
-      if (attributeType === 'trait_group') return 'traits.name';
-      if (attributeType === 'trait') return 'traits.traits.name';
-      return ['breed_group', 'traits.name', 'traits.traits.name'];
-    case 'breeder':
-      return 'specialties';
-    case 'listing':
-      return 'category';
-    default:
-      return '';
-  }
 }
 
 // Filter Buttons Component
@@ -285,51 +434,56 @@ function FilterButtons({
     sortBy: ['count:desc'],
   });
 
-  const allItems = [
-    ...(breedGroupItems.items || []).map((item) => ({
-      ...item,
-      attributeType: 'breedGroup',
-    })),
-    ...(traitGroupItems.items || []).map((item) => ({
-      ...item,
-      attributeType: 'trait_group',
-    })),
+  const traitItems = useRefinementList({
+    attribute: 'traits.traits.name',
+    limit: 50,
+    sortBy: ['count:desc'],
+  });
+
+  // Get only the refined (selected) items
+  const selectedItems = [
+    ...(breedGroupItems.items || [])
+      .filter((item) => item.isRefined)
+      .map((item) => ({
+        ...item,
+        attributeType: 'breedGroup',
+        refine: () => breedGroupItems.refine(item.value),
+      })),
+    ...(traitGroupItems.items || [])
+      .filter((item) => item.isRefined)
+      .map((item) => ({
+        ...item,
+        attributeType: 'trait_group',
+        refine: () => traitGroupItems.refine(item.value),
+      })),
+    ...(traitItems.items || [])
+      .filter((item) => item.isRefined)
+      .map((item) => ({
+        ...item,
+        attributeType: 'trait',
+        refine: () => traitItems.refine(item.value),
+      })),
   ];
 
-  const onFilterPress = (value: string, attributeType: string) => {
-    switch (attributeType) {
-      case 'breedGroup':
-        console.log('breedGroup', value);
-        breedGroupItems.refine(value);
-        break;
-      case 'trait_group':
-        traitGroupItems.refine(value);
-        break;
-      default:
-        break;
-    }
-  };
-
-  // console.log('allItems', allItems);
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
       <XStack gap='$2' paddingRight='$4'>
         <Button
-          key={33}
+          icon={<Filter size={16} />}
           onPress={() => setFilterSheetOpen(true)}
-          theme='active'
+          theme='gray'
           size='$3'
-          icon={<MaterialCommunityIcons name='filter-variant' size={20} />}
-        ></Button>
+        >
+          Filters
+        </Button>
 
-        {allItems.map((item) => (
+        {selectedItems.map((item) => (
           <Button
             key={`${item.attributeType}-${item.label}`}
-            onPress={() => onFilterPress(item.value, item.attributeType)}
-            theme={item.isRefined ? 'active' : 'gray'}
-            backgroundColor={item.isRefined ? '$blue10' : '$gray2'}
+            onPress={() => item.refine()}
+            theme='active'
             size='$3'
-            // iconAfter={<ChevronDown />}
+            iconAfter={<X size={14} />}
           >
             <Text textTransform='capitalize'>{item.label}</Text>
           </Button>
@@ -342,64 +496,45 @@ function FilterButtons({
 function SearchResults() {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
-  const [hasInitialData, setHasInitialData] = React.useState(false);
 
   const {items, isFirstPage, isLastPage, showMore, sendEvent} =
     useInfiniteHits<SearchHit>();
-
-  useEffect(() => {
-    if (items.length > 0 && !hasInitialData) {
-      setHasInitialData(true);
-    }
-  }, [items, hasInitialData]);
-
-  const {results} = useInstantSearch();
-  // Add this debug log
-  // useEffect(() => {
-  //   if (results) {
-  //     console.log('Algolia Results Metadata:', {
-  //       facets: results.facets,
-  //       // params: results.params,
-  //       queryID: results.queryID,
-  //     });
-  //   }
-  // }, [results]);
 
   const renderHit = ({item}: {item: SearchHit}) => {
     return <BreedCard breed={item as BreedHit} index={0} />;
   };
 
   const {status} = useInstantSearch();
-  const isLoading = status === 'loading' || status === 'stalled';
 
-  if (isLoading && !hasInitialData) {
+  if ((status === 'loading' || status === 'stalled') && isFirstPage) {
     return (
       <View flex={1} justifyContent='center' alignItems='center'>
         <Spinner size='large' color={colorSet.primaryForeground} />
       </View>
     );
-  }
-  return (
-    <FlatList
-      data={items}
-      numColumns={2}
-      renderItem={renderHit}
-      keyExtractor={(item) => item.objectID}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{gap: 10}}
-      onEndReachedThreshold={0.5}
-      onEndReached={() => {
-        if (!isLastPage) {
-          showMore();
+  } else {
+    return (
+      <FlatList
+        data={items}
+        numColumns={2}
+        renderItem={renderHit}
+        keyExtractor={(item) => item.objectID}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{gap: 10}}
+        onEndReachedThreshold={0.5}
+        onEndReached={() => {
+          if (!isLastPage) {
+            showMore();
+          }
+        }}
+        ListFooterComponent={() =>
+          !isLastPage && (status === 'loading' || status === 'stalled') ? (
+            <Spinner size='small' color={colorSet.primaryForeground} />
+          ) : null
         }
-      }}
-      ListFooterComponent={() =>
-        !isLastPage && isLoading ? (
-          <Spinner size='small' color={colorSet.primaryForeground} />
-        ) : null
-      }
-    />
-  );
+      />
+    );
+  }
 }
 
 // Results Info Component
@@ -475,7 +610,7 @@ export default function ExploreScreen() {
 
         {/* Filter Sheet */}
         <FilterSheet
-          isOpen={filterSheetOpen}
+          open={filterSheetOpen}
           onClose={() => setFilterSheetOpen(false)}
           type={searchType}
         />
