@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {TouchableOpacity, Alert, FlatList, StyleSheet} from 'react-native';
 import {YStack, Text, Button, XStack, View, Spinner, Image} from 'tamagui';
-import BreedSelector from '../../../components/BreedSelector';
+import BreedSelector from '../../../components/breed-selector';
 import {useTranslations} from '../../../dopebase';
 import {useRouter} from 'expo-router';
 import useCurrentUser from '../../../hooks/useCurrentUser';
@@ -11,7 +11,7 @@ import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
 import {Plus} from '@tamagui/lucide-icons';
 import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
-import ParallaxScrollView from '../../../components/ParallaxScrollView';
+import ParallaxScrollView from '../../../components/parallax-scrollview';
 import UserBreedCard from '../../../components/user-breed-card';
 
 const TOTAL_STEPS = 3;

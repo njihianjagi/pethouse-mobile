@@ -14,7 +14,7 @@ import {
   Spinner,
 } from 'tamagui';
 import {useTranslations} from '../../../dopebase';
-import BreedSelector from '../../../components/BreedSelector';
+import BreedSelector from '../../../components/breed-selector';
 import {
   WantedListing,
   useListingData,

@@ -2,7 +2,7 @@ import {Stack, useRouter} from 'expo-router';
 import {useTheme, useTranslations} from '../../../dopebase';
 import {Text, View, Image} from 'react-native';
 import {HeaderBackButton} from '@react-navigation/elements';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import ParallaxScrollView from '@/components/parallax-scrollview';
 
 const StepIndicator = ({current, total}: {current: number; total: number}) => {
   const {theme, appearance} = useTheme();

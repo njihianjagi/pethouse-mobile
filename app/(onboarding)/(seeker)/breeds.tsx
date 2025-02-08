@@ -13,13 +13,13 @@ import {
 } from 'tamagui';
 import {useTheme, useTranslations} from '../../../dopebase';
 import {SeekerProfile} from '../../../api/firebase/users/userClient';
-import BreedSelector from '../../../components/BreedSelector';
+import BreedSelector from '../../../components/breed-selector';
 import {useRouter} from 'expo-router';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
-import ParallaxScrollView from '../../../components/ParallaxScrollView';
+import ParallaxScrollView from '../../../components/parallax-scrollview';
 import {Plus} from '@tamagui/lucide-icons';
 import {TouchableOpacity, FlatList} from 'react-native';
 import breeds from '../(breeder)/breeds';

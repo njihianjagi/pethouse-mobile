@@ -10,7 +10,7 @@ import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
 import ImageSelector from '@/components/ImageSelector';
 import firebaseStorage from '../../../api/firebase/media/storage';
-import ParallaxScrollView from '../../../components/ParallaxScrollView';
+import ParallaxScrollView from '../../../components/parallax-scrollview';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 3;

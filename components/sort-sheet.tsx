@@ -40,7 +40,7 @@ export function SortSheet({
     >
       <Sheet.Overlay />
       <Sheet.Frame padding='$4' space>
-        <Sheet.Handle />
+        <Sheet.Handle theme='active' />
         <H4>Sort By</H4>
         <YStack space>
           <XStack space alignItems='center'>

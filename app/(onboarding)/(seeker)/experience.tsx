@@ -21,7 +21,7 @@ import useCurrentUser from '../../../hooks/useCurrentUser';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
-import ParallaxScrollView from '../../../components/ParallaxScrollView';
+import ParallaxScrollView from '../../../components/parallax-scrollview';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;

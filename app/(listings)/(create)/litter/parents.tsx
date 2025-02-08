@@ -11,7 +11,7 @@ import {
 } from 'tamagui';
 import {useTranslations} from '../../../../dopebase';
 import ImageSelector from '../../../../components/ImageSelector';
-import BreedSelector from '../../../../components/BreedSelector';
+import BreedSelector from '../../../../components/breed-selector';
 import {Check, ChevronDown, ChevronUp} from '@tamagui/lucide-icons';
 import {useRouter} from 'expo-router';
 import {useLitterForm} from '../../../../hooks/useLitterForm';

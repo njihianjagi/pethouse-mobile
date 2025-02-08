@@ -4,15 +4,15 @@ import {View, YStack, Text, Spinner, XStack, Image} from 'tamagui';
 import useCurrentUser from '../../../hooks/useCurrentUser';
 import {Plus} from '@tamagui/lucide-icons';
 import {useTheme, useTranslations} from '../../../dopebase';
-import BreedSelector from '../../../components/BreedSelector';
+import BreedSelector from '../../../components/breed-selector';
 import {useRouter} from 'expo-router';
 import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
-import {EmptyStateCard} from '../../../components/EmptyStateCard';
+import {EmptyStateCard} from '../../../components/empty-state-card';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
 import UserBreedCard from '../../../components/user-breed-card';
-import ParallaxScrollView from '../../../components/ParallaxScrollView';
+import ParallaxScrollView from '../../../components/parallax-scrollview';
 
 const BreedsScreen = () => {
   const currentUser = useCurrentUser();

@@ -1,6 +1,6 @@
 import React from 'react';
 import {YStack, XStack, Input, Text, Card} from 'tamagui';
-import BreedSelector from '../../../../components/BreedSelector';
+import BreedSelector from '../../../../components/breed-selector';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {Platform} from 'react-native';
 import {useRouter} from 'expo-router';

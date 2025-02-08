@@ -16,8 +16,8 @@ import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
 import {useTheme} from '../../../dopebase';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import LocationSelector from '@/components/LocationSelector';
+import ParallaxScrollView from '@/components/parallax-scrollview';
+import LocationSelector from '@/components/location-select-sheet';
 import {Copyright, Home, MapPin} from '@tamagui/lucide-icons';
 
 const TOTAL_STEPS = 3;

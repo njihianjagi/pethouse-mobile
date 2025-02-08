@@ -20,7 +20,7 @@ import {ArrowRight, MapPin, Search} from '@tamagui/lucide-icons';
 import {useListingData} from '../../../api/firebase/listings/useListingData';
 import {RecommendedBreeds} from '../../../components/recommended-breeds';
 import {useBreedSearch} from '../../../hooks/useBreedSearch';
-import {EmptyStateCard} from '../../../components/EmptyStateCard';
+import {EmptyStateCard} from '../../../components/empty-state-card';
 import {TraitSelector} from '../../../components/TraitSelector';
 import {MatchingBreeders} from '../../../components/matching-breeders';
 

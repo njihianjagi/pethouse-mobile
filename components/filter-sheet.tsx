@@ -1,185 +1,322 @@
-import React, {useEffect, useState} from 'react';
 import {
-  Sheet,
-  YStack,
-  XStack,
   Button,
-  Text,
-  ScrollView,
-  ListItem,
-  Separator,
-  YGroup,
-  Switch,
+  Checkbox,
+  H4,
+  Label,
+  RadioGroup,
+  Sheet,
   Spinner,
+  Text,
+  XStack,
+  YStack,
 } from 'tamagui';
-import {useTheme} from '../dopebase';
-import {X} from '@tamagui/lucide-icons';
-import useCurrentUser from '../hooks/useCurrentUser';
-import {updateUser} from '../api/firebase/users/userClient';
-import {useDispatch} from 'react-redux';
-import {setUserData} from '../redux/reducers/auth';
+import {ScrollView} from 'react-native';
+import {useEffect, useState, useCallback, memo} from 'react';
+import {useRefinementList, useInstantSearch} from 'react-instantsearch-core';
+import {useBreedSearch} from '../hooks/useBreedSearch';
 
-interface BreedFilterSheetProps {
+type SearchType = 'breed' | 'breeder' | 'listing';
+type SelectionType = 'breedGroup' | 'traitGroups' | 'traits';
+
+interface FilterSheetProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-  traitGroups: any;
-  traitPreferences: any;
-  updateFilter: any;
-  mode?: 'list' | 'steps'; // New prop to control display mode
-  title?: string;
+  onClose: () => void;
+  type: SearchType;
 }
 
-export const BreedFilterSheet: React.FC<BreedFilterSheetProps> = ({
-  open,
-  onOpenChange,
-  traitGroups,
-  traitPreferences,
-  updateFilter,
-  mode = 'steps', // Default to steps mode
-  title = 'Select traits',
-}) => {
-  const {theme, appearance} = useTheme();
-  const colorSet = theme.colors[appearance];
+interface Selections {
+  breedGroup?: any;
+  traitGroups: any;
+  traits: any;
+}
 
-  const [tempPreferences, setTempPreferences] = useState({...traitPreferences});
-  const [isApplying, setIsApplying] = useState(false);
-  const dispatch = useDispatch();
-  const currentUser = useCurrentUser();
+interface TraitGroup {
+  name: string;
+  traits: Array<{name: string}>;
+}
 
+interface TraitGroupSectionProps {
+  group: TraitGroup;
+  groupTraits: any;
+  isSelected: (value: string, type: SelectionType) => boolean;
+  onToggleSelection: (value: string, type: SelectionType) => void;
+}
+
+const initialSelections: Selections = {
+  breedGroup: undefined,
+  traitGroups: [],
+  traits: [],
+};
+
+const TraitGroupSection = memo(
+  ({
+    group,
+    groupTraits,
+    isSelected,
+    onToggleSelection,
+  }: TraitGroupSectionProps) => {
+    if (groupTraits.length === 0) return null;
+
+    return (
+      <YStack gap='$2'>
+        <XStack alignItems='center' gap='$2'>
+          <Label>{group.name}</Label>
+        </XStack>
+
+        <YStack pl='$4' gap='$2'>
+          {groupTraits.map((trait) => (
+            <XStack key={trait.label} gap='$2' alignItems='center'>
+              <Checkbox
+                checked={isSelected(trait.value, 'traits')}
+                onCheckedChange={() => onToggleSelection(trait.value, 'traits')}
+              >
+                <Checkbox.Indicator />
+              </Checkbox>
+              <Text>{trait.label}</Text>
+            </XStack>
+          ))}
+        </YStack>
+      </YStack>
+    );
+  }
+);
+
+export function FilterSheet({open, onClose, type}: FilterSheetProps) {
+  const {traitGroups} = useBreedSearch();
+  const {status} = useInstantSearch();
+
+  // Get all available options from refinement lists
+  const breedGroupItems = useRefinementList({
+    attribute: 'breedGroup',
+    limit: 50,
+    sortBy: ['count:desc'],
+    operator: 'and',
+  });
+
+  const traitGroupItems = useRefinementList({
+    attribute: 'traits.name',
+    limit: 50,
+    sortBy: ['count:desc'],
+    operator: 'and',
+  });
+
+  const traitItems = useRefinementList({
+    attribute: 'traits.traits.name',
+    limit: 50,
+    sortBy: ['count:desc'],
+    operator: 'and',
+  });
+
+  // Store initial options on mount
+  const [initialOptions] = useState({
+    breedGroups: breedGroupItems.items,
+    traits: traitItems.items,
+    traitGroups: traitGroupItems.items,
+  });
+
+  // Track temporary selections
+  const [tempSelections, setTempSelections] = useState<Selections>(() => ({
+    breedGroup: breedGroupItems.items.find((item) => item.isRefined)?.value,
+    traitGroups: [],
+    traits: traitItems.items
+      .filter((item) => item.isRefined)
+      .map((item) => item.value),
+  }));
+
+  // Reset selections when sheet opens
   useEffect(() => {
     if (open) {
-      setTempPreferences({...traitPreferences});
+      setTempSelections({
+        ...initialOptions,
+      });
     }
-  }, [open, traitPreferences]);
+  }, [open]);
 
-  const handleTraitChange = (traitName: string, value: boolean) => {
-    setTempPreferences((prev) => {
-      const newPreferences = {...prev};
-      if (!value) {
-        // Remove the trait if it's being set to false
-        delete newPreferences[traitName];
-      } else {
-        // Only add the trait if it's being set to true
-        newPreferences[traitName] = value;
+  const toggleSelection = useCallback((value: string, type: SelectionType) => {
+    setTempSelections((prev) => {
+      if (type === 'breedGroup') {
+        return {
+          ...prev,
+          breedGroup: value === prev.breedGroup ? undefined : value,
+        };
       }
-      return newPreferences;
+
+      const current = prev[type];
+      const updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      return {...prev, [type]: updated};
     });
-  };
+  }, []);
 
-  const handleApplyFilters = async () => {
-    try {
-      setIsApplying(true);
-
-      if (currentUser?.id) {
-        const response: any = await updateUser(currentUser.id, {
-          ...currentUser,
-          traitPreferences: tempPreferences,
-        });
-
-        console.log('response: ', response.user);
-        if (response && response.user) {
-          dispatch(
-            setUserData({
-              user: response.user,
-            })
-          );
-        }
+  const isSelected = useCallback(
+    (value: string, type: SelectionType): boolean => {
+      if (type === 'breedGroup') {
+        return tempSelections.breedGroup === value;
       }
-    } catch (error) {
-      console.error('Error applying filters:', error);
-      // Optionally show error toast/alert here
-    } finally {
-      updateFilter('traitPreferences', tempPreferences);
-      setIsApplying(false);
-      onOpenChange(false);
-    }
-  };
+      return tempSelections[type].includes(value);
+    },
+    [tempSelections]
+  );
 
-  const renderTraitOption = (trait) => (
-    <ListItem key={trait.name}>
-      <ListItem.Text>{trait.name}</ListItem.Text>
-      <Switch
-        backgroundColor={
-          !!tempPreferences[trait.name]
-            ? colorSet.secondaryForeground
-            : '$gray3'
-        }
-        checked={!!tempPreferences[trait.name]}
-        onCheckedChange={(value) => handleTraitChange(trait.name, value)}
+  const applyFilters = useCallback(() => {
+    // Clear all existing refinements first
+    breedGroupItems.items.forEach((item) => {
+      if (item.isRefined) {
+        breedGroupItems.refine(item.value);
+      }
+    });
+
+    traitItems.items.forEach((item) => {
+      if (item.isRefined) {
+        traitItems.refine(item.value);
+      }
+    });
+
+    // Then apply new selections
+    if (tempSelections.breedGroup) {
+      breedGroupItems.refine(tempSelections.breedGroup);
+    }
+
+    tempSelections.traits.forEach((trait) => {
+      traitItems.refine(trait);
+    });
+
+    onClose();
+  }, [tempSelections, breedGroupItems, traitItems, onClose]);
+
+  const clearAll = useCallback(() => {
+    onClose();
+    setTempSelections(initialSelections);
+
+    breedGroupItems.items.forEach((item) => {
+      if (item.isRefined) {
+        breedGroupItems.refine(item.value);
+      }
+    });
+
+    traitItems.items.forEach((item) => {
+      if (item.isRefined) {
+        traitItems.refine(item.value);
+      }
+    });
+  }, [breedGroupItems, traitItems, onClose]);
+
+  const handleOpenChange = useCallback(
+    (isOpen: boolean) => {
+      if (!isOpen) onClose();
+    },
+    [onClose]
+  );
+
+  const isLoading = status === 'loading' || status === 'stalled';
+
+  const renderBreedGroups = () => (
+    <YStack gap='$2'>
+      <Label>Breed Group</Label>
+      <RadioGroup
+        value={tempSelections.breedGroup}
+        onValueChange={(value) => toggleSelection(value, 'breedGroup')}
       >
-        <Switch.Thumb
-          animation='quicker'
-          backgroundColor={
-            !!tempPreferences[trait.name]
-              ? colorSet.primaryForeground
-              : '$gray6'
-          }
-        />
-      </Switch>
-    </ListItem>
+        <YStack gap='$2'>
+          {initialOptions.breedGroups.map((item) => (
+            <XStack key={item.label} gap='$2' alignItems='center'>
+              <RadioGroup.Item value={item.value}>
+                <RadioGroup.Indicator />
+              </RadioGroup.Item>
+              <Text textTransform='capitalize'>{item.label} group</Text>
+            </XStack>
+          ))}
+        </YStack>
+      </RadioGroup>
+    </YStack>
+  );
+
+  const renderTraitGroups = () => (
+    <>
+      {traitGroups.map((group) => {
+        const groupTraits = initialOptions.traits.filter((t) =>
+          group.traits.some((gt) => gt.name === t.label)
+        );
+
+        if (groupTraits.length === 0) return null;
+
+        return (
+          <TraitGroupSection
+            key={group.name}
+            group={group}
+            groupTraits={groupTraits}
+            isSelected={isSelected}
+            onToggleSelection={toggleSelection}
+          />
+        );
+      })}
+    </>
   );
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange} snapPoints={[90]}>
+    <Sheet
+      modal
+      open={open}
+      onOpenChange={handleOpenChange}
+      snapPoints={[85]}
+      position={0}
+      dismissOnSnapToBottom
+    >
       <Sheet.Overlay />
-      <Sheet.Frame backgroundColor={colorSet.primaryBackground}>
-        <Sheet.Handle backgroundColor={colorSet.primaryForeground} />
-        <YStack flex={1}>
-          <XStack justifyContent='space-between' alignItems='center'>
-            <Text
-              fontSize='$8'
-              fontWeight='bold'
-              color={colorSet.primaryForeground}
-              paddingLeft='$4'
-            >
-              Filter Breeds
+      <Sheet.Frame>
+        <YStack f={1}>
+          <YStack
+            padding='$4'
+            borderBottomColor='$gray5'
+            borderBottomWidth={1}
+            backgroundColor='$background'
+          >
+            <Sheet.Handle theme='active' />
+            <H4 paddingTop='$2'>Filter {type}s</H4>
+            <Text color='$gray11' paddingTop='$2' fontSize='$2'>
+              Select options to narrow down your search results
             </Text>
-            <Button
-              icon={<X size='$1' color={colorSet.primaryForeground} />}
-              circular
-              onPress={() => onOpenChange(false)}
-              chromeless
-            />
-          </XStack>
+          </YStack>
 
-          <ScrollView marginTop='$4'>
-            <YStack padding='$4' marginBottom='$12' gap='$4'>
-              {traitGroups.map((group) => (
-                <YGroup key={group.name} bordered>
-                  <YGroup.Item>
-                    <ListItem
-                      title={<Text fontWeight='bold'>{group.name}</Text>}
-                    />
-                  </YGroup.Item>
-                  <Separator />
-                  {group.traits.map(renderTraitOption)}
-                  <Separator />
-                </YGroup>
-              ))}
+          <ScrollView>
+            <YStack padding='$4' gap='$4'>
+              {renderBreedGroups()}
+              {renderTraitGroups()}
             </YStack>
           </ScrollView>
 
           <YStack
-            position='absolute'
-            bottom={0}
-            left={0}
-            right={0}
             padding='$4'
-            backgroundColor={colorSet.primaryBackground}
-            borderBottomWidth={1}
-            borderBottomColor={colorSet.secondaryBackground}
+            borderTopColor='$gray5'
+            borderTopWidth={1}
+            backgroundColor='$background'
           >
-            <Button
-              onPress={handleApplyFilters}
-              backgroundColor={colorSet.primaryForeground}
-              color={colorSet.primaryBackground}
-              size='$4'
-            >
-              {isApplying ? <Spinner /> : 'Apply Filters'}
-            </Button>
+            <XStack gap='$2'>
+              <Button
+                size='$4'
+                theme='gray'
+                onPress={clearAll}
+                flex={1}
+                disabled={isLoading}
+                icon={isLoading ? <Spinner size='small' /> : undefined}
+              >
+                Clear All
+              </Button>
+              <Button
+                size='$4'
+                theme='active'
+                onPress={applyFilters}
+                flex={1}
+                disabled={isLoading}
+                icon={isLoading ? <Spinner size='small' /> : undefined}
+              >
+                Apply Filters
+              </Button>
+            </XStack>
           </YStack>
         </YStack>
       </Sheet.Frame>
     </Sheet>
   );
-};
+}
