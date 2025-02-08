@@ -25,9 +25,9 @@ interface FilterSheetProps {
 }
 
 interface Selections {
-  breedGroup?: any;
-  traitGroups: any;
-  traits: any;
+  breedGroup?: string;
+  traitGroups: string[];
+  traits: string[];
 }
 
 interface TraitGroup {
@@ -111,7 +111,6 @@ export function FilterSheet({open, onClose, type}: FilterSheetProps) {
   const [initialOptions] = useState({
     breedGroups: breedGroupItems.items,
     traits: traitItems.items,
-    traitGroups: traitGroupItems.items,
   });
 
   // Track temporary selections
@@ -127,7 +126,11 @@ export function FilterSheet({open, onClose, type}: FilterSheetProps) {
   useEffect(() => {
     if (open) {
       setTempSelections({
-        ...initialOptions,
+        breedGroup: breedGroupItems.items.find((item) => item.isRefined)?.value,
+        traitGroups: [],
+        traits: traitItems.items
+          .filter((item) => item.isRefined)
+          .map((item) => item.value),
       });
     }
   }, [open]);
@@ -220,7 +223,7 @@ export function FilterSheet({open, onClose, type}: FilterSheetProps) {
       >
         <YStack gap='$2'>
           {initialOptions.breedGroups.map((item) => (
-            <XStack key={item.label} gap='$2' alignItems='center'>
+            <XStack key={item.label} space alignItems='center'>
               <RadioGroup.Item value={item.value}>
                 <RadioGroup.Indicator />
               </RadioGroup.Item>

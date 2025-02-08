@@ -1,28 +1,9 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import {useTheme, useTranslations} from '../../../dopebase';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {Href, useRouter} from 'expo-router';
-import {
-  Button,
-  Card,
-  H3,
-  Input,
-  ListItem,
-  ScrollView,
-  Spinner,
-  Text,
-  View,
-  XGroup,
-  XStack,
-  YStack,
-} from 'tamagui';
-import {ArrowRight, MapPin, Search} from '@tamagui/lucide-icons';
-import {useListingData} from '../../../api/firebase/listings/useListingData';
-import {RecommendedBreeds} from '../../../components/recommended-breeds';
-import {useBreedSearch} from '../../../hooks/useBreedSearch';
-import {EmptyStateCard} from '../../../components/empty-state-card';
-import {TraitSelector} from '../../../components/TraitSelector';
-import {MatchingBreeders} from '../../../components/matching-breeders';
+import {useRouter} from 'expo-router';
+import {Button, Input, ScrollView, View, XGroup, YStack} from 'tamagui';
+import {Search} from '@tamagui/lucide-icons';
 
 export default function HomeScreen() {
   const router = useRouter();
