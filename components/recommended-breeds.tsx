@@ -1,10 +1,10 @@
 import React from 'react';
 import {FlatList} from 'react-native';
 import {YStack, XStack, ScrollView, Button, H3, Spinner} from 'tamagui';
-import {useTheme} from '../../../../dopebase';
+import {useTheme} from '../dopebase';
 import {useRouter} from 'expo-router';
 import BreedCard from './breed-card';
-import {useBreedMatch} from '../../../../hooks/useBreedMatch';
+import {useBreedMatch} from '../hooks/useBreedMatch';
 
 interface RecommendedBreedsProps {
   filteredBreeds: any[];

@@ -108,7 +108,7 @@ const BreedSelector: React.FC<BreedSelectorProps> = ({
     >
       <Sheet.Overlay />
       <Sheet.Frame>
-        <Sheet.Handle />
+        <Sheet.Handle theme='active' />
         <YStack padding='$4' gap='$4'>
           <Input
             ref={searchInputRef}

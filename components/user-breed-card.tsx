@@ -1,6 +1,6 @@
 import React from 'react';
 import {Card, YStack, XStack, Image, Text, Button, Spacer} from 'tamagui';
-import {useTheme, useTranslations} from '../../../dopebase';
+import {useTheme, useTranslations} from '../dopebase';
 import {LinearGradient} from 'tamagui/linear-gradient';
 import {Trash} from '@tamagui/lucide-icons';
 

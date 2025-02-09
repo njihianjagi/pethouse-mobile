@@ -21,7 +21,7 @@ import useCurrentUser from '../../../hooks/useCurrentUser';
 import {updateUser} from '../../../api/firebase/users/userClient';
 import {useDispatch} from 'react-redux';
 import {setUserData} from '../../../redux/reducers/auth';
-import ParallaxScrollView from '../../../components/ParallaxScrollView';
+import ParallaxScrollView from '../../../components/parallax-scrollview';
 
 const TOTAL_STEPS = 3;
 const CURRENT_STEP = 2;
@@ -69,7 +69,7 @@ export const ExperienceScreen = () => {
         ...currentUser,
         experience: formData,
       });
-      dispatch(setUserData(updatedUser));
+      dispatch(setUserData({user: updatedUser}));
       router.push('/(onboarding)/(seeker)/housing');
     } catch (error) {
       console.error('Error updating user:', error);
@@ -142,7 +142,7 @@ export const ExperienceScreen = () => {
                 onValueChange={(value) => handleChange('dogExperience', value)}
               >
                 <YStack gap='$2' width='100%'>
-                  <XStack width={300} alignItems='center' space='$4'>
+                  <XStack width={300} alignItems='center' gap='$4'>
                     <RadioGroup.Item value='first_time'>
                       <RadioGroup.Indicator />
                     </RadioGroup.Item>
@@ -150,7 +150,7 @@ export const ExperienceScreen = () => {
                       {localized('First-time Dog Owner')}
                     </Label>
                   </XStack>
-                  <XStack width={300} alignItems='center' space='$4'>
+                  <XStack width={300} alignItems='center' gap='$4'>
                     <RadioGroup.Item value='some_experience'>
                       <RadioGroup.Indicator />
                     </RadioGroup.Item>
@@ -159,7 +159,7 @@ export const ExperienceScreen = () => {
                     </Label>
                   </XStack>
 
-                  <XStack width={300} alignItems='center' space='$4'>
+                  <XStack width={300} alignItems='center' gap='$4'>
                     <RadioGroup.Item value='experienced'>
                       <RadioGroup.Indicator />
                     </RadioGroup.Item>

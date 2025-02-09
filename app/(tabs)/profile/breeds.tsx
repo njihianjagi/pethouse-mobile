@@ -1,23 +1,18 @@
-import React, {useEffect} from 'react';
-import {ScrollView, Alert} from 'react-native';
-import {
-  View,
-  YStack,
-  Button,
-  Text,
-  Separator,
-  YGroup,
-  ListItem,
-  Spinner,
-} from 'tamagui';
+import React, {useEffect, useState} from 'react';
+import {Alert, FlatList} from 'react-native';
+import {View, YStack, Text, Spinner, XStack, Image} from 'tamagui';
 import useCurrentUser from '../../../hooks/useCurrentUser';
-import {Trash, Plus} from '@tamagui/lucide-icons';
+import {Plus} from '@tamagui/lucide-icons';
 import {useTheme, useTranslations} from '../../../dopebase';
-import BreedSelector from '../../../components/BreedSelector';
+import BreedSelector from '../../../components/breed-selector';
 import {useRouter} from 'expo-router';
-import useBreedData from '../../../api/firebase/breeds/useBreedData';
-import {EmptyStateCard} from '../../../components/EmptyStateCard';
+import {UserBreed} from '../../../api/firebase/breeds/useBreedData';
+import {EmptyStateCard} from '../../../components/empty-state-card';
 import {updateUser} from '../../../api/firebase/users/userClient';
+import {useDispatch} from 'react-redux';
+import {setUserData} from '../../../redux/reducers/auth';
+import UserBreedCard from '../../../components/user-breed-card';
+import ParallaxScrollView from '../../../components/parallax-scrollview';
 
 const BreedsScreen = () => {
   const currentUser = useCurrentUser();
@@ -25,18 +20,29 @@ const BreedsScreen = () => {
   const {theme, appearance} = useTheme();
   const colorSet = theme?.colors[appearance];
   const {localized} = useTranslations();
+  const dispatch = useDispatch();
 
-  const {
-    userBreeds,
-    fetchUserBreeds,
-    addUserBreed,
-    deleteUserBreed,
-    loading,
-    error,
-  } = useBreedData(currentUser.id);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [breedSelectorOpen, setBreedSelectorOpen] = useState(false);
+  const [userBreeds, setUserBreeds] = useState(
+    currentUser.preferredBreeds || currentUser.kennel.primaryBreeds
+  );
+  // const {
+  //   userBreeds,
+  //   fetchUserBreeds,
+  //   addUserBreed,
+  //   deleteUserBreed,
+  //   loading,
+  //   error,
+  // } = useBreedData(currentUser.id);
 
   useEffect(() => {
-    fetchUserBreeds(currentUser.id);
+    setUserBreeds(
+      currentUser.preferredBreeds || currentUser.kennel.primaryBreeds
+    );
   }, [currentUser.id]);
 
   const handleAddBreed = async (breed) => {
@@ -47,28 +53,74 @@ const BreedsScreen = () => {
       );
       return;
     }
-    const userBreed = await addUserBreed(breed);
+    const userBreed: UserBreed = {
+      userId: currentUser.id,
+      breedId: breed.id,
+      breedName: breed.name,
+      breedGroup: breed.breedGroup,
+      images: [breed.image],
+      yearsBreeding: 0,
+      healthTesting: {
+        dna: false,
+        hips: false,
+        eyes: false,
+        heart: false,
+      },
+      isOwner: true,
+    };
 
     await updateUser(currentUser.id, {
-      userBreeds: {...currentUser.userBreeds, userBreed},
+      ...(currentUser.role === 'breeder'
+        ? {
+            ...currentUser,
+            kennel: {
+              ...currentUser.kennel,
+              primaryBreeds: [...currentUser.kennel.primaryBreeds, userBreed],
+            },
+          }
+        : {
+            ...currentUser,
+            preferredBreeds: [...currentUser.preferredBreeds, userBreed],
+          }),
     });
   };
 
   const handleRemoveBreed = async (userBreedId) => {
-    await deleteUserBreed(userBreedId);
-
-    await updateUser(currentUser.id, {
-      userBreeds: {
-        ...(currentUser.userBreeds || []).filter(
-          (userBreed) => userBreed.id !== userBreedId
-        ),
-      },
+    const updatedUser = await updateUser(currentUser.id, {
+      ...(currentUser.role === 'breeder'
+        ? {
+            ...currentUser,
+            kennel: {
+              ...currentUser.kennel,
+              primaryBreeds: currentUser.kennel.primaryBreeds.filter(
+                (userBreed) => userBreed.id !== userBreedId
+              ),
+            },
+          }
+        : {
+            ...currentUser,
+            preferredBreeds: (currentUser.preferredBreeds || []).filter(
+              (breed) => breed.id !== userBreedId
+            ),
+          }),
     });
+    dispatch(setUserData({user: updatedUser}));
   };
 
   return (
     <View flex={1} backgroundColor={colorSet.primaryBackground}>
-      <ScrollView>
+      <ParallaxScrollView
+        headerImage={
+          <Image
+            source={require('@/assets/images/doggo.png')}
+            objectFit='contain'
+          />
+        }
+        headerBackgroundColor={{
+          dark: colorSet.primaryBackground,
+          light: colorSet.primaryBackground,
+        }}
+      >
         <YStack padding='$4' gap='$4'>
           {loading ? (
             <Spinner size='large' />
@@ -82,71 +134,34 @@ const BreedsScreen = () => {
               onPress={() => {
                 /* Add breed action */
               }}
-              icon={<Plus size='$2' color={colorSet.primaryBackground} />}
+              buttonIcon={<Plus size='$2' color={colorSet.primaryBackground} />}
               backgroundImage={require('../../../assets/images/doggos_3.png')}
               backgroundColor={colorSet.secondaryForeground}
               color={''}
             />
           ) : (
-            userBreeds.map((breed) => (
-              <YGroup key={breed.id} separator={<Separator />} flex={1}>
-                <YGroup.Item>
-                  <ListItem
-                    title={breed.breedName}
-                    subTitle={breed.breedGroup}
-                    iconAfter={
-                      <Button
-                        icon={Trash}
-                        size='$2'
-                        circular
-                        onPress={() => handleRemoveBreed(breed.id)}
-                      />
-                    }
-                  />
-                </YGroup.Item>
-
-                {/* <YGroup.Item>
-                  <ListItem
-                    title='Listings'
-                    iconAfter={
-                      <Button
-                        chromeless
-                        iconAfter={ChevronRight}
-                        size='$2'
-                        circular
-                        onPress={() => router.push('/listings')}
-                      >
-                        <Text>{listings[breed.breedId] || 0}</Text>
-                      </Button>
-                    }
-                  />
-                </YGroup.Item>
-                <YGroup.Item>
-                  <ListItem
-                    title='Litters'
-                    iconAfter={
-                      <Button
-                        chromeless
-                        iconAfter={ChevronRight}
-                        size='$2'
-                        circular
-                        onPress={() => router.push('/litters')}
-                      >
-                        <Text>{litters[breed.breedId] || 0}</Text>
-                      </Button>
-                    }
-                  />
-                </YGroup.Item> */}
-              </YGroup>
-            ))
+            <FlatList
+              data={userBreeds}
+              numColumns={2}
+              renderItem={({item, index}) => (
+                <UserBreedCard
+                  key={index}
+                  userBreed={item}
+                  handleRemoveBreed={handleRemoveBreed}
+                />
+              )}
+              keyExtractor={(item) => item.breedId}
+            />
           )}
+
           <BreedSelector
             onSelectBreed={handleAddBreed}
             userBreeds={userBreeds}
-            buttonText={localized('Add Breed')}
+            open={breedSelectorOpen}
+            onOpenChange={setBreedSelectorOpen}
           />
         </YStack>
-      </ScrollView>
+      </ParallaxScrollView>
     </View>
   );
 };

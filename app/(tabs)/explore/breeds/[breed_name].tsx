@@ -188,15 +188,17 @@ function BreedDetailScreen() {
             flexDirection='column'
           >
             <Tabs.List flex={1} paddingBottom='$4' bordered>
-              <Tabs.Tab value='tab1' flex={1}>
-                <Text>{localized('Overview')}</Text>
-              </Tabs.Tab>
-              <Tabs.Tab value='tab2' flex={1}>
-                <Text>{localized('Traits')}</Text>
-              </Tabs.Tab>
-              <Tabs.Tab value='tab3' flex={1}>
-                <Text>{localized('Breeders')}</Text>
-              </Tabs.Tab>
+              <XStack flex={1}>
+                <Tabs.Tab value='tab1' flex={1}>
+                  <Text>{localized('Overview')}</Text>
+                </Tabs.Tab>
+                <Tabs.Tab value='tab2' flex={1}>
+                  <Text>{localized('Traits')}</Text>
+                </Tabs.Tab>
+                <Tabs.Tab value='tab3' flex={1}>
+                  <Text>{localized('Breeders')}</Text>
+                </Tabs.Tab>
+              </XStack>
             </Tabs.List>
 
             <Tabs.Content value='tab1'>

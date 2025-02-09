@@ -15,7 +15,7 @@ import {
   AdoptionListing,
   useListingData,
 } from '../../../api/firebase/listings/useListingData';
-import BreedSelector from '../../../components/BreedSelector';
+import BreedSelector from '../../../components/breed-selector';
 import ImageSelector from '../../../components/ImageSelector';
 import {useRouter} from 'expo-router';
 import {Alert} from 'react-native';

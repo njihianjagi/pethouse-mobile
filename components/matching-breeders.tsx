@@ -2,9 +2,9 @@ import React, {useEffect, useState} from 'react';
 import {ScrollView, Image, FlatList} from 'react-native';
 import {XStack, YStack, Text, Card, Button, H3, View, Spinner} from 'tamagui';
 import {MapPin, Star, ChevronRight} from '@tamagui/lucide-icons';
-import {useTheme} from '../../../../dopebase';
+import {useTheme} from '../dopebase';
 import {useRouter} from 'expo-router';
-import {useBreedData} from '../../../../api/firebase/breeds/useBreedData';
+import {useBreedData} from '../api/firebase/breeds/useBreedData';
 import BreederCard from './breeder-card';
 
 interface MatchingBreedersProps {
@@ -68,7 +68,7 @@ export const MatchingBreeders = ({userBreeds}: MatchingBreedersProps) => {
                 chromeless
                 onPress={() =>
                   router.push({
-                    pathname: '/(breeders)',
+                    pathname: '/explore/breeders',
                     params: {breedId: breed.breedId},
                   })
                 }

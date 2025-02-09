@@ -3,8 +3,8 @@ import {MapPin, Star} from '@tamagui/lucide-icons';
 import {router} from 'expo-router';
 import {LinearGradient} from 'tamagui/linear-gradient';
 import {Text, Image, Card, XStack, YStack} from 'tamagui';
-import {useTheme} from '../../../../dopebase';
-import {BreederProfile} from '../../../../api/firebase/users/userClient';
+import {useTheme} from '../dopebase';
+import {BreederProfile} from '../api/firebase/users/userClient';
 
 interface BreederCardProps {
   breeder: BreederProfile;
@@ -17,8 +17,9 @@ const BreederCard = ({breeder, index}: BreederCardProps) => {
   const {theme, appearance} = useTheme();
   const colorSet = theme.colors[appearance];
 
-  const displayImage = breeder.images?.[0]?.thumbnailURL || DEFAULT_IMAGE;
-  const location = breeder.kennel.location?.name || 'Location unknown';
+  const displayImage =
+    breeder.kennel?.images?.[0]?.thumbnailURL || DEFAULT_IMAGE;
+  const location = breeder.kennel?.location?.name || 'Location unknown';
   const rating = breeder.rating || 0;
   const reviewCount = breeder.reviewCount || 0;
 
@@ -50,23 +51,25 @@ const BreederCard = ({breeder, index}: BreederCardProps) => {
       </Card.Background>
 
       <Card.Footer padding='$4'>
-        <YStack space='$2'>
+        <YStack gap='$2'>
           <Text
             color='$color.foregroundContrast'
             fontSize={24}
             fontWeight='bold'
           >
-            {breeder.kennel.name || breeder.firstName}
+            {breeder.kennel?.name
+              ? breeder.kennel.name
+              : breeder.firstName + ' ' + breeder.lastName}
           </Text>
 
-          <XStack space='$2' alignItems='center'>
+          <XStack gap='$2' alignItems='center'>
             <MapPin size={16} color='$color.foregroundContrast' />
             <Text color='$color.foregroundContrast' fontSize={16}>
               {location}
             </Text>
           </XStack>
 
-          <XStack space='$2' alignItems='center'>
+          <XStack gap='$2' alignItems='center'>
             <Star size={16} color='$color.foregroundContrast' />
             <Text color='$color.foregroundContrast' fontSize={16}>
               {rating.toFixed(1)} ({reviewCount})

@@ -406,7 +406,7 @@ const SmsAuthenticationScreen = () => {
           enterStyle={{opacity: 0}}
           exitStyle={{opacity: 0}}
         />
-        <Sheet.Handle />
+        <Sheet.Handle theme='active' />
 
         <Sheet.Frame
           padding='$4'
