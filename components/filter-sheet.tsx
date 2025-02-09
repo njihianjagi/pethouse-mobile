@@ -14,6 +14,7 @@ import {ScrollView} from 'react-native';
 import {useEffect, useState, useCallback, memo} from 'react';
 import {useRefinementList, useInstantSearch} from 'react-instantsearch-core';
 import {useBreedSearch} from '../hooks/useBreedSearch';
+import {useTheme} from '../dopebase';
 
 type SearchType = 'breed' | 'breeder' | 'listing';
 type SelectionType = 'breedGroup' | 'traitGroups' | 'traits';
@@ -84,6 +85,8 @@ const TraitGroupSection = memo(
 export function FilterSheet({open, onClose, type}: FilterSheetProps) {
   const {traitGroups} = useBreedSearch();
   const {status} = useInstantSearch();
+  const {theme, appearance} = useTheme();
+  const colorSet = theme.colors[appearance];
 
   // Get all available options from refinement lists
   const breedGroupItems = useRefinementList({
@@ -223,9 +226,11 @@ export function FilterSheet({open, onClose, type}: FilterSheetProps) {
       >
         <YStack gap='$2'>
           {initialOptions.breedGroups.map((item) => (
-            <XStack key={item.label} space alignItems='center'>
+            <XStack key={item.label} gap='$2' alignItems='center'>
               <RadioGroup.Item value={item.value}>
-                <RadioGroup.Indicator />
+                <RadioGroup.Indicator
+                  backgroundColor={colorSet.primaryForeground}
+                />
               </RadioGroup.Item>
               <Text textTransform='capitalize'>{item.label} group</Text>
             </XStack>

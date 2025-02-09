@@ -30,6 +30,8 @@ import {BreederProfile} from '../../../api/firebase/users/userClient';
 import BreedCard from '../../../components/breed-card';
 import {SortSheet} from '../../../components/sort-sheet';
 import {FilterSheet} from '../../../components/filter-sheet';
+import {FilterButtons} from '../../../components/filter-buttons';
+import FilterSheet2 from '../../../components/filter-sheet_2';
 
 // Types for search hits
 type BreedHit = Breed & {
@@ -99,88 +101,6 @@ const CustomSearchBox = memo(function CustomSearchBox({
         />
       </XGroup.Item>
     </XGroup>
-  );
-});
-
-interface FilterButtonsProps {
-  setFilterSheetOpen: (open: boolean) => void;
-}
-
-// Filter Buttons Component
-const FilterButtons = memo(function FilterButtons({
-  setFilterSheetOpen,
-}: FilterButtonsProps) {
-  const breedGroupItems = useRefinementList({
-    attribute: 'breedGroup',
-    limit: 50,
-    sortBy: ['count:desc'],
-  });
-
-  const traitGroupItems = useRefinementList({
-    attribute: 'traits.name',
-    limit: 50,
-    sortBy: ['count:desc'],
-  });
-
-  const traitItems = useRefinementList({
-    attribute: 'traits.traits.name',
-    limit: 50,
-    sortBy: ['count:desc'],
-  });
-
-  const selectedItems = [
-    ...(breedGroupItems.items || [])
-      .filter((item) => item.isRefined)
-      .map((item) => ({
-        ...item,
-        attributeType: 'breedGroup' as const,
-        refine: () => breedGroupItems.refine(item.value),
-      })),
-    ...(traitGroupItems.items || [])
-      .filter((item) => item.isRefined)
-      .map((item) => ({
-        ...item,
-        attributeType: 'trait_group' as const,
-        refine: () => traitGroupItems.refine(item.value),
-      })),
-    ...(traitItems.items || [])
-      .filter((item) => item.isRefined)
-      .map((item) => ({
-        ...item,
-        attributeType: 'trait' as const,
-        refine: () => traitItems.refine(item.value),
-      })),
-  ];
-
-  const handleFilterPress = useCallback(() => {
-    setFilterSheetOpen(true);
-  }, [setFilterSheetOpen]);
-
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <XStack gap='$2' paddingRight='$4'>
-        <Button
-          icon={<Filter size={16} />}
-          onPress={handleFilterPress}
-          theme='gray'
-          size='$3'
-        >
-          Filters
-        </Button>
-
-        {selectedItems.map((item) => (
-          <Button
-            key={`${item.attributeType}-${item.label}`}
-            onPress={item.refine}
-            theme='active'
-            size='$3'
-            iconAfter={<X size={14} />}
-          >
-            <Text textTransform='capitalize'>{item.label}</Text>
-          </Button>
-        ))}
-      </XStack>
-    </ScrollView>
   );
 });
 
@@ -331,7 +251,7 @@ export default function ExploreScreen() {
 
         <SearchResults />
 
-        <FilterSheet
+        <FilterSheet2
           open={filterSheetOpen}
           onClose={handleFilterClose}
           type={searchType}
