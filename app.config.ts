@@ -1,15 +1,15 @@
-import {ExpoConfig, ConfigContext} from 'expo/config';
+import { ExpoConfig, ConfigContext } from 'expo/config';
 
 // You can import your .env types if you have them defined
 // import { z } from 'zod'; // If you want to add runtime validation
 
-export default ({config}: ConfigContext): ExpoConfig => ({
-  name: process.env.EXPO_PUBLIC_APP_NAME || 'Doghouse',
-  slug: 'doghouse',
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  name: process.env.EXPO_PUBLIC_APP_NAME || 'Pethouse',
+  slug: 'pethouse',
   version: process.env.EXPO_PUBLIC_APP_VERSION || '1.0.0',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
-  scheme: process.env.EXPO_PUBLIC_APP_SCHEME || 'com.doghouse.ke',
+  scheme: process.env.EXPO_PUBLIC_APP_SCHEME || 'com.toruslabs.pethouse',
   userInterfaceStyle: 'automatic',
   splash: {
     image: './assets/images/splash.png',
@@ -17,14 +17,14 @@ export default ({config}: ConfigContext): ExpoConfig => ({
   },
   ios: {
     supportsTablet: true,
-    bundleIdentifier: process.env.IOS_BUNDLE_ID || 'com.doghouse.ke',
+    bundleIdentifier: process.env.IOS_BUNDLE_ID || 'com.toruslabs.pethouse',
   },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#ffffff',
     },
-    package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE_NAME || 'com.doghouse.ke',
+    package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE_NAME || 'com.toruslabs.pethouse',
     googleServicesFile: './google-services.json',
     userInterfaceStyle: 'automatic',
     config: {
