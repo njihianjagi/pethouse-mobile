@@ -1,9 +1,9 @@
-import {Tabs, useRouter} from 'expo-router';
-import React, {useCallback} from 'react';
+import { Tabs, useRouter } from 'expo-router';
+import React, { useCallback } from 'react';
 
-import {useColorScheme} from '@/hooks/useColorScheme';
-import {useTheme, useTranslations} from '../../dopebase';
-import {useAuth} from '../../hooks/useAuth';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useTheme, useTranslations } from '../../dopebase';
+import { useAuth } from '../../hooks/useAuth';
 import useCurrentUser from '../../hooks/useCurrentUser';
 import {
   Home,
@@ -13,12 +13,12 @@ import {
   LogOut,
   Bell,
 } from '@tamagui/lucide-icons';
-import {Button} from 'tamagui';
+import { Button } from 'tamagui';
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
-  const {localized} = useTranslations();
-  const {theme, appearance} = useTheme();
+  const { localized } = useTranslations();
+  const { theme, appearance } = useTheme();
   const colorSet = theme.colors[appearance];
 
   return (
@@ -36,7 +36,7 @@ export default function TabLayout() {
         name='(home)'
         options={{
           title: 'Home',
-          tabBarIcon: ({color, focused}) => (
+          tabBarIcon: ({ color, focused }) => (
             <Home color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
 
@@ -49,7 +49,7 @@ export default function TabLayout() {
         name='explore'
         options={{
           title: 'Explore',
-          tabBarIcon: ({color, focused}) => (
+          tabBarIcon: ({ color, focused }) => (
             <Search color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
 
@@ -62,7 +62,7 @@ export default function TabLayout() {
         name='inbox'
         options={{
           title: 'Inbox',
-          tabBarIcon: ({color, focused}) => (
+          tabBarIcon: ({ color, focused }) => (
             <MessageSquare
               color={focused ? colorSet.primaryForeground : '$gray9'}
             />
@@ -77,7 +77,7 @@ export default function TabLayout() {
         name='profile'
         options={{
           title: 'Profile',
-          tabBarIcon: ({color, focused}) => (
+          tabBarIcon: ({ color, focused }) => (
             <User2 color={focused ? colorSet.primaryForeground : '$gray9'} />
           ),
 

@@ -1,4 +1,4 @@
-package com.doghouse.ke
+package com.toruslabs.pethouse
 
 import android.os.Build
 import android.os.Bundle

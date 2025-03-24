@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "838635783062",
-    "project_id": "doghouse-c77c1",
-    "storage_bucket": "doghouse-c77c1.appspot.com"
+    "project_number": "196729860873",
+    "project_id": "pethouse-fd220",
+    "storage_bucket": "pethouse-fd220.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:838635783062:android:40a16ab72ef48566c213b7",
+        "mobilesdk_app_id": "1:196729860873:android:766162fab19ca7464759d8",
         "android_client_info": {
-          "package_name": "com.doghouse.ke"
+          "package_name": "com.toruslabs.pethouse"
         }
       },
       "oauth_client": [
         {
-          "client_id": "838635783062-lum2hnj0eujchm0hrac0e7iimbmraenb.apps.googleusercontent.com",
+          "client_id": "196729860873-gcrd9rpjtmnkjt5sek1fkgt8imt9cupd.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAOzWQrJbqgqFHXy3CKOFzN4Vdcwq2maCc"
+          "current_key": "AIzaSyC6fW02Yx3RslaJ9fMktX_QWIJ8Z_GYW8g"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "838635783062-5u4n4gerafbra1qlaakuadi30mq7sv84.apps.googleusercontent.com",
+              "client_id": "196729860873-gcrd9rpjtmnkjt5sek1fkgt8imt9cupd.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
