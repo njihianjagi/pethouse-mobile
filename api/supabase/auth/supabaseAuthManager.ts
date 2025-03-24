@@ -208,6 +208,143 @@ const deleteUser = async (userID) => {
     }
 };
 
+const loginOrSignUpWithApple = async (appConfig) => {
+    try {
+        const appleAuthRequestResponse = await appleAuth.performRequest({
+            requestedOperation: AppleAuthRequestOperation.LOGIN,
+            requestedScopes: [
+                AppleAuthRequestScope.EMAIL,
+                AppleAuthRequestScope.FULL_NAME,
+            ],
+        });
+
+        const { identityToken, nonce } = appleAuthRequestResponse;
+
+        // Sign in with Supabase using Apple OAuth
+        const { data: { user }, error: signInError } = await supabase.auth.signInWithIdToken({
+            provider: 'apple',
+            token: identityToken,
+            nonce,
+        });
+
+        if (signInError) {
+            return { error: ErrorCode.appleAuthFailed };
+        }
+
+        // Check if this is a new user
+        const { data: existingProfile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (!existingProfile) {
+            // Create new user profile
+            const timestamp = getUnixTimeStamp();
+            const userData = {
+                id: user.id,
+                userID: user.id,
+                email: user.email || '',
+                first_name: appleAuthRequestResponse.fullName?.givenName || 'Apple',
+                last_name: appleAuthRequestResponse.fullName?.familyName || 'User',
+                profile_picture_url: defaultProfilePhotoURL,
+                app_identifier: appConfig.appIdentifier,
+                created_at: new Date(timestamp * 1000).toISOString(),
+                social_auth_type: 'Apple',
+            };
+
+            const { error: profileError } = await supabase
+                .from('users')
+                .insert([userData]);
+
+            if (profileError) {
+                return { error: ErrorCode.serverError };
+            }
+
+            return {
+                user: userData,
+                accountCreated: true,
+            };
+        }
+
+        return {
+            user: existingProfile,
+            accountCreated: false,
+        };
+    } catch (error) {
+        console.error('Apple auth error:', error);
+        return { error: ErrorCode.appleAuthFailed };
+    }
+};
+
+const loginOrSignUpWithGoogle = async (appConfig) => {
+    try {
+        // Configure Google Sign In
+        GoogleSignin.configure({
+            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+            offlineAccess: true,
+        });
+
+        // Get the user's ID token
+        const response = await GoogleSignin.signIn();
+        const { accessToken } = await GoogleSignin.getTokens();
+
+        // Sign in with Supabase using Google OAuth
+        const { data: { user }, error: signInError } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: accessToken,
+        });
+
+        if (signInError) {
+            return { error: ErrorCode.googleSigninFailed };
+        }
+
+        // Check if this is a new user
+        const { data: existingProfile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        if (!existingProfile) {
+            // Create new user profile
+            const timestamp = getUnixTimeStamp();
+            const userData = {
+                id: user.id,
+                userID: user.id,
+                email: user.email || '',
+                first_name: user.user_metadata?.given_name || 'Google',
+                last_name: user.user_metadata?.family_name || 'User',
+                profile_picture_url: user.user_metadata?.picture || defaultProfilePhotoURL,
+                app_identifier: appConfig.appIdentifier,
+                created_at: new Date(timestamp * 1000).toISOString(),
+                social_auth_type: 'Google',
+            };
+
+            const { error: profileError } = await supabase
+                .from('users')
+                .insert([userData]);
+
+            if (profileError) {
+                return { error: ErrorCode.serverError };
+            }
+
+            return {
+                user: userData,
+                accountCreated: true,
+            };
+        }
+
+        return {
+            user: existingProfile,
+            accountCreated: false,
+        };
+    } catch (error) {
+        console.error('Google auth error:', error);
+        return { error: ErrorCode.googleSigninFailed };
+    }
+};
+
 const authManager = {
     validateUsernameFieldIfNeeded,
     retrievePersistedAuthUser,
@@ -215,6 +352,8 @@ const authManager = {
     createAccountWithEmailAndPassword,
     logout,
     deleteUser,
+    loginOrSignUpWithApple,
+    loginOrSignUpWithGoogle,
 };
 
 export default authManager; 

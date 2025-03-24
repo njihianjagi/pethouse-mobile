@@ -1,30 +1,30 @@
-import {DarkTheme, DefaultTheme, ThemeProvider} from '@react-navigation/native';
-import {useFonts} from 'expo-font';
-import {Stack} from 'expo-router';
+import { DarkTheme, DefaultTheme } from '@react-navigation/native';
+import { useFonts } from 'expo-font';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import 'react-native-reanimated';
-import {MenuProvider} from 'react-native-popup-menu';
-import {useColorScheme} from '@/hooks/useColorScheme';
-import {ActionSheetProvider} from '@expo/react-native-action-sheet';
-import {Provider} from 'react-redux';
-import {ConfigProvider, useConfig} from '../config';
-import {TranslationProvider, DopebaseProvider, extendTheme} from '../dopebase';
-import {AuthProvider} from '../hooks/useAuth';
-import {authManager} from '../api/firebase/auth';
+import { MenuProvider } from 'react-native-popup-menu';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { ActionSheetProvider } from '@expo/react-native-action-sheet';
+import { Provider } from 'react-redux';
+import { ConfigProvider, useConfig } from '../config';
+import { TranslationProvider, DopebaseProvider, extendTheme } from '../dopebase';
+import { AuthProvider } from '../hooks/useAuth';
+import authManager from '../api/supabase/auth/supabaseAuthManager';
 import translations from '../translations';
 import configureStore from '../redux/store/dev';
 import DoghouseTheme from '../theme';
-import {TamaguiProvider, createTamagui} from 'tamagui'; // or 'tamagui'
-import {config} from '@tamagui/config/v3';
-import {SafeAreaView} from 'react-native';
+import { TamaguiProvider, createTamagui } from 'tamagui'; // or 'tamagui'
+import { config } from '@tamagui/config/v3';
+import { SafeAreaView } from 'react-native';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {StoreProvider} from '../store/provider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { StoreProvider } from '../store/provider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -37,7 +37,7 @@ const tamaguiConfig = createTamagui(config);
 type Conf = typeof tamaguiConfig;
 declare module '@tamagui/core' {
   // or 'tamagui'
-  interface TamaguiCustomConfig extends Conf {}
+  interface TamaguiCustomConfig extends Conf { }
 }
 
 export default function RootLayout() {
@@ -70,52 +70,48 @@ export default function RootLayout() {
   }
 
   return (
-    <Provider store={store}>
-      <StoreProvider>
-        <TranslationProvider translations={translations}>
-          <DopebaseProvider theme={theme}>
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <QueryClientProvider client={queryClient}>
+          <StoreProvider>
             <ConfigProvider>
-              <AuthProvider authManager={authManager}>
-                <MenuProvider>
-                  <ActionSheetProvider>
-                    <ThemeProvider
-                      value={
-                        colorScheme === 'dark' ? DefaultTheme : DefaultTheme
-                      }
-                    >
-                      <TamaguiProvider
-                        config={tamaguiConfig}
-                        defaultTheme={colorScheme as string | undefined}
-                      >
-                        <QueryClientProvider client={queryClient}>
-                          <SafeAreaProvider>
-                            <Stack>
-                              <Stack.Screen
-                                name='(auth)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(onboarding)'
-                                options={{headerShown: false}}
-                              />
-                              <Stack.Screen
-                                name='(tabs)'
-                                options={{headerShown: false}}
-                              />
-
-                              <Stack.Screen name='+not-found' />
-                            </Stack>
-                          </SafeAreaProvider>
-                        </QueryClientProvider>
-                      </TamaguiProvider>
-                    </ThemeProvider>
-                  </ActionSheetProvider>
-                </MenuProvider>
-              </AuthProvider>
+              <TranslationProvider translations={translations}>
+                <DopebaseProvider theme={theme}>
+                  <AuthProvider authManager={authManager}>
+                    <MenuProvider>
+                      <ActionSheetProvider>
+                        <TamaguiProvider config={tamaguiConfig}>
+                          <Stack
+                            screenOptions={{
+                              headerShown: false,
+                            }}
+                          >
+                            <Stack.Screen
+                              name='(auth)'
+                              options={{
+                                headerShown: false,
+                              }}
+                            />
+                            <Stack.Screen
+                              name='(onboarding)'
+                              options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                              name='(tabs)'
+                              options={{ headerShown: false }}
+                            />
+                            <Stack.Screen name='+not-found' />
+                          </Stack>
+                        </TamaguiProvider>
+                      </ActionSheetProvider>
+                    </MenuProvider>
+                  </AuthProvider>
+                </DopebaseProvider>
+              </TranslationProvider>
             </ConfigProvider>
-          </DopebaseProvider>
-        </TranslationProvider>
-      </StoreProvider>
-    </Provider>
+          </StoreProvider>
+        </QueryClientProvider>
+      </Provider>
+    </SafeAreaProvider>
   );
 }
