@@ -1,0 +1,111 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+## App Flow Rules
+
+1. **Authentication Flow**
+   - Splash screen with app initialization
+   - Welcome screen with sign-in/sign-up options
+   - Social auth integration (Google, Apple)
+   - Email/password authentication
+   - Profile completion for new users
+   - Password reset flow
+
+2. **User Onboarding**
+   - **Shelter Users**
+     - Verify shelter identity
+     - Complete shelter profile
+     - Set up location and contact info
+     - Add shelter photos and description
+     - Set adoption policies
+   - **Adopter Users**
+     - Set preferences (pet type, breed, age)
+     - Specify living situation
+     - Add experience with pets
+     - Set location and radius
+     - Upload profile photo
+
+3. **Main App Flow**
+   - **Shelter Dashboard**
+     - View active listings
+     - Track applications
+     - Manage pet profiles
+     - View adoption statistics
+     - Respond to messages
+   - **Adopter Dashboard**
+     - Browse pet listings
+     - View saved pets
+     - Track applications
+     - Message shelters
+     - View adoption history
+
+4. **Pet Listing Flow**
+   - **Creation (Shelter)**
+     - Upload multiple photos
+     - Add pet details (name, age, breed)
+     - Specify requirements
+     - Set adoption fee
+     - Add medical history
+   - **Discovery (Adopter)**
+     - Search by criteria
+     - Filter results
+     - Save favorites
+     - Share listings
+     - View detailed profiles
+
+5. **Application Process**
+   - **Adopter Side**
+     - Fill application form
+     - Add supporting documents
+     - Schedule meet & greet
+     - Track application status
+     - Receive notifications
+   - **Shelter Side**
+     - Review applications
+     - Request additional info
+     - Schedule meetings
+     - Process approvals
+     - Update pet status
+
+6. **Communication System**
+   - In-app messaging
+   - Push notifications
+   - Email notifications
+   - Message history
+   - File sharing
+
+7. **Navigation Rules**
+   - Use React Navigation
+   - Implement deep linking
+   - Handle back navigation
+   - Maintain navigation state
+   - Support gesture navigation
+
+8. **State Management**
+   - Use Redux for global state
+   - React Query for server state
+   - AsyncStorage for persistence
+   - Handle offline state
+   - Manage loading states
+
+9. **Error Handling**
+   - Show user-friendly messages
+   - Handle network errors
+   - Implement retry mechanisms
+   - Log errors for debugging
+   - Provide fallback UI
+
+10. **Performance**
+    - Implement lazy loading
+    - Optimize image loading
+    - Cache API responses
+    - Minimize re-renders
+    - Monitor app performance

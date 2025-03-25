@@ -1,0 +1,116 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+## Backend Rules
+
+1. **Authentication & User Management**
+   - Use Supabase Auth for:
+     - Email/password authentication
+     - Social auth (Google, Apple)
+     - Session management
+     - Password reset flow
+   - User roles:
+     - Shelter users
+     - Adopter users
+     - Individual pet owners
+   - Profile management:
+     - User details
+     - Role-specific information
+     - Profile pictures
+     - Contact information
+
+2. **Database Schema**
+   - **Users Table**
+     - Basic user info
+     - Role information
+     - Profile details
+     - Preferences
+   - **Pets Table**
+     - Pet details
+     - Medical history
+     - Adoption status
+     - Location data
+   - **Listings Table**
+     - Pet references
+     - Shelter information
+     - Requirements
+     - Status tracking
+   - **Applications Table**
+     - Adopter information
+     - Pet reference
+     - Application status
+     - Meeting schedules
+   - **Messages Table**
+     - Chat history
+     - File attachments
+     - Read status
+     - Timestamps
+
+3. **API Structure**
+   - RESTful endpoints for:
+     - User management
+     - Pet listings
+     - Applications
+     - Messaging
+   - Real-time subscriptions for:
+     - Chat updates
+     - Application status
+     - Listing changes
+   - File upload endpoints for:
+     - Profile pictures
+     - Pet photos
+     - Documents
+
+4. **Security Rules**
+   - Row Level Security (RLS) policies for:
+     - User data access
+     - Pet listing visibility
+     - Application management
+     - Message access
+   - Data validation:
+     - Input sanitization
+     - Type checking
+     - Required fields
+   - Rate limiting:
+     - API requests
+     - File uploads
+     - Authentication attempts
+
+5. **File Storage**
+   - Supabase Storage buckets for:
+     - User avatars
+     - Pet photos
+     - Documents
+     - Chat attachments
+   - File type restrictions
+   - Size limits
+   - Access control
+
+6. **Error Handling**
+   - Standardized error responses
+   - Error logging
+   - Retry mechanisms
+   - Fallback options
+   - User-friendly messages
+
+7. **Performance**
+   - Database indexing
+   - Query optimization
+   - Caching strategies
+   - Connection pooling
+   - Load balancing
+
+8. **Monitoring & Logging**
+   - Error tracking
+   - Performance metrics
+   - Usage statistics
+   - Security audits
+   - System health checks

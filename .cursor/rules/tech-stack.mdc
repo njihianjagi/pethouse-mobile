@@ -1,0 +1,53 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+## Tech Stack Rules
+
+1. **Core Framework**
+   - React Native with Expo
+   - TypeScript for type safety
+   - Tamagui for UI components
+   - React Navigation for routing
+
+2. **Backend & Services**
+   - Supabase for:
+     - Authentication
+     - Database
+     - Storage
+     - Real-time subscriptions
+   - Algolia for search functionality
+   - Leaflet.js for maps
+
+3. **State Management**
+   - Redux for global state
+   - React Query for server state
+   - AsyncStorage for local persistence
+
+4. **Testing & Quality**
+   - Jest for unit testing
+   - React Native Testing Library
+   - ESLint with TypeScript support
+   - Husky for git hooks
+   - Prettier for code formatting
+
+5. **Development Tools**
+   - Expo CLI
+   - TypeScript
+   - ESLint
+   - Prettier
+   - Husky
+   - Jest
+
+6. **Dependencies**
+   - Keep dependencies up to date
+   - Use exact versions in package.json
+   - Document major dependency changes
+   - Regular security audits

@@ -1,0 +1,126 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+## Product Requirements
+
+1. **User Types & Roles**
+   - **Shelter Users**
+     - Verify identity and credentials
+     - Manage multiple pet listings
+     - Process adoption applications
+     - Communicate with potential adopters
+     - Track adoption statistics
+   - **Adopter Users**
+     - Create detailed profiles
+     - Set pet preferences
+     - Submit adoption applications
+     - Track application status
+     - Message with shelters
+   - **Individual Pet Owners**
+     - List pets for adoption
+     - Manage single listings
+     - Process applications
+     - Communicate with adopters
+
+2. **Core Features**
+   - **Authentication & Profiles**
+     - Social and email sign-in
+     - Role-based access control
+     - Profile verification
+     - Password management
+   - **Pet Management**
+     - Multi-photo uploads
+     - Detailed pet profiles
+     - Medical history tracking
+     - Status updates
+   - **Search & Discovery**
+     - Advanced filtering
+     - Location-based search
+     - Save favorites
+     - Share listings
+   - **Application Process**
+     - Digital applications
+     - Document uploads
+     - Status tracking
+     - Meeting scheduling
+   - **Communication**
+     - In-app messaging
+     - Push notifications
+     - Email notifications
+     - File sharing
+
+3. **Technical Requirements**
+   - **Platform Support**
+     - iOS and Android
+     - Responsive design
+     - Offline functionality
+     - Cross-device sync
+   - **Performance**
+     - Fast load times
+     - Smooth animations
+     - Efficient image loading
+     - Battery optimization
+   - **Security**
+     - End-to-end encryption
+     - Secure file storage
+     - Data privacy
+     - Regular security audits
+   - **Accessibility**
+     - Screen reader support
+     - High contrast mode
+     - Keyboard navigation
+     - Voice commands
+
+4. **User Experience**
+   - **Navigation**
+     - Intuitive flow
+     - Quick access to key features
+     - Clear back navigation
+     - Deep linking support
+   - **Feedback**
+     - Loading states
+     - Success messages
+     - Error handling
+     - Progress indicators
+   - **Customization**
+     - Theme support
+     - Language options
+     - Notification preferences
+     - Privacy settings
+
+5. **Quality Assurance**
+   - **Testing**
+     - Unit tests
+     - Integration tests
+     - E2E testing
+     - Performance testing
+   - **Monitoring**
+     - Error tracking
+     - Usage analytics
+     - Performance metrics
+     - User feedback
+   - **Maintenance**
+     - Regular updates
+     - Bug fixes
+     - Security patches
+     - Documentation
+
+6. **Compliance & Legal**
+   - **Data Protection**
+     - GDPR compliance
+     - Data retention
+     - User consent
+     - Privacy policy
+   - **Terms of Service**
+     - User agreements
+     - Adoption policies
+     - Content guidelines
+     - Dispute resolution

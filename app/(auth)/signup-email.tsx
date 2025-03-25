@@ -46,7 +46,7 @@ interface UserDetails {
   profilePictureURL?: string;
   location?: string;
   signUpLocation?: string;
-  photoFile?: ProfilePictureFile | null;
+  photoFile?: any;
   appIdentifier?: string;
 }
 
@@ -87,7 +87,7 @@ const SignupScreen = () => {
     const trimmedFields: UserDetails = {};
     Object.keys(fields).forEach((key) => {
       if (key === 'photoFile') {
-        trimmedFields[key] = fields[key];
+        trimmedFields.photoFile = fields.photoFile;
       } else if (fields[key as keyof UserDetails]) {
         trimmedFields[key as keyof UserDetails] = fields[key as keyof UserDetails]?.toString().trim();
       }
