@@ -11,7 +11,7 @@ const defaultProfilePhotoURL =
     'https://www.iosapptemplates.com/wp-content/uploads/2019/06/empty-avatar.jpg';
 
 const validateUsernameFieldIfNeeded = (inputFields, appConfig) => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         const usernamePattern = /^[aA-zZ]\w{3,29}$/;
 
         if (!appConfig.isUsernameFieldEnabled) {
@@ -39,9 +39,9 @@ const loginWithEmailAndPassword = async (email, password) => {
             password,
         });
 
-        if (error) {
+        if (error || !user) {
             let errorCode = ErrorCode.serverError;
-            switch (error.message) {
+            switch (error?.message) {
                 case 'Invalid login credentials':
                     errorCode = ErrorCode.invalidPassword;
                     break;
@@ -103,9 +103,9 @@ const createAccountWithEmailAndPassword = async (userDetails, appConfig) => {
             password,
         });
 
-        if (signUpError) {
+        if (signUpError || !user) {
             let errorCode = ErrorCode.serverError;
-            if (signUpError.message.includes('already registered')) {
+            if (signUpError?.message.includes('already registered')) {
                 errorCode = ErrorCode.emailInUse;
             }
             return { error: errorCode };
@@ -220,6 +220,10 @@ const loginOrSignUpWithApple = async (appConfig) => {
 
         const { identityToken, nonce } = appleAuthRequestResponse;
 
+        if (!identityToken) {
+            return { error: ErrorCode.appleAuthFailed };
+        }
+
         // Sign in with Supabase using Apple OAuth
         const { data: { user }, error: signInError } = await supabase.auth.signInWithIdToken({
             provider: 'apple',
@@ -227,7 +231,7 @@ const loginOrSignUpWithApple = async (appConfig) => {
             nonce,
         });
 
-        if (signInError) {
+        if (signInError || !user) {
             return { error: ErrorCode.appleAuthFailed };
         }
 
@@ -286,7 +290,7 @@ const loginOrSignUpWithGoogle = async (appConfig) => {
         });
 
         // Get the user's ID token
-        const response = await GoogleSignin.signIn();
+        await GoogleSignin.signIn();
         const { accessToken } = await GoogleSignin.getTokens();
 
         // Sign in with Supabase using Google OAuth
@@ -295,7 +299,7 @@ const loginOrSignUpWithGoogle = async (appConfig) => {
             token: accessToken,
         });
 
-        if (signInError) {
+        if (signInError || !user) {
             return { error: ErrorCode.googleSigninFailed };
         }
 
