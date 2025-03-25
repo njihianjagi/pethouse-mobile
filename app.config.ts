@@ -12,8 +12,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: process.env.EXPO_PUBLIC_APP_SCHEME || 'com.toruslabs.pethouse',
   userInterfaceStyle: 'automatic',
   splash: {
-    image: './assets/images/splash.png',
+    image: './assets/images/splash-icon-light.png',
+    backgroundColor: '#ffffff',
     resizeMode: 'contain',
+    dark: {
+      image: './assets/images/splash-icon-dark',
+      backgroundColor: '#000000'
+    }
   },
   ios: {
     supportsTablet: true,
@@ -25,18 +30,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       backgroundColor: '#ffffff',
     },
     package: process.env.EXPO_PUBLIC_ANDROID_PACKAGE_NAME || 'com.toruslabs.pethouse',
-    googleServicesFile: './google-services.json',
     userInterfaceStyle: 'automatic',
-    config: {
-      googleMaps: {
-        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
-      },
-    },
   },
   web: {
     bundler: 'metro',
     output: 'static',
-    favicon: './assets/images/favicon.png',
+    favicon: './assets/images/icon.png',
   },
   plugins: [
     'expo-router',
@@ -50,7 +49,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         },
       },
     ],
-    '@react-native-google-signin/google-signin',
     './translucent-default-splash-screen-config',
   ],
   experiments: {
